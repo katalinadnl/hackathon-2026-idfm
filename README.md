@@ -4,7 +4,7 @@
 
 | Service | Description | Techno |
 |---------|-------------|--------|
-| `nginx` | Gateway / reverse-proxy, seul port exposé (`8080`) | nginx alpine |
+| `nginx` | Gateway / reverse-proxy, seul port exposé (`80`) | nginx alpine |
 | `app`   | Application front, build web statique d'Expo servi par nginx | Expo / React Native Web |
 | `php`   | API back-end | Symfony 8.1 · PHP 8.4-FPM |
 
@@ -24,8 +24,8 @@ Une fois les conteneurs démarrés :
 
 | URL | Cible |
 |-----|-------|
-| <http://localhost:8080/> | Application Expo (web) |
-| <http://localhost:8080/api/> | API Symfony |
+| <http://localhost/> | Application Expo (web) |
+| <http://localhost/api/> | API Symfony |
 
 Pour arrêter :
 
@@ -46,7 +46,7 @@ Disponible une fois les conteneurs lancés :
 
 | Type | URL |
 |------|-----|
-| Doc HTML (Swagger UI) | <http://localhost:8080/api/docs> |
+| Doc HTML (Swagger UI) | <http://localhost/api/docs> |
 
 
   ```bash
