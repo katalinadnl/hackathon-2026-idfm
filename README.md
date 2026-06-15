@@ -8,6 +8,7 @@
 | `app`   | Application front, build web statique d'Expo servi par nginx | Expo / React Native Web |
 | `php`   | API back-end | Symfony 8.1 · PHP 8.4-FPM |
 
+Copy .env.example to .env in backend
 ## Démarrage
 
 ```bash
