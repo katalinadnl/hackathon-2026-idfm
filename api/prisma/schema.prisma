@@ -1,3 +1,19 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
 enum BeneficiaryStatus {
   ACTIVE
   STUDENT
@@ -63,4 +79,47 @@ model StatusVerification {
   createdAt  DateTime  @default(now())
 
   beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
+}
+
+model Account {
+  id            Int      @id @default(autoincrement())
+  email         String   @unique
+  passwordHash  String
+  accountNumber String   @unique
+  createdAt     DateTime @default(now())
+
+  beneficiaryId Int?         @unique
+  beneficiary   Beneficiary? @relation(fields: [beneficiaryId], references: [id])
+
+  referredSubscriptions Subscription[] @relation("SubscriptionReferrer")
+  paidSubscriptions     Subscription[] @relation("SubscriptionPayer")
+}
+
+model Subscription {
+  id               Int      @id @default(autoincrement())
+  beneficiaryId    Int
+  referrerId       Int?
+  payerId          Int?
+  navigoNumber     String   @unique
+  subscriptionType String
+  startDate        DateTime
+  endDate          DateTime
+  status           String   @default("active")
+
+  beneficiary Beneficiary @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
+  referrer    Account?    @relation("SubscriptionReferrer", fields: [referrerId], references: [id])
+  payer       Account?    @relation("SubscriptionPayer", fields: [payerId], references: [id])
+
+  payments Payment[]
+}
+
+model Payment {
+  id             Int      @id @default(autoincrement())
+  subscriptionId Int
+  amount         Float
+  paidAt         DateTime @default(now())
+  method         String
+  status         String   @default("succeeded")
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
 }
