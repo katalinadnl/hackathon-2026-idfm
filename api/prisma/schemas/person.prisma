@@ -1,0 +1,66 @@
+enum BeneficiaryStatus {
+  ACTIVE
+  STUDENT
+  SENIOR
+  UNEMPLOYED
+  DISABLED
+  MINOR
+}
+
+enum VerificationSource {
+  MANUAL_DOCUMENT
+  STATE_API
+  DECLARATIVE
+}
+
+model Department {
+  id     Int    @id @default(autoincrement())
+  code   String @unique
+  name   String
+  region String
+
+  residents       Beneficiary[] @relation("ResidenceDepartment")
+  workersStudents Beneficiary[] @relation("WorkStudyDepartment")
+}
+
+model Beneficiary {
+  id                   Int               @id @default(autoincrement())
+  firstName            String
+  lastName             String
+  email                String            @unique
+  phone                String?
+  birthDate            DateTime
+  socialSecurityNumber String?           @unique
+  status               BeneficiaryStatus @default(ACTIVE)
+
+  residenceDepartmentId Int
+  workStudyDepartmentId Int?
+
+  residenceDepartment Department  @relation("ResidenceDepartment", fields: [residenceDepartmentId], references: [id])
+  workStudyDepartment Department? @relation("WorkStudyDepartment", fields: [workStudyDepartmentId], references: [id])
+
+  statusVerifications StatusVerification[]
+  account             Account?
+  subscriptions       Subscription[]       @relation("SubscriptionHolder")
+}
+
+model StatusVerification {
+  id            Int                @id @default(autoincrement())
+  beneficiaryId Int
+  status        BeneficiaryStatus
+  source        VerificationSource
+  verified      Boolean            @default(false)
+
+  documentUrl    String?
+  expirationDate DateTime?
+
+  apiName      String?
+  apiReference String?
+  apiQueriedAt DateTime?
+
+  validFrom  DateTime?
+  validUntil DateTime?
+  createdAt  DateTime  @default(now())
+
+  beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
+}
