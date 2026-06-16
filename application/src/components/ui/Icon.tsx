@@ -28,6 +28,10 @@ const SYMBOL_MAP: Record<string, { ios: string; android: string; web: string }> 
   'location-pin':   { ios: 'mappin',                    android: 'location_on',         web: 'location_on' },
   person:           { ios: 'person.circle',             android: 'account_circle',      web: 'account_circle' },
   link:             { ios: 'arrow.up.right.square',     android: 'open_in_new',         web: 'open_in_new' },
+  receipt:          { ios: 'doc.text',                  android: 'receipt',             web: 'receipt' },
+  creditcard:       { ios: 'creditcard',                android: 'credit_card',         web: 'credit_card' },
+  'chevron-left':   { ios: 'chevron.left',              android: 'chevron_left',        web: 'chevron_left' },
+  home:             { ios: 'house',                     android: 'home',                web: 'home' },
 };
 
 type IconProps = {
