@@ -1,10 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 @import 'tailwindcss';
+
 :root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji,
-    Segoe UI Symbol, Noto Color Emoji;
+  --font-display: 'Raleway', ui-sans-serif, system-ui, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace;
   --font-rounded: 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', Meiryo, 'MS PGothic', sans-serif;
   --font-serif: Georgia, 'Times New Roman', serif;
+}
+
+/*
+  Set Raleway on the document root so all elements inherit it by default.
+  !important only here (not on *) so that React Native Web's atomic CSS
+  classes for icon fonts (Ionicons, MaterialIcons, …) can still override
+  the inherited value — icon glyphs rely on their specific font-family.
+  Text components also get Raleway via Text.defaultProps in setup/fonts.ts,
+  which generates an explicit RNW CSS class that overrides Tailwind's reset.
+*/
+html,
+body {
+  font-family: 'Raleway', ui-sans-serif, system-ui, sans-serif !important;
 }
