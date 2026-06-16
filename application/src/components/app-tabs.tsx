@@ -28,6 +28,15 @@ export default function AppTabs() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
+
+      {/* TODO: dedicated billing icon — reusing explore.png for now */}
+      <NativeTabs.Trigger name="billing">
+        <NativeTabs.Trigger.Label>Facturation</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }
