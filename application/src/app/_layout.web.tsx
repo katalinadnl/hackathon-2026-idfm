@@ -1,13 +1,32 @@
+import '@/setup/fonts';
 import { DarkTheme, DefaultTheme, Link, Slot, ThemeProvider, usePathname } from 'expo-router';
 import { Image } from 'expo-image';
+import * as Font from 'expo-font';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { DS, MaxContentWidth } from '@/constants/theme';
 import { I18nProvider, useI18n } from '@/contexts/i18n';
 
+SplashScreen.preventAutoHideAsync();
+
 export default function WebLayout() {
   const colorScheme = useColorScheme();
+  const [fontsLoaded] = Font.useFonts({
+    'Raleway': require('@/assets/fonts/Raleway-Regular.ttf'),
+    'Raleway-SemiBold': require('@/assets/fonts/Raleway-SemiBold.ttf'),
+    'Raleway-Bold': require('@/assets/fonts/Raleway-Bold.ttf'),
+    'Raleway-ExtraBold': require('@/assets/fonts/Raleway-ExtraBold.ttf'),
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
+
   return (
     <I18nProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
@@ -63,6 +82,7 @@ function SiteHeader() {
         <View style={styles.nav}>
           <NavLink href="/">Accueil</NavLink>
           <NavLink href="/visitors">Visiteurs</NavLink>
+          <NavLink href="/uikit">UI Kit</NavLink>
         </View>
 
         <View style={styles.right}>
