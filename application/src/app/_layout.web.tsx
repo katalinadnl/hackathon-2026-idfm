@@ -86,6 +86,7 @@ function SiteHeader() {
         </View>
 
         <View style={styles.right}>
+          <NavLink href="/dashboard">Mon espace</NavLink>
           <LanguageSwitcher value={lang} onChange={setLang as any} />
         </View>
       </View>
@@ -163,6 +164,9 @@ const styles = StyleSheet.create({
     backgroundColor: DS.actionPrimary,
   },
   right: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.space1,
     marginLeft: 'auto' as any,
   },
 });
