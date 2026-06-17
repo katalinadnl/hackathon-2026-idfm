@@ -1,0 +1,141 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+      - dev
+      - infra/ci-cd
+      # for dev
+
+jobs:
+  lint-back:
+    name: Lint Back
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: api/package-lock.json
+
+      - run: cd api && npm ci
+      - run: cd api && npm run lint
+
+  lint-front:
+    name: Lint Front
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: application/package-lock.json
+
+      - run: cd application && npm ci
+      - run: cd application && npm run lint
+
+  build-back:
+    name: Build Back
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: "npm"
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        run: cd api && npm ci
+
+      - name: Generate Prisma Client
+        run: cd api && npm run prisma:generate
+
+      - name: Build
+        run: cd api && npm run build
+
+  build-front:
+    name: Build Front
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 25
+          cache: "npm"
+          cache-dependency-path: application/package-lock.json
+
+      - name: Install dependencies
+        run: cd application && npm ci
+
+      - name: Build
+        run: cd application && npm run build:web
+
+  docker-build-api:
+    name: Docker Build API
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build API image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/api/Dockerfile
+          push: false
+          tags: api:ci-check
+
+  docker-build-application:
+    name: Docker Build Application
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Application image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/application/Dockerfile
+          push: false
+          tags: application:ci-check
+
+  docker-build-nginx:
+    name: Docker Build Nginx
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Nginx image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./docker/nginx/Dockerfile
+          push: false
+          tags: nginx:ci-check
