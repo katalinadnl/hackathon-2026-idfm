@@ -8,6 +8,7 @@
 | `app`      | Frontend statique Expo/web servi par nginx           | Expo / React Native Web |
 | `api`      | API REST                                             | NestJS                  |
 | `database` | Base de données relationnelle                        | PostgreSQL 16           |
+| `directus` | CMS headless                                         | Directus 11             |
 | `umami`    | Analytics RGPD-compliant (prod uniquement)           | Umami                   |
 
 ## Prérequis

@@ -131,13 +131,49 @@ services:
       - public
       - internal
 
+  # ── CMS (Directus) ───────────────────────────────────────────────────────────
+  directus:
+    image: directus/directus:11
+    restart: unless-stopped
+    environment:
+      SECRET: ${DIRECTUS_SECRET}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD}
+      DB_CLIENT: pg
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      WEBSOCKETS_ENABLED: "true"
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
+      PUBLIC_URL: https://cms.${DOMAIN}
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.directus.rule=Host(`cms.${DOMAIN}`)
+      - traefik.http.routers.directus.entrypoints=websecure
+      - traefik.http.routers.directus.tls.certresolver=letsencrypt
+      - traefik.http.services.directus.loadbalancer.server.port=8055
+    networks:
+      - public
+      - internal
+
 networks:
   public:
     driver: bridge
   internal:
     driver: bridge
-    internal: true   # jamais exposé à l'extérieur
+    internal: true
 
 volumes:
   database_data:
   traefik_certs:
+  directus_uploads:
+  directus_extensions:
