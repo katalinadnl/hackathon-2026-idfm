@@ -4,10 +4,13 @@ import { Image } from 'expo-image';
 import * as Font from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
 
+import { AuthScreen } from '@/components/auth/AuthScreen';
+import { Icon } from '@/components/ui/Icon';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { DS, MaxContentWidth } from '@/constants/theme';
+import { AuthProvider, useAuth } from '@/contexts/auth';
 import { I18nProvider, useI18n } from '@/contexts/i18n';
 
 SplashScreen.preventAutoHideAsync();
@@ -29,15 +32,35 @@ export default function WebLayout() {
 
   return (
     <I18nProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <View style={styles.root}>
-          <SiteHeader />
-          <View style={styles.pageSlot}>
-            <Slot />
-          </View>
-        </View>
-      </ThemeProvider>
+      <AuthProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <AuthGate />
+        </ThemeProvider>
+      </AuthProvider>
     </I18nProvider>
+  );
+}
+
+function AuthGate() {
+  const { token, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <View style={styles.loader}>
+        <ActivityIndicator size="large" color={DS.actionPrimary} />
+      </View>
+    );
+  }
+
+  if (!token) return <AuthScreen />;
+
+  return (
+    <View style={styles.root}>
+      <SiteHeader />
+      <View style={styles.pageSlot}>
+        <Slot />
+      </View>
+    </View>
   );
 }
 
@@ -59,6 +82,32 @@ function NavLink({ href, children }: { href: string; children: string }) {
         {isActive && <View style={styles.navLinkIndicator} />}
       </Pressable>
     </Link>
+  );
+}
+
+function AccountMenu() {
+  const { user, logout } = useAuth();
+  const name =
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email;
+
+  return (
+    <View style={styles.account}>
+      <View style={styles.accountInfo}>
+        <Icon name="person" size={22} color={DS.actionPrimary} />
+        <Text style={styles.accountName} numberOfLines={1}>
+          {name}
+        </Text>
+      </View>
+      <Pressable
+        onPress={logout}
+        accessibilityRole="button"
+        accessibilityLabel="Se déconnecter"
+        style={({ pressed }) => [styles.logoutBtn, pressed && styles.logoutBtnPressed]}
+      >
+        <Icon name="log-out" size={18} color={DS.danger} />
+        <Text style={styles.logoutText}>Déconnexion</Text>
+      </Pressable>
+    </View>
   );
 }
 
@@ -88,6 +137,7 @@ function SiteHeader() {
         <View style={styles.right}>
           <NavLink href="/dashboard">Mon espace</NavLink>
           <LanguageSwitcher value={lang} onChange={setLang as any} />
+          <AccountMenu />
         </View>
       </View>
     </View>
@@ -95,6 +145,12 @@ function SiteHeader() {
 }
 
 const styles = StyleSheet.create({
+  loader: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: DS.surfacePage,
+  },
   root: {
     flex: 1,
     backgroundColor: DS.surfacePage,
@@ -164,9 +220,44 @@ const styles = StyleSheet.create({
     backgroundColor: DS.actionPrimary,
   },
   right: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: DS.space1,
     marginLeft: 'auto' as any,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  account: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.space3,
+  },
+  accountInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.space2,
+    maxWidth: 180,
+  },
+  accountName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: DS.textStrong,
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.space2,
+    paddingHorizontal: DS.space3,
+    paddingVertical: DS.space2,
+    borderRadius: DS.radiusSm,
+    borderWidth: 1.5,
+    borderColor: DS.borderDefault,
+  },
+  logoutBtnPressed: {
+    backgroundColor: DS.dangerTint,
+    borderColor: DS.danger,
+  },
+  logoutText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: DS.danger,
   },
 });
