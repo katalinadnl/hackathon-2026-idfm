@@ -310,22 +310,6 @@ async function main() {
     },
   });
 
-  // Bernard : ancien abonnement expiré
-  const subBernardOld = await prisma.subscription.upsert({
-    where: { navigoNumber: 'NAV-2023-001' },
-    update: {},
-    create: {
-      beneficiaryId: bernard.id,
-      referrerId: accountBernard.id,
-      payerId: accountBernard.id,
-      navigoNumber: 'NAV-2023-001',
-      subscriptionType: 'Navigo Mois Senior',
-      startDate: new Date('2023-01-01'),
-      endDate: new Date('2023-12-31'),
-      status: 'expired',
-    },
-  });
-
   // ── Payments ──────────────────────────────────────────────────────────────────
 
   // Alice : 3 mensualités
@@ -431,18 +415,6 @@ async function main() {
         status: 'succeeded',
       },
     ],
-  });
-
-  // Bernard : historique ancien abonnement
-  await prisma.payment.createMany({
-    skipDuplicates: true,
-    data: Array.from({ length: 12 }, (_, i) => ({
-      subscriptionId: subBernardOld.id,
-      amount: 49.0,
-      paidAt: new Date(`2023-${String(i + 1).padStart(2, '0')}-01`),
-      method: 'direct_debit',
-      status: 'succeeded',
-    })),
   });
 
   console.log('✅ Seed terminé');

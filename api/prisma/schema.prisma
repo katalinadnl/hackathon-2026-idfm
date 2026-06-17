@@ -91,6 +91,12 @@ model Account {
   beneficiaryId Int?         @unique
   beneficiary   Beneficiary? @relation(fields: [beneficiaryId], references: [id])
 
+  // Stripe linkage — set for accounts that pay (payers become customers).
+  stripeCustomerId        String? @unique
+  stripePaymentMethodId   String? // default SEPA payment method
+  stripeMandateId         String? // mandate generated for that payment method
+  stripePreviousMandateId String? // last revoked mandate (after a RIB change)
+
   referredSubscriptions Subscription[] @relation("SubscriptionReferrer")
   paidSubscriptions     Subscription[] @relation("SubscriptionPayer")
 }
