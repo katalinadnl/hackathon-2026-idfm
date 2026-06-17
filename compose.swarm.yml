@@ -1,0 +1,184 @@
+# Cluster : 2 managers + 5 workers
+#
+# manager-1 : leader, porte traefik + la DB (volume local donc on fixe le noeud)
+# manager-2 : failover manager, porte traefik aussi via mode global
+# worker-1 à worker-5 : api (5 replicas) + app (5 replicas), 1 par worker
+#
+# Ordre de setup :
+#   1. docker swarm init sur manager-1
+#   2. coller le join-token manager sur manager-2
+#   3. coller le join-token worker sur worker-1..5
+#   4. poser le label storage=primary sur manager-1 (pour contraindre la DB)
+#   5. make swarm-deploy
+
+services:
+
+  traefik:
+    image: traefik:v3.3
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    command:
+      - --providers.docker=true
+      - --providers.docker.swarmmode=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=idfm_public
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --api.dashboard=true
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN}`)
+        - traefik.http.routers.traefik-dashboard.entrypoints=websecure
+        - traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt
+        - traefik.http.routers.traefik-dashboard.service=api@internal
+        - traefik.http.routers.traefik-dashboard.middlewares=auth
+        - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}
+        - traefik.http.services.traefik-dashboard.loadbalancer.server.port=8080
+    networks:
+      - public
+
+  api:
+    image: ghcr.io/${GITHUB_REPO}/api:latest
+    environment:
+      PORT: 3000
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+      JWT_SECRET: ${JWT_SECRET}
+      FC_CLIENT_ID: ${FC_CLIENT_ID}
+      FC_CLIENT_SECRET: ${FC_CLIENT_SECRET}
+      FC_BASE_URL: ${FC_BASE_URL}
+      FC_CALLBACK_URL: https://api.${DOMAIN}/auth/france-connect/callback
+      APP_REDIRECT_URL: ${APP_REDIRECT_URL}
+    deploy:
+      replicas: 5
+      placement:
+        constraints:
+          - node.role == worker
+        preferences:
+          - spread: node.id
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.api.rule=Host(`api.${DOMAIN}`)
+        - traefik.http.routers.api.entrypoints=websecure
+        - traefik.http.routers.api.tls.certresolver=letsencrypt
+        - traefik.http.services.api.loadbalancer.server.port=3000
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - public
+      - internal
+
+  app:
+    image: ghcr.io/${GITHUB_REPO}/app:latest
+    deploy:
+      replicas: 5
+      placement:
+        constraints:
+          - node.role == worker
+        preferences:
+          - spread: node.id
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.app.rule=Host(`app.${DOMAIN}`)
+        - traefik.http.routers.app.entrypoints=websecure
+        - traefik.http.routers.app.tls.certresolver=letsencrypt
+        - traefik.http.services.app.loadbalancer.server.port=80
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - public
+
+  # La DB est épinglée sur manager-1 via le label storage=primary
+  # parce que les volumes Docker ne se partagent pas entre noeuds
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.storage == primary
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB}", "-U", "${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - database_data:/var/lib/postgresql/data:rw
+    networks:
+      - internal
+
+networks:
+  public:
+    driver: overlay
+    attachable: true
+  internal:
+    driver: overlay
+    internal: true
+
+volumes:
+  database_data:
+  traefik_certs:
