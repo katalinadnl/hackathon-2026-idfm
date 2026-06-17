@@ -29,9 +29,8 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      {/* TODO: dedicated billing icon — reusing explore.png for now */}
-      <NativeTabs.Trigger name="billing">
-        <NativeTabs.Trigger.Label>Facturation</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger name="profile">
+        <NativeTabs.Trigger.Label>Compte</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"
