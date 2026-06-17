@@ -5,17 +5,22 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { InvoiceData } from './invoice-pdf.service';
 import {
   BillingRole,
+  CurrentMonthStatus,
   MandateResponse,
+  MonthGroup,
   PassSummary,
   PaymentMethodInfo,
+  PaymentModeLabel,
   PaymentMethodResponse,
   SepaMandate,
   Transaction,
   TransactionsResponse,
   TransactionStatus,
 } from './dto/billing.types';
+import { PaymentMode } from '../generated/prisma/enums';
 import { StripeProvider } from './stripe/stripe.provider';
 
 const CREDITOR_NAME = 'Île-de-France Mobilités';
@@ -61,18 +66,36 @@ export class BillingService {
     });
   }
 
+  private toModeLabel(mode: PaymentMode): PaymentModeLabel {
+    switch (mode) {
+      case PaymentMode.CARD_ONCE:
+        return 'card_once';
+      case PaymentMode.SEPA_ONCE:
+        return 'sepa_once';
+      case PaymentMode.SEPA_MONTHLY:
+        return 'sepa_monthly';
+    }
+  }
+
   async getPasses(accountId: number): Promise<PassSummary[]> {
     const visible = await this.getVisibleSubscriptions(accountId);
-    return visible.map(({ sub, roles }) => ({
-      subscriptionId: sub.id,
-      navigoNumber: sub.navigoNumber,
-      subscriptionType: sub.subscriptionType,
-      status: sub.status,
-      holderName: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
-      roles,
-      startDate: sub.startDate.toISOString(),
-      endDate: sub.endDate.toISOString(),
-    }));
+    return visible.map(({ sub, roles }) => {
+      const mode = this.toModeLabel(sub.paymentMode);
+      return {
+        subscriptionId: sub.id,
+        navigoNumber: sub.navigoNumber,
+        subscriptionType: sub.subscriptionType,
+        status: sub.status,
+        holderName: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
+        roles,
+        startDate: sub.startDate.toISOString(),
+        endDate: sub.endDate.toISOString(),
+        paymentMode: mode,
+        annualAmount: sub.annualAmount,
+        monthlyAmount: sub.monthlyAmount,
+        hasSepa: mode !== 'card_once',
+      };
+    });
   }
 
   async getTransactions(
@@ -88,24 +111,53 @@ export class BillingService {
       );
     }
 
+    const targetSub = subscriptionId
+      ? visible.find((v) => v.sub.id === subscriptionId)?.sub
+      : visible[0]?.sub;
     const targetIds = subscriptionId ? [subscriptionId] : [...visibleIds];
 
+    const mode = targetSub
+      ? this.toModeLabel(targetSub.paymentMode)
+      : 'sepa_monthly';
+
     if (targetIds.length === 0) {
-      return { total: 0, outstanding: 0, currency: 'EUR', transactions: [] };
+      return {
+        total: 0,
+        outstanding: 0,
+        currency: 'EUR',
+        transactions: [],
+        monthGroups: null,
+        paymentMode: mode,
+        currentMonthStatus: 'not_applicable',
+        nextPayment: null,
+        annualPaid: false,
+      };
     }
 
     const payments = await this.prisma.payment.findMany({
       where: { subscriptionId: { in: targetIds } },
-      include: { subscription: { include: { beneficiary: true } } },
+      include: {
+        subscription: {
+          include: {
+            beneficiary: true,
+            payer: { include: { beneficiary: true } },
+          },
+        },
+      },
       orderBy: { paidAt: 'desc' },
     });
 
+    const payerSubIds = new Set(
+      visible.filter((v) => v.roles.includes('payer')).map((v) => v.sub.id),
+    );
+
     const transactions: Transaction[] = payments.map((p) => {
       const status = this.normalizeStatus(p.status);
-
       const signedAmount =
         status === 'refunded' ? Math.abs(p.amount) : -Math.abs(p.amount);
       const holder = p.subscription.beneficiary;
+      const isMine = payerSubIds.has(p.subscriptionId);
+      const payer = p.subscription.payer;
       return {
         id: String(p.id),
         date: p.paidAt.toISOString(),
@@ -114,23 +166,175 @@ export class BillingService {
         status,
         method: p.method,
         navigoNumber: p.subscription.navigoNumber,
+        paidByOther: isMine
+          ? null
+          : payer?.beneficiary
+            ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+            : null,
       };
     });
 
-    const total = transactions
+    const isAllPasses = subscriptionId === undefined;
+
+    const billableTx = isAllPasses
+      ? transactions.filter((t) => t.paidByOther === null)
+      : transactions;
+
+    const total = billableTx
       .filter((t) => t.status !== 'failed')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    const outstanding = transactions
+    const outstanding = billableTx
       .filter((t) => t.status === 'failed')
       .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+    const payerSubs = visible
+      .filter((v) => v.roles.includes('payer'))
+      .map((v) => v.sub);
+    const targetSubs = isAllPasses
+      ? payerSubs
+      : [targetSub].filter(Boolean);
+
+    const statusPayments = isAllPasses
+      ? payments.filter((p) => payerSubIds.has(p.subscriptionId))
+      : payments;
+    const { currentMonthStatus, nextPayment, annualPaid } =
+      this.computePaymentStatus(targetSubs, statusPayments, outstanding);
+
+    const monthGroups = isAllPasses
+      ? this.buildMonthGroups(transactions)
+      : null;
 
     return {
       total: Number(total.toFixed(2)),
       outstanding: Number(outstanding.toFixed(2)),
       currency: 'EUR',
       transactions,
+      monthGroups,
+      paymentMode: mode,
+      currentMonthStatus,
+      nextPayment,
+      annualPaid,
     };
+  }
+
+  private buildMonthGroups(transactions: Transaction[]): MonthGroup[] {
+    const groups = new Map<string, { label: string; txs: Transaction[] }>();
+    for (const tx of transactions) {
+      const d = new Date(tx.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      const label = d.toLocaleDateString('fr-FR', {
+        month: 'long',
+        year: 'numeric',
+      });
+      if (!groups.has(key)) groups.set(key, { label, txs: [] });
+      groups.get(key)!.txs.push(tx);
+    }
+    return [...groups.entries()]
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([month, { label, txs }]) => ({
+        month,
+        label,
+        total: Number(
+          txs
+            .filter((t) => t.status !== 'failed')
+            .reduce((s, t) => s + t.amount, 0)
+            .toFixed(2),
+        ),
+        outstanding: Number(
+          txs
+            .filter((t) => t.status === 'failed')
+            .reduce((s, t) => s + Math.abs(t.amount), 0)
+            .toFixed(2),
+        ),
+        transactions: txs,
+      }));
+  }
+
+  private computePaymentStatus(
+    subs: any[],
+    payments: any[],
+    totalOutstanding: number,
+  ): {
+    currentMonthStatus: CurrentMonthStatus;
+    nextPayment: { date: string; amount: number } | null;
+    annualPaid: boolean;
+  } {
+    if (subs.length === 0) {
+      return {
+        currentMonthStatus: 'not_applicable',
+        nextPayment: null,
+        annualPaid: false,
+      };
+    }
+
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    const hasMonthly = subs.some(
+      (s) => s.paymentMode === PaymentMode.SEPA_MONTHLY,
+    );
+    const onceOnly = !hasMonthly;
+
+    if (onceOnly) {
+      const hasSucceeded = payments.some((p) => p.status === 'succeeded');
+      const hasFailed = payments.some(
+        (p) =>
+          p.status === 'failed' &&
+          !payments.some(
+            (s: any) => s.status === 'succeeded' && s.amount === p.amount,
+          ),
+      );
+      return {
+        currentMonthStatus: hasSucceeded
+          ? 'paid'
+          : hasFailed
+            ? 'failed'
+            : 'pending',
+        nextPayment: null,
+        annualPaid: hasSucceeded,
+      };
+    }
+
+    // At least one SEPA_MONTHLY sub
+    const thisMonthPayments = payments.filter((p) => {
+      const d = new Date(p.paidAt);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    });
+
+    let currentMonthStatus: CurrentMonthStatus;
+    if (thisMonthPayments.length === 0) {
+      currentMonthStatus = 'upcoming';
+    } else if (thisMonthPayments.some((p) => p.status === 'failed')) {
+      currentMonthStatus = 'failed';
+    } else if (thisMonthPayments.every((p) => p.status === 'succeeded')) {
+      currentMonthStatus = 'paid';
+    } else {
+      currentMonthStatus = 'pending';
+    }
+
+    const nextMonth = new Date(currentYear, currentMonth + 1, 5);
+
+    let regularAmount = 0;
+    for (const s of subs) {
+      if (
+        s.paymentMode === PaymentMode.SEPA_MONTHLY &&
+        s.monthlyAmount &&
+        nextMonth <= new Date(s.endDate)
+      ) {
+        regularAmount += Number(s.monthlyAmount);
+      }
+    }
+
+    const nextAmount = regularAmount + totalOutstanding;
+
+    const nextPayment =
+      nextAmount > 0
+        ? { date: nextMonth.toISOString(), amount: nextAmount }
+        : null;
+
+    return { currentMonthStatus, nextPayment, annualPaid: false };
   }
 
   private normalizeStatus(raw: string): TransactionStatus {
@@ -157,18 +361,25 @@ export class BillingService {
 
   async getMandate(
     accountId: number,
-    subscriptionId: number,
+    subscriptionId?: number,
   ): Promise<MandateResponse> {
-    await this.assertCanAccessPass(accountId, subscriptionId);
+    const subId =
+      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    if (!subId) {
+      return { connected: false, active: null, history: [] };
+    }
+    await this.assertCanAccessPass(accountId, subId);
 
     if (this.stripe.isConnected) {
       const [active, history] = await Promise.all([
-        this.stripe.getMandate(subscriptionId),
-        this.stripe.getMandateHistory(subscriptionId),
+        this.stripe.getMandate(subId),
+        this.stripe.getMandateHistory(subId),
       ]);
-      return { connected: true, active, history };
+      if (active) {
+        return { connected: true, active, history };
+      }
     }
-    const { active, history } = await this.buildLocalMandates(subscriptionId);
+    const { active, history } = await this.buildLocalMandates(subId);
     return { connected: false, active, history };
   }
 
@@ -313,19 +524,23 @@ export class BillingService {
 
   async getPaymentMethod(
     accountId: number,
-    subscriptionId: number,
+    subscriptionId?: number,
   ): Promise<PaymentMethodResponse> {
-    await this.assertCanAccessPass(accountId, subscriptionId);
+    const subId =
+      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    if (!subId) {
+      return { connected: false, paymentMethod: null };
+    }
+    await this.assertCanAccessPass(accountId, subId);
     if (this.stripe.isConnected) {
-      return {
-        connected: true,
-        paymentMethod:
-          await this.stripe.getDefaultPaymentMethod(subscriptionId),
-      };
+      const pm = await this.stripe.getDefaultPaymentMethod(subId);
+      if (pm) {
+        return { connected: true, paymentMethod: pm };
+      }
     }
     return {
       connected: false,
-      paymentMethod: await this.buildLocalPaymentMethod(subscriptionId),
+      paymentMethod: await this.buildLocalPaymentMethod(subId),
     };
   }
 
@@ -343,10 +558,21 @@ export class BillingService {
     };
   }
 
-  async startRibChange(accountId: number, subscriptionId: number) {
-    await this.assertCanAccessPass(accountId, subscriptionId);
+  async startRibChange(accountId: number, subscriptionId?: number) {
+    const subId =
+      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    if (!subId) {
+      return {
+        connected: false,
+        clientSecret: null,
+        billingName: null,
+        billingEmail: null,
+        message: 'Aucun pass SEPA trouvé.',
+      };
+    }
+    await this.assertCanAccessPass(accountId, subId);
     if (this.stripe.isConnected) {
-      const intent = await this.stripe.createSepaSetupIntent(subscriptionId);
+      const intent = await this.stripe.createSepaSetupIntent(subId);
       return {
         connected: true,
         clientSecret: intent?.clientSecret ?? null,
@@ -367,16 +593,299 @@ export class BillingService {
 
   async finalizeRibChange(
     accountId: number,
-    subscriptionId: number,
+    subscriptionId: number | undefined,
     setupIntentId: string,
   ) {
-    await this.assertCanAccessPass(accountId, subscriptionId);
+    const subId =
+      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    if (!subId) return { ok: false, connected: false };
+    await this.assertCanAccessPass(accountId, subId);
     if (!this.stripe.isConnected) return { ok: false, connected: false };
     const res = await this.stripe.finalizeRibChange(
-      subscriptionId,
+      subId,
       setupIntentId,
     );
     return { ok: res.ok, connected: true };
+  }
+
+  async retryPayment(accountId: number, paymentId: number) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: { subscription: true },
+    });
+    if (!payment) {
+      throw new NotFoundException(`Payment ${paymentId} not found.`);
+    }
+
+    const visible = await this.getVisibleSubscriptions(accountId);
+    const allowed = visible.some(
+      (v) => v.sub.id === payment.subscriptionId,
+    );
+    if (!allowed) {
+      throw new ForbiddenException(
+        'This payment is not linked to your account.',
+      );
+    }
+
+    if (payment.status !== 'failed') {
+      throw new ForbiddenException(
+        'Only failed payments can be retried.',
+      );
+    }
+
+    if (this.stripe.isConnected) {
+      const result = await this.stripe.retryPayment(
+        payment.subscriptionId,
+        payment.amount,
+      );
+      if (result.ok) {
+        await this.prisma.payment.update({
+          where: { id: paymentId },
+          data: { status: 'succeeded' },
+        });
+        return { ok: true, message: 'Paiement relancé avec succès.' };
+      }
+      return {
+        ok: false,
+        message: result.error ?? 'Échec de la relance du paiement.',
+      };
+    }
+
+    await this.prisma.payment.update({
+      where: { id: paymentId },
+      data: { status: 'succeeded' },
+    });
+    return { ok: true, message: 'Paiement marqué comme réglé.' };
+  }
+
+  async payByCard(
+    accountId: number,
+    paymentId: number,
+    baseUrl: string,
+  ): Promise<{ url: string | null; sessionId: string | null; message: string }> {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        subscription: {
+          include: { beneficiary: true, payer: true },
+        },
+      },
+    });
+    if (!payment) {
+      throw new NotFoundException(`Payment ${paymentId} not found.`);
+    }
+
+    const visible = await this.getVisibleSubscriptions(accountId);
+    const allowed = visible.some(
+      (v) => v.sub.id === payment.subscriptionId,
+    );
+    if (!allowed) {
+      throw new ForbiddenException(
+        'This payment is not linked to your account.',
+      );
+    }
+
+    if (payment.status !== 'failed') {
+      throw new ForbiddenException(
+        'Only failed payments can be paid by card.',
+      );
+    }
+
+    if (!this.stripe.isConnected) {
+      await this.prisma.payment.update({
+        where: { id: paymentId },
+        data: { status: 'succeeded', method: 'card' },
+      });
+      return {
+        url: null,
+        sessionId: null,
+        message: 'Paiement marqué comme réglé (mode local).',
+      };
+    }
+
+    const holder = payment.subscription.beneficiary;
+    const description = `Régularisation ${payment.subscription.subscriptionType} — ${holder.firstName} ${holder.lastName}`;
+    const payerId = payment.subscription.payerId ?? accountId;
+    const apiBase = process.env.API_BASE_URL ?? 'http://localhost:3000/api';
+    const successUrl = `${apiBase}/billing/payment/card-return?paymentId=${paymentId}&sessionId={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = `${baseUrl}/billing`;
+
+    const result = await this.stripe.createCardCheckoutSession(
+      payerId,
+      payment.amount,
+      description,
+      successUrl,
+      cancelUrl,
+    );
+
+    if (!result) {
+      return { url: null, sessionId: null, message: 'Impossible de créer la session de paiement.' };
+    }
+
+    return { url: result.url, sessionId: result.sessionId, message: 'Redirection vers la page de paiement.' };
+  }
+
+  async confirmCardPayment(
+    paymentId: number,
+    sessionId: string,
+  ): Promise<{ ok: boolean; message: string }> {
+    if (this.stripe.isConnected) {
+      const { paid } = await this.stripe.checkCheckoutSession(sessionId);
+      if (!paid) {
+        return { ok: false, message: 'Le paiement n\'a pas été finalisé.' };
+      }
+    }
+    await this.prisma.payment.update({
+      where: { id: paymentId },
+      data: { status: 'succeeded', method: 'card' },
+    });
+    return { ok: true, message: 'Paiement confirmé.' };
+  }
+
+  async getInvoiceData(
+    accountId: number,
+    paymentId: number,
+  ): Promise<InvoiceData> {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        subscription: {
+          include: {
+            beneficiary: true,
+            payer: { include: { beneficiary: true } },
+          },
+        },
+      },
+    });
+    if (!payment) {
+      throw new NotFoundException(`Payment ${paymentId} not found.`);
+    }
+
+    const visible = await this.getVisibleSubscriptions(accountId);
+    if (!visible.some((v) => v.sub.id === payment.subscriptionId)) {
+      throw new ForbiddenException(
+        'This payment is not linked to your account.',
+      );
+    }
+
+    const sub = payment.subscription;
+    const holder = sub.beneficiary;
+    const payer = sub.payer;
+    const payerName = payer?.beneficiary
+      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+      : `${holder.firstName} ${holder.lastName}`;
+
+    const paidAt = new Date(payment.paidAt);
+    const month = paidAt.toLocaleDateString('fr-FR', {
+      month: 'long',
+      year: 'numeric',
+    });
+    const period =
+      sub.paymentMode === 'SEPA_MONTHLY' ? month : `Année ${paidAt.getFullYear()}`;
+
+    const fmtDate = (d: Date) =>
+      d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    const subscriptionPeriod = `${fmtDate(sub.startDate)} — ${fmtDate(sub.endDate)}`;
+
+    return {
+      invoiceNumber: `F-${sub.navigoNumber}-${String(payment.id).padStart(4, '0')}`,
+      date: payment.paidAt.toISOString(),
+      holderName: `${holder.firstName} ${holder.lastName}`,
+      navigoNumber: sub.navigoNumber,
+      subscriptionType: sub.subscriptionType,
+      subscriptionPeriod,
+      paymentMethod: payment.method,
+      amount: payment.amount,
+      status: payment.status,
+      payerName,
+      period,
+    };
+  }
+
+  async getMonthInvoiceData(
+    accountId: number,
+    month: string,
+  ): Promise<InvoiceData[]> {
+    const [yearStr, monthStr] = month.split('-');
+    const year = Number(yearStr);
+    const mon = Number(monthStr) - 1;
+    const from = new Date(year, mon, 1);
+    const to = new Date(year, mon + 1, 1);
+
+    const visible = await this.getVisibleSubscriptions(accountId);
+    const visibleIds = visible.map((v) => v.sub.id);
+
+    const payments = await this.prisma.payment.findMany({
+      where: {
+        subscriptionId: { in: visibleIds },
+        paidAt: { gte: from, lt: to },
+      },
+      include: {
+        subscription: {
+          include: {
+            beneficiary: true,
+            payer: { include: { beneficiary: true } },
+          },
+        },
+      },
+      orderBy: { paidAt: 'asc' },
+    });
+
+    if (payments.length === 0) {
+      throw new NotFoundException(
+        `Aucune facture pour le mois ${month}.`,
+      );
+    }
+
+    return payments.map((p) => {
+      const sub = p.subscription;
+      const holder = sub.beneficiary;
+      const payer = sub.payer;
+      const payerName = payer?.beneficiary
+        ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+        : `${holder.firstName} ${holder.lastName}`;
+
+      const paidAt = new Date(p.paidAt);
+      const monthLabel = paidAt.toLocaleDateString('fr-FR', {
+        month: 'long',
+        year: 'numeric',
+      });
+      const period =
+        sub.paymentMode === 'SEPA_MONTHLY'
+          ? monthLabel
+          : `Année ${paidAt.getFullYear()}`;
+
+      const fmtDate = (d: Date) =>
+        d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      const subscriptionPeriod = `${fmtDate(sub.startDate)} — ${fmtDate(sub.endDate)}`;
+
+      return {
+        invoiceNumber: `F-${sub.navigoNumber}-${String(p.id).padStart(4, '0')}`,
+        date: p.paidAt.toISOString(),
+        holderName: `${holder.firstName} ${holder.lastName}`,
+        navigoNumber: sub.navigoNumber,
+        subscriptionType: sub.subscriptionType,
+        subscriptionPeriod,
+        paymentMethod: p.method,
+        amount: p.amount,
+        status: p.status,
+        payerName,
+        period,
+      };
+    });
+  }
+
+  private async firstSepaSubId(accountId: number): Promise<number | null> {
+    const visible = await this.getVisibleSubscriptions(accountId);
+    const isSepa = (v: (typeof visible)[number]) =>
+      v.sub.paymentMode === PaymentMode.SEPA_MONTHLY ||
+      v.sub.paymentMode === PaymentMode.SEPA_ONCE;
+    const asPayer = visible.find(
+      (v) => isSepa(v) && v.roles.includes('payer'),
+    );
+    if (asPayer) return asPayer.sub.id;
+    const any = visible.find(isSepa);
+    return any?.sub.id ?? null;
   }
 
   private hash(seed: string): number {

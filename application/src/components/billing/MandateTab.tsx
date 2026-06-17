@@ -37,16 +37,6 @@ const STATUS_META: Record<
 export function MandateTab({ accountId, subscriptionId, onGoToRib }: Props) {
   const { data, loading, error } = useMandate(accountId, subscriptionId);
 
-  if (subscriptionId === null) {
-    return (
-      <Card>
-        <Text style={styles.hint}>
-          Sélectionnez un pass précis pour afficher son mandat SEPA.
-        </Text>
-      </Card>
-    );
-  }
-
   if (loading) {
     return (
       <View style={styles.center}>
@@ -69,7 +59,9 @@ export function MandateTab({ accountId, subscriptionId, onGoToRib }: Props) {
   const meta = STATUS_META[m.status];
 
   const handleDownload = async () => {
-    Linking.openURL(await mandateDocumentUrl(subscriptionId));
+    if (subscriptionId != null) {
+      Linking.openURL(await mandateDocumentUrl(subscriptionId));
+    }
   };
 
   return (

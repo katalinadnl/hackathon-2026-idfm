@@ -44,20 +44,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Bootstrap: restore a stored session on launch.
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const stored = await loadToken();
-        if (stored) {
-          const me = await authApi.me(stored);
-          setToken(stored);
-          setUser(me);
+        if (!stored) return;
+
+        // Optimistic: set token immediately so AuthGate doesn't flash login
+        if (!cancelled) setToken(stored);
+
+        const me = await authApi.me(stored);
+        if (!cancelled) setUser(me);
+      } catch (err: any) {
+        if (err?.status === 401) {
+          await clearToken();
+          if (!cancelled) {
+            setToken(null);
+            setUser(null);
+          }
         }
-      } catch {
-        await clearToken();
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(

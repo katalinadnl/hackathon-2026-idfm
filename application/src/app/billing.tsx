@@ -22,22 +22,42 @@ import { usePasses } from "@/hooks/useBilling";
 
 type TabKey = "transactions" | "mandate" | "rib";
 
-const TABS = [
-  { key: "transactions", label: "Historique" },
-  { key: "mandate", label: "Mandat SEPA" },
-  { key: "rib", label: "RIB" },
-];
-
 export default function BillingScreen() {
   const { isDesktop, hPad } = usePageLayout();
   const { user } = useAuth();
   const accountId = user?.id ?? null;
   const { data: passes, loading, error } = usePasses(accountId);
 
-  const [selectedPassId, setSelectedPassId] = useState<number | null>(
-    passes?.length === 1 ? passes[0].subscriptionId : null,
-  );
+  const [selectedPassId, setSelectedPassId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>("transactions");
+
+  const hasMultiplePasses = (passes?.length ?? 0) > 1;
+  const effectivePassId =
+    selectedPassId ?? (passes?.length === 1 ? passes[0].subscriptionId : null);
+
+  const selectedPass = passes?.find(
+    (p) => p.subscriptionId === effectivePassId,
+  );
+  const anySepa = passes?.some((p) => p.hasSepa) ?? false;
+  const hasSepa = selectedPass ? selectedPass.hasSepa : anySepa;
+
+  const tabs = [
+    { key: "transactions", label: "Historique" },
+    ...(hasSepa
+      ? [
+          { key: "mandate", label: "Mandat SEPA" },
+          { key: "rib", label: "RIB" },
+        ]
+      : []),
+  ];
+
+  const paymentModeLabel = selectedPass
+    ? selectedPass.paymentMode === "card_once"
+      ? "Paiement CB en une fois"
+      : selectedPass.paymentMode === "sepa_once"
+        ? "Prélèvement SEPA annuel"
+        : "Prélèvement SEPA mensuel"
+    : null;
 
   const sectionPad = { paddingHorizontal: hPad };
 
@@ -83,39 +103,49 @@ export default function BillingScreen() {
                 <Text style={styles.errorBody}>{error}</Text>
               </Card>
             )}
-            {passes && (
+            {passes && hasMultiplePasses && (
               <PassSelector
                 passes={passes}
-                selectedId={selectedPassId}
+                selectedId={effectivePassId}
                 onSelect={setSelectedPassId}
               />
             )}
           </View>
 
-          <View style={[styles.block, sectionPad]}>
-            <SegmentedTabs
-              segments={TABS}
-              active={activeTab}
-              onChange={(k) => setActiveTab(k as TabKey)}
-            />
-          </View>
+          {paymentModeLabel && (
+            <View style={[styles.block, sectionPad]}>
+              <View style={styles.modeBadge}>
+                <Text style={styles.modeText}>{paymentModeLabel}</Text>
+              </View>
+            </View>
+          )}
+
+          {tabs.length > 1 && (
+            <View style={[styles.block, sectionPad]}>
+              <SegmentedTabs
+                segments={tabs}
+                active={activeTab}
+                onChange={(k) => setActiveTab(k as TabKey)}
+              />
+            </View>
+          )}
 
           <View style={[styles.block, sectionPad]}>
             {activeTab === "transactions" && (
               <TransactionsTab
                 accountId={accountId}
-                subscriptionId={selectedPassId}
+                subscriptionId={effectivePassId}
               />
             )}
-            {activeTab === "mandate" && (
+            {activeTab === "mandate" && hasSepa && (
               <MandateTab
                 accountId={accountId}
-                subscriptionId={selectedPassId}
+                subscriptionId={effectivePassId}
                 onGoToRib={() => setActiveTab("rib")}
               />
             )}
-            {activeTab === "rib" && (
-              <RibTab accountId={accountId} subscriptionId={selectedPassId} />
+            {activeTab === "rib" && hasSepa && (
+              <RibTab accountId={accountId} subscriptionId={effectivePassId} />
             )}
           </View>
         </View>
@@ -127,11 +157,6 @@ export default function BillingScreen() {
 const styles = StyleSheet.create({
   scroll: { flex: 1, backgroundColor: DS.surfacePage },
   content: { flexGrow: 1 },
-  pageInner: {
-    maxWidth: MaxContentWidth,
-    width: "100%",
-    marginHorizontal: "auto" as any,
-  },
   header: {
     paddingTop: DS.space6,
     paddingBottom: DS.space4,
@@ -143,9 +168,26 @@ const styles = StyleSheet.create({
     color: DS.textStrong,
     letterSpacing: -0.6,
   },
-  subtitle: { fontSize: 16, color: DS.textBody, lineHeight: 24, maxWidth: 520 },
+  subtitle: {
+    fontSize: 16,
+    color: DS.textBody,
+    lineHeight: 24,
+    maxWidth: 520,
+  },
   block: { paddingVertical: DS.space3 },
   center: { paddingVertical: DS.space6, alignItems: "center" },
   errorTitle: { fontSize: 15, fontWeight: "700", color: DS.dangerText },
   errorBody: { fontSize: 13, color: DS.textMuted, marginTop: 4 },
+  modeBadge: {
+    backgroundColor: DS.surfaceTint,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  modeText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: DS.actionPrimary,
+  },
 });
