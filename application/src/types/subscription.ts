@@ -60,7 +60,11 @@ export type Pass = {
   delivery: Delivery;
 };
 
-export type SubscriptionStatus = "active" | "expired" | "cancelled";
+export type SubscriptionStatus =
+  | "active"
+  | "expired"
+  | "cancelled"
+  | "pending_cancellation";
 
 export type SubscriptionResponse = {
   id: number;
@@ -70,7 +74,7 @@ export type SubscriptionResponse = {
   status: SubscriptionStatus;
   clientNumber: string;
   renewed: boolean;
-
+  reference: string;
   beneficiary: {
     id: number;
     firstName: string;

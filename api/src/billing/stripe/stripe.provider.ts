@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import Stripe from 'stripe';
 
 import { PrismaService } from '../../prisma/prisma.service';
@@ -33,9 +33,10 @@ export class StripeProvider {
   private async payerOf(subscriptionId: number) {
     const sub = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { payer: { include: { beneficiary: true } } },
+      include: { bankInfo: { include: { account: true } }, beneficiary: true },
     });
-    return sub ? { payer: sub.payer } : { payer: null };
+    if (!sub) throw new NotFoundException('Subscription not found');
+    return { payer: sub.bankInfo.account, beneficiary: sub.beneficiary };
   }
 
   private maskIban(last4: string | null): string {
@@ -128,7 +129,7 @@ export class StripeProvider {
     billingName: string;
     billingEmail: string;
   } | null> {
-    const { payer } = await this.payerOf(subscriptionId);
+    const { payer, beneficiary } = await this.payerOf(subscriptionId);
     if (!payer?.stripeCustomerId) return null;
 
     const intent = await this.getClient().setupIntents.create({
@@ -138,8 +139,8 @@ export class StripeProvider {
     });
     if (!intent.client_secret) return null;
 
-    const billingName = payer.beneficiary
-      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+    const billingName = beneficiary
+      ? `${beneficiary.firstName} ${beneficiary.lastName}`
       : payer.email.split('@')[0];
     return {
       clientSecret: intent.client_secret,

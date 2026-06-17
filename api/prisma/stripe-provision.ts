@@ -20,8 +20,15 @@ async function main() {
   const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
   const prisma = new PrismaClient({ adapter });
 
+  // Un compte est "payeur" s'il possède au moins un BankInfo réellement
+  // utilisé par un abonnement — payerId n'existe plus, le lien passe par
+  // BankInfo.subscriptions.
   const payers = await prisma.account.findMany({
-    where: { paidSubscriptions: { some: {} } },
+    where: {
+      bankInfos: {
+        some: { subscriptions: { some: {} } },
+      },
+    },
     include: { beneficiary: true },
   });
 
@@ -29,7 +36,9 @@ async function main() {
 
   for (const account of payers) {
     if (account.stripeCustomerId) {
-      console.log(`  • ${account.email} déjà lié (${account.stripeCustomerId})`);
+      console.log(
+        `  • ${account.email} déjà lié (${account.stripeCustomerId})`,
+      );
       continue;
     }
 

@@ -11,9 +11,7 @@ export const subscriptionInclude = {
   referrer: {
     include: { beneficiary: true },
   },
-  payer: {
-    include: { beneficiary: true },
-  },
+  bankInfo: true,
   payments: {
     orderBy: { paidAt: 'desc' as const },
   },

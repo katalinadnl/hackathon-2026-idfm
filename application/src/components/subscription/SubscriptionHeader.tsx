@@ -1,21 +1,23 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { Badge } from "@/components/ui/Badge";
+import { Badge, BadgeTone } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DS } from "@/constants/theme";
-import { Subscription } from "@/types/subscription";
+import { SubscriptionResponse, SubscriptionStatus } from "@/types/subscription";
 
-const STATUS_TONE = {
+export const STATUS_TONE: Record<SubscriptionStatus, BadgeTone> = {
   active: "success",
   expired: "neutral",
-  blocked: "danger",
-} as const;
+  cancelled: "danger",
+  pending_cancellation: "warning",
+};
 
-const STATUS_LABEL = {
+export const STATUS_LABEL: Record<SubscriptionStatus, string> = {
   active: "Actif",
   expired: "Expiré",
-  blocked: "Bloqué",
-} as const;
+  cancelled: "Bloqué",
+  pending_cancellation: "En cours d'arrêt",
+};
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("fr-FR", {
@@ -26,7 +28,7 @@ function formatDate(iso: string) {
 }
 
 type SubscriptionHeaderProps = {
-  subscription: Subscription;
+  subscription: SubscriptionResponse;
   onBack: () => void;
 };
 

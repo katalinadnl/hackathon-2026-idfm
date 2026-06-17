@@ -316,10 +316,70 @@ async function main() {
     },
   });
 
+  // ── Bank infos ────────────────────────────────────────────────────────────────
+  // Chaque compte payeur a son propre IBAN. Théo n'a pas de compte propre,
+  // c'est donc le compte de son père (accountPereTheo) qui porte l'IBAN
+  // utilisé pour payer son abonnement.
+
+  const bankInfoAlice = await prisma.bankInfo.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      accountId: accountAlice.id,
+      iban: 'FR7630001007941234567890185',
+      bic: 'BDFEFRPPXXX',
+      holderName: 'Alice Martin',
+      label: 'Mon compte',
+      isDefault: true,
+    },
+  });
+
+  const bankInfoBernard = await prisma.bankInfo.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      accountId: accountBernard.id,
+      iban: 'FR7630003000308765432109876',
+      bic: 'SOGEFRPPXXX',
+      holderName: 'Bernard Dupont',
+      label: 'Mon compte',
+      isDefault: true,
+    },
+  });
+
+  // Le père de Théo gère aussi son propre IBAN, utilisé pour payer
+  // l'abonnement Imagine R de son fils.
+  const bankInfoPereTheo = await prisma.bankInfo.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      accountId: accountPereTheo.id,
+      iban: 'FR7610278060501234567890144',
+      bic: 'CMCIFRPPXXX',
+      holderName: 'Pierre Moreau',
+      label: "Compte pour l'abonnement de Théo",
+      isDefault: true,
+    },
+  });
+
+  const bankInfoClara = await prisma.bankInfo.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      accountId: accountClara.id,
+      iban: 'FR7613807009630987654321567',
+      bic: 'BNPAFRPPXXX',
+      holderName: 'Clara Petit',
+      label: 'Mon compte',
+      isDefault: true,
+    },
+  });
+
   // ── Subscriptions ─────────────────────────────────────────────────────────────
-  // navigoNumber et status (blocked/active du pass) ont migré vers Pass.
-  // Subscription.status reste le statut du CONTRAT (active/expired/cancelled),
-  // indépendant du fait que le support physique ait été perdu/volé.
+  // payerId n'existe plus : qui paie est désormais déduit de bankInfo.account.
+  // Subscription.status reste le statut du CONTRAT (active/pending_cancellation/
+  // cancelled/expired), indépendant du fait que le support physique (Pass)
+  // ait été perdu/volé.
 
   // Alice : abonnement étudiant, elle paie elle-même
   const subAlice = await prisma.subscription.upsert({
@@ -328,7 +388,7 @@ async function main() {
     create: {
       beneficiaryId: alice.id,
       referrerId: accountAlice.id,
-      payerId: accountAlice.id,
+      bankInfoId: bankInfoAlice.id,
       subscriptionType: 'Navigo Mois Étudiant',
       startDate: new Date('2024-09-01'),
       endDate: new Date('2025-06-30'),
@@ -343,7 +403,7 @@ async function main() {
     create: {
       beneficiaryId: bernard.id,
       referrerId: accountBernard.id,
-      payerId: accountBernard.id,
+      bankInfoId: bankInfoBernard.id,
       subscriptionType: 'Navigo Mois Senior',
       startDate: new Date('2024-01-01'),
       endDate: new Date('2024-12-31'),
@@ -351,14 +411,14 @@ async function main() {
     },
   });
 
-  // Théo : abonnement mineur, le père est référant et payeur
+  // Théo : abonnement mineur, le père est référant et paie via son IBAN
   const subTheo = await prisma.subscription.upsert({
     where: { id: 3 },
     update: {},
     create: {
       beneficiaryId: theo.id,
       referrerId: accountPereTheo.id,
-      payerId: accountPereTheo.id,
+      bankInfoId: bankInfoPereTheo.id,
       subscriptionType: 'Navigo Mois Imagine R',
       startDate: new Date('2024-09-01'),
       endDate: new Date('2025-06-30'),
@@ -366,14 +426,14 @@ async function main() {
     },
   });
 
-  // Clara : abonnement handicap, référant = Clara, payeur = Clara
+  // Clara : abonnement handicap, référant = Clara, paie via son propre IBAN
   const subClara = await prisma.subscription.upsert({
     where: { id: 4 },
     update: {},
     create: {
       beneficiaryId: clara.id,
       referrerId: accountClara.id,
-      payerId: accountClara.id,
+      bankInfoId: bankInfoClara.id,
       subscriptionType: 'Navigo Mois PMR',
       startDate: new Date('2024-03-01'),
       endDate: new Date('2025-02-28'),

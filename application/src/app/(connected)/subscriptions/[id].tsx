@@ -25,11 +25,14 @@ import { useFetch } from "@/hooks/useFetch";
 import { ReportLostOrStolenModal } from "@/components/subscription/CancelPass";
 import { useState } from "react";
 import { SubscriptionResponse } from "@/types/subscription";
+import { CancelSubscriptionModal } from "@/components/subscription/CancelSubscriptionModal";
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+
   const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
 
   const {
     data: subscription,
@@ -180,16 +183,16 @@ export default function SubscriptionDetailPage() {
                 Signaler une perte ou un vol
               </Button>
             )}
-
-            <Button
-              variant="danger"
-              size="md"
-              fullWidth
-              disabled
-              onPress={() => {}}
-            >
-              Résilier l&apos;abonnement
-            </Button>
+            {subscription.status === "active" && (
+              <Button
+                variant="danger"
+                size="md"
+                fullWidth
+                onPress={() => setCancelModalVisible(true)}
+              >
+                Résilier l&apos;abonnement
+              </Button>
+            )}
           </Card>
         </ScrollView>
       </View>
@@ -201,6 +204,15 @@ export default function SubscriptionDetailPage() {
         onSuccess={() => {
           setReportModalVisible(false);
           reload();
+        }}
+      />
+
+      <CancelSubscriptionModal
+        visible={cancelModalVisible}
+        subscriptionId={subscription.id}
+        onClose={() => setCancelModalVisible(false)}
+        onSuccess={() => {
+          router.replace("/dashboard");
         }}
       />
     </SafeAreaView>

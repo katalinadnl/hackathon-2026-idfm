@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import {
   subscriptionInclude,
@@ -33,12 +32,6 @@ export interface SubscriptionWithRoles {
 @Injectable()
 export class SubscriptionsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  async create(createSubscriptionDto: CreateSubscriptionDto) {
-    return this.prisma.subscription.create({
-      data: createSubscriptionDto,
-    });
-  }
 
   async findAll(): Promise<SubscriptionResponse[]> {
     const subscriptions = await this.prisma.subscription.findMany({
@@ -99,6 +92,7 @@ export class SubscriptionsService {
 
     return {
       id: subscription.id,
+      bankInfo: subscription.bankInfo,
       passes: subscription.passes.map((pass) => {
         if (!pass.delivery) {
           throw new Error(
@@ -143,6 +137,7 @@ export class SubscriptionsService {
           country: a.country,
         })),
       },
+
       account: account ? { email: account.email } : null,
       referrer: subscription.referrer
         ? {
@@ -153,20 +148,6 @@ export class SubscriptionsService {
               ? {
                   firstName: subscription.referrer.beneficiary.firstName,
                   lastName: subscription.referrer.beneficiary.lastName,
-                }
-              : null,
-          }
-        : null,
-
-      payer: subscription.payer
-        ? {
-            id: subscription.payer.id,
-            email: subscription.payer.email,
-            accountNumber: subscription.payer.accountNumber,
-            beneficiary: subscription.payer.beneficiary
-              ? {
-                  firstName: subscription.payer.beneficiary.firstName,
-                  lastName: subscription.payer.beneficiary.lastName,
                 }
               : null,
           }
@@ -188,7 +169,6 @@ export class SubscriptionsService {
       where: {
         OR: [
           { referrerId: accountId },
-          { payerId: accountId },
           { beneficiary: { account: { id: accountId } } },
         ],
       },
@@ -196,6 +176,7 @@ export class SubscriptionsService {
         beneficiary: { include: { account: { select: { id: true } } } },
         payments: { orderBy: { paidAt: 'desc' }, take: 1 },
         passes: { where: { status: PassStatus.active }, take: 1 },
+        bankInfo: true,
       },
       orderBy: { startDate: 'desc' },
     });
@@ -203,9 +184,8 @@ export class SubscriptionsService {
     return subscriptions.map((sub) => {
       const roles: SubscriptionRole[] = [];
       if (sub.beneficiary.account?.id === accountId) roles.push('titulaire');
-      if (sub.payerId === accountId) roles.push('payeur');
       if (sub.referrerId === accountId) roles.push('gestionnaire');
-
+      if (sub.bankInfo.accountId === accountId) roles.push('payeur');
       return {
         id: sub.id,
         navigoNumber: sub.passes[0]?.navigoNumber ?? null,
@@ -469,5 +449,82 @@ export class SubscriptionsService {
       where: { id: subscriptionId },
       data: { referrerId: newReferrerAccountId },
     });
+  }
+
+  /**
+   * Résilie un abonnement, conformément aux CGU IDFM :
+   * - aucun préavis nécessaire pour la demande
+   * - le mois en cours reste dû dans son intégralité
+   * - la résiliation ne prend effet qu'au 1er jour du mois suivant
+   *
+   * Le statut passe immédiatement à "pending_cancellation" (visible par
+   * l'utilisateur), puis un job planifié devra repasser le statut à
+   * "cancelled" une fois cancellationEffectiveAt atteint.
+   *
+   * Le pass actif est bloqué dès la demande — conformément à la consigne
+   * métier, indépendamment de la date d'effet de la résiliation contractuelle.
+   */
+  async cancelSubscription(subscriptionId: number, requesterAccountId: number) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        beneficiary: { include: { account: true } },
+        passes: { where: { status: PassStatus.active } },
+      },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
+    }
+
+    const isBeneficiaryAccount =
+      subscription.beneficiary.account?.id === requesterAccountId;
+    const isReferrer = subscription.referrerId === requesterAccountId;
+
+    if (!isBeneficiaryAccount && !isReferrer) {
+      throw new ForbiddenException(
+        'Seul le titulaire ou le référant peut résilier cet abonnement.',
+      );
+    }
+
+    if (subscription.status !== 'active') {
+      throw new BadRequestException(
+        'Cet abonnement ne peut pas être résilié dans son état actuel.',
+      );
+    }
+
+    const now = new Date();
+    const effectiveAt = this.firstDayOfNextMonth(now);
+    const activePasses = subscription.passes ?? null;
+
+    const [updatedSubscription] = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.subscription.update({
+        where: { id: subscriptionId },
+        data: {
+          status: 'pending_cancellation',
+          cancelledAt: now,
+          cancellationEffectiveAt: effectiveAt,
+          cancelledById: requesterAccountId,
+        },
+      });
+
+      if (activePasses) {
+        await Promise.all(
+          activePasses.map((pass) =>
+            tx.pass.update({
+              where: { id: pass.id },
+              data: { status: PassStatus.blocked },
+            }),
+          ),
+        );
+      }
+      return [updated];
+    });
+
+    return updatedSubscription;
+  }
+
+  private firstDayOfNextMonth(date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 1);
   }
 }

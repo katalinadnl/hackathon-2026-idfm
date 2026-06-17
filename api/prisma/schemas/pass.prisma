@@ -12,7 +12,7 @@ model Pass {
   issuedAt       DateTime   @default(now())
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
-  delivery   Delivery?
+  delivery     Delivery?
   usages       PassUsage[]
 }
 
@@ -26,20 +26,19 @@ model PassUsage {
 }
 
 model Delivery {
-  id             Int            @id @default(autoincrement())
-  passId          Int @unique
-  addressId      Int
-  reason         DeliveryReason @default(initial_order)
-  status         DeliveryStatus @default(ordered)
+  id        Int            @id @default(autoincrement())
+  passId    Int            @unique
+  addressId Int
+  reason    DeliveryReason @default(initial_order)
+  status    DeliveryStatus @default(ordered)
 
   orderedAt      DateTime  @default(now())
   estimatedAt    DateTime?
   trackingNumber String?
 
-  pass Pass @relation(fields: [passId], references: [id])
-  address      Address      @relation(fields: [addressId], references: [id])
-
- }
+  pass    Pass    @relation(fields: [passId], references: [id])
+  address Address @relation(fields: [addressId], references: [id])
+}
 
 enum DeliveryStatus {
   ordered

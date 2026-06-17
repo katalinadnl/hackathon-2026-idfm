@@ -52,6 +52,14 @@ export type Delivery = {
 
 export type PassStatus = 'active' | 'blocked' | 'replaced';
 
+export type BankInfo = {
+  id: number;
+  iban: string;
+  bic: string | null;
+  holderName: string;
+  label: string | null;
+};
+
 export type Pass = {
   id: number;
   navigoNumber: string;
@@ -60,7 +68,11 @@ export type Pass = {
   delivery: Delivery;
 };
 
-export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+export type SubscriptionStatus =
+  | 'active'
+  | 'expired'
+  | 'cancelled'
+  | 'pending_cancellation';
 
 export type SubscriptionResponse = {
   id: number;
@@ -70,7 +82,7 @@ export type SubscriptionResponse = {
   status: SubscriptionStatus;
   clientNumber: string;
   renewed: boolean;
-
+  bankInfo: BankInfo;
   beneficiary: {
     id: number;
     firstName: string;
@@ -83,7 +95,6 @@ export type SubscriptionResponse = {
 
   account: { email: string } | null;
   referrer: AccountInfo | null;
-  payer: AccountInfo | null;
   payments: Payment[];
   documents: SubscriptionDocument[];
   passes: Pass[];

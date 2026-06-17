@@ -58,6 +58,7 @@ export const ModelName = {
   PassUsage: 'PassUsage',
   Delivery: 'Delivery',
   Account: 'Account',
+  BankInfo: 'BankInfo',
   Subscription: 'Subscription',
   Payment: 'Payment',
   StatusVerification: 'StatusVerification'
@@ -173,16 +174,33 @@ export const AccountScalarFieldEnum = {
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
 
 
+export const BankInfoScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  iban: 'iban',
+  bic: 'bic',
+  holderName: 'holderName',
+  label: 'label',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type BankInfoScalarFieldEnum = (typeof BankInfoScalarFieldEnum)[keyof typeof BankInfoScalarFieldEnum]
+
+
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
   beneficiaryId: 'beneficiaryId',
   referrerId: 'referrerId',
-  payerId: 'payerId',
   subscriptionType: 'subscriptionType',
   startDate: 'startDate',
   endDate: 'endDate',
-  status: 'status'
+  status: 'status',
+  cancelledAt: 'cancelledAt',
+  cancellationEffectiveAt: 'cancellationEffectiveAt',
+  cancelledById: 'cancelledById',
+  bankInfoId: 'bankInfoId'
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]

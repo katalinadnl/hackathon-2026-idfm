@@ -36,5 +36,23 @@ model Account {
   stripePreviousMandateId String? // last revoked mandate (after a RIB change)
 
   referredSubscriptions Subscription[] @relation("SubscriptionReferrer")
-  paidSubscriptions     Subscription[] @relation("SubscriptionPayer")
+
+  subscriptions Subscription[] @relation("SubscriptionCancelledBy")
+
+  bankInfos BankInfo[]
+}
+
+model BankInfo {
+  id         Int      @id @default(autoincrement())
+  accountId  Int
+  iban       String
+  bic        String?
+  holderName String
+  label      String? // ex: "Mon compte", "Compte de mes parents"
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  subscriptions Subscription[] @relation("BankInfo")
 }

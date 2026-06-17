@@ -39,7 +39,7 @@ export interface MandateResponse {
 export interface PaymentMethodInfo {
   type: 'sepa_debit';
   ibanMasked: string;
-  bankName: string;
+  bankName: string | null;
   holderName: string;
   isDefault: boolean;
   source: 'local' | 'stripe';

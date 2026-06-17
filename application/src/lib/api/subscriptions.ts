@@ -39,3 +39,6 @@ export function reportLostOrStolen(
     payload,
   );
 }
+export function cancelSubscription(subscriptionId: number) {
+  return http.post(`/subscriptions/${subscriptionId}/cancel`);
+}

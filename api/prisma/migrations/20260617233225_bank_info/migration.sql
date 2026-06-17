@@ -17,7 +17,7 @@ CREATE TYPE "DeliveryReason" AS ENUM ('initial_order', 'lost', 'stolen', 'damage
 CREATE TYPE "AccountRole" AS ENUM ('client', 'admin');
 
 -- CreateEnum
-CREATE TYPE "SubscriptionStatus" AS ENUM ('active', 'expired', 'cancelled');
+CREATE TYPE "SubscriptionStatus" AS ENUM ('active', 'expired', 'cancelled', 'pending_cancellation');
 
 -- CreateEnum
 CREATE TYPE "PaymentMethod" AS ENUM ('card', 'direct_debit');
@@ -123,16 +123,33 @@ CREATE TABLE "Account" (
 );
 
 -- CreateTable
+CREATE TABLE "BankInfo" (
+    "id" SERIAL NOT NULL,
+    "accountId" INTEGER NOT NULL,
+    "iban" TEXT NOT NULL,
+    "bic" TEXT,
+    "holderName" TEXT NOT NULL,
+    "label" TEXT,
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "BankInfo_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Subscription" (
     "id" SERIAL NOT NULL,
     "reference" TEXT NOT NULL,
     "beneficiaryId" INTEGER NOT NULL,
     "referrerId" INTEGER,
-    "payerId" INTEGER,
     "subscriptionType" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
     "status" "SubscriptionStatus" NOT NULL DEFAULT 'active',
+    "cancelledAt" TIMESTAMP(3),
+    "cancellationEffectiveAt" TIMESTAMP(3),
+    "cancelledById" INTEGER,
+    "bankInfoId" INTEGER NOT NULL,
 
     CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
 );
@@ -181,6 +198,9 @@ CREATE UNIQUE INDEX "Beneficiary_socialSecurityNumber_key" ON "Beneficiary"("soc
 CREATE UNIQUE INDEX "Pass_navigoNumber_key" ON "Pass"("navigoNumber");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Delivery_passId_key" ON "Delivery"("passId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Account_email_key" ON "Account"("email");
 
 -- CreateIndex
@@ -220,13 +240,19 @@ ALTER TABLE "Delivery" ADD CONSTRAINT "Delivery_addressId_fkey" FOREIGN KEY ("ad
 ALTER TABLE "Account" ADD CONSTRAINT "Account_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "BankInfo" ADD CONSTRAINT "BankInfo_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_referrerId_fkey" FOREIGN KEY ("referrerId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_payerId_fkey" FOREIGN KEY ("payerId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_cancelledById_fkey" FOREIGN KEY ("cancelledById") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_bankInfoId_fkey" FOREIGN KEY ("bankInfoId") REFERENCES "BankInfo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

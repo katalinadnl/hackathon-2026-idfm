@@ -391,6 +391,7 @@ export const ModelName = {
   PassUsage: 'PassUsage',
   Delivery: 'Delivery',
   Account: 'Account',
+  BankInfo: 'BankInfo',
   Subscription: 'Subscription',
   Payment: 'Payment',
   StatusVerification: 'StatusVerification'
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "address" | "department" | "beneficiary" | "pass" | "passUsage" | "delivery" | "account" | "subscription" | "payment" | "statusVerification"
+    modelProps: "address" | "department" | "beneficiary" | "pass" | "passUsage" | "delivery" | "account" | "bankInfo" | "subscription" | "payment" | "statusVerification"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -931,6 +932,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BankInfo: {
+      payload: Prisma.$BankInfoPayload<ExtArgs>
+      fields: Prisma.BankInfoFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BankInfoFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BankInfoFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>
+        }
+        findFirst: {
+          args: Prisma.BankInfoFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BankInfoFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>
+        }
+        findMany: {
+          args: Prisma.BankInfoFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>[]
+        }
+        create: {
+          args: Prisma.BankInfoCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>
+        }
+        createMany: {
+          args: Prisma.BankInfoCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BankInfoCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>[]
+        }
+        delete: {
+          args: Prisma.BankInfoDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>
+        }
+        update: {
+          args: Prisma.BankInfoUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>
+        }
+        deleteMany: {
+          args: Prisma.BankInfoDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BankInfoUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BankInfoUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>[]
+        }
+        upsert: {
+          args: Prisma.BankInfoUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BankInfoPayload>
+        }
+        aggregate: {
+          args: Prisma.BankInfoAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBankInfo>
+        }
+        groupBy: {
+          args: Prisma.BankInfoGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BankInfoGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BankInfoCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BankInfoCountAggregateOutputType> | number
+        }
+      }
+    }
     Subscription: {
       payload: Prisma.$SubscriptionPayload<ExtArgs>
       fields: Prisma.SubscriptionFieldRefs
@@ -1286,16 +1361,33 @@ export const AccountScalarFieldEnum = {
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
 
 
+export const BankInfoScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  iban: 'iban',
+  bic: 'bic',
+  holderName: 'holderName',
+  label: 'label',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type BankInfoScalarFieldEnum = (typeof BankInfoScalarFieldEnum)[keyof typeof BankInfoScalarFieldEnum]
+
+
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
   reference: 'reference',
   beneficiaryId: 'beneficiaryId',
   referrerId: 'referrerId',
-  payerId: 'payerId',
   subscriptionType: 'subscriptionType',
   startDate: 'startDate',
   endDate: 'endDate',
-  status: 'status'
+  status: 'status',
+  cancelledAt: 'cancelledAt',
+  cancellationEffectiveAt: 'cancellationEffectiveAt',
+  cancelledById: 'cancelledById',
+  bankInfoId: 'bankInfoId'
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
@@ -1681,6 +1773,7 @@ export type GlobalOmitConfig = {
   passUsage?: Prisma.PassUsageOmit
   delivery?: Prisma.DeliveryOmit
   account?: Prisma.AccountOmit
+  bankInfo?: Prisma.BankInfoOmit
   subscription?: Prisma.SubscriptionOmit
   payment?: Prisma.PaymentOmit
   statusVerification?: Prisma.StatusVerificationOmit

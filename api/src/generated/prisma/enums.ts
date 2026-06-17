@@ -70,7 +70,8 @@ export type AccountRole = (typeof AccountRole)[keyof typeof AccountRole]
 export const SubscriptionStatus = {
   active: 'active',
   expired: 'expired',
-  cancelled: 'cancelled'
+  cancelled: 'cancelled',
+  pending_cancellation: 'pending_cancellation'
 } as const
 
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]

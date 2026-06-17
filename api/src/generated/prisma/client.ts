@@ -75,6 +75,11 @@ export type Delivery = Prisma.DeliveryModel
  */
 export type Account = Prisma.AccountModel
 /**
+ * Model BankInfo
+ * 
+ */
+export type BankInfo = Prisma.BankInfoModel
+/**
  * Model Subscription
  * 
  */

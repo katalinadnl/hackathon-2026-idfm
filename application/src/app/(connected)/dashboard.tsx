@@ -13,11 +13,16 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { Card } from "@/components/ui/Card";
 import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { ApiSubscription, SubscriptionRole } from "@/hooks/use-subscriptions";
 import { useFetch } from "@/hooks/useFetch";
+import {
+  STATUS_LABEL,
+  STATUS_TONE,
+} from "@/components/subscription/SubscriptionHeader";
 
 type Section = "dashboard" | "subscriptions" | "billing" | "history";
 
@@ -157,8 +162,8 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
         <View style={styles.passCardMeta}>
           <Icon name="ticket" size={18} color="rgba(255,255,255,0.7)" />
           <Text style={styles.passCardType}>{sub.subscriptionType}</Text>
-          <Badge tone="success" dot>
-            {sub.status === "active" ? "Actif" : sub.status}
+          <Badge tone={STATUS_TONE[sub.status]} dot>
+            {STATUS_LABEL[sub.status]}
           </Badge>
         </View>
         <Button
@@ -202,17 +207,17 @@ function PassRow({ sub }: { sub: ApiSubscription }) {
   const router = useRouter();
   const expiring = isExpiringSoon(sub.endDate);
   return (
-    <Pressable
-      style={({ pressed }) => [styles.passRow, pressed && { opacity: 0.6 }]}
+    <Card
+      style={styles.passRow}
       onPress={() => router.push(`/subscriptions/${sub.id}`)}
-      accessibilityRole="button"
+      interactive
       accessibilityLabel={`Voir le détail de ${sub.subscriptionType}`}
     >
       <View style={styles.passRowLeft}>
         <View style={styles.passRowHeader}>
           <Text style={styles.passRowType}>{sub.subscriptionType}</Text>
-          <Badge tone={sub.status === "active" ? "success" : "neutral"} dot>
-            {sub.status === "active" ? "Actif" : sub.status}
+          <Badge tone={STATUS_TONE[sub.status]} dot>
+            {STATUS_LABEL[sub.status]}
           </Badge>
           {expiring && <Badge tone="warning">Renouveler</Badge>}
         </View>
@@ -238,7 +243,7 @@ function PassRow({ sub }: { sub: ApiSubscription }) {
         )}
         <Icon name="arrow-right" size={18} color={DS.textMuted} />
       </View>
-    </Pressable>
+    </Card>
   );
 }
 
@@ -248,7 +253,7 @@ function PaymentRow({ sub }: { sub: ApiSubscription }) {
   return (
     <View style={styles.tableRow}>
       <Text style={[styles.tableCell, styles.tableCellId]}>
-        {sub.navigoNumber}
+        {sub.reference}
       </Text>
       <Text style={[styles.tableCell, styles.tableCellDesc]}>
         {sub.subscriptionType}
@@ -353,7 +358,7 @@ function DashboardHome({
         action="Tout voir"
         onAction={() => onNav("subscriptions")}
       />
-      <View style={styles.card}>
+      <View>
         {loading ? (
           <LoadingPlaceholder />
         ) : subscriptions.length === 0 ? (
@@ -876,7 +881,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     justifyContent: "space-between",
-    padding: DS.space5,
     gap: DS.space4,
   },
   passRowLeft: {

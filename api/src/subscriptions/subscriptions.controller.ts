@@ -23,11 +23,6 @@ import { LinkReferrerDto } from './dto/link-referrer.dto';
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
 
-  @Post()
-  create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
-    return this.subscriptionsService.create(createSubscriptionDto);
-  }
-
   @Get()
   findAll() {
     return this.subscriptionsService.findAll();
@@ -66,6 +61,7 @@ export class SubscriptionsController {
       dto,
     );
   }
+
   @Post(':id/unlink-referrer')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -91,5 +87,16 @@ export class SubscriptionsController {
       requesterAccountId,
       body.referrerId,
     );
+  }
+
+  @Post(':id/cancel')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  cancelSubscription(
+    @Param('id', ParseIntPipe) id: number,
+    @GetMe() user: JwtPayload,
+  ) {
+    const requesterAccountId = user.id;
+    return this.subscriptionsService.cancelSubscription(id, requesterAccountId);
   }
 }

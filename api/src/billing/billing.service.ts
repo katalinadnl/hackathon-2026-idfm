@@ -22,15 +22,6 @@ import { StripeProvider } from './stripe/stripe.provider';
 const CREDITOR_NAME = 'Île-de-France Mobilités';
 const CREDITOR_ICS = 'FR93ZZZ123456';
 
-const BANKS = [
-  'Crédit Agricole',
-  'BNP Paribas',
-  'Société Générale',
-  'La Banque Postale',
-  "Caisse d'Épargne",
-  'Crédit Mutuel',
-];
-
 @Injectable()
 export class BillingService {
   constructor(
@@ -38,11 +29,15 @@ export class BillingService {
     private readonly stripe: StripeProvider,
   ) {}
 
+  /**
+   * Un compte "voit" un abonnement s'il en est le titulaire ou le référant.
+   * Le propriétaire du BankInfo (qui paie réellement) n'intervient plus dans
+   * cette visibilité — c'est une information affichée, pas une permission.
+   */
   private async getVisibleSubscriptions(accountId: number) {
     const subs = await this.prisma.subscription.findMany({
       where: {
         OR: [
-          { payerId: accountId },
           { referrerId: accountId },
           { beneficiary: { account: { id: accountId } } },
         ],
@@ -58,7 +53,6 @@ export class BillingService {
       const roles: BillingRole[] = [];
       if (sub.beneficiary.account?.id === accountId) roles.push('holder');
       if (sub.referrerId === accountId) roles.push('referrer');
-      if (sub.payerId === accountId) roles.push('payer');
       return { sub, roles, activePass: sub.passes[0] ?? null };
     });
   }
@@ -185,36 +179,32 @@ export class BillingService {
     return { connected: false, active, history };
   }
 
+  /**
+   * Construit le mandat à partir du BankInfo réellement associé à
+   * l'abonnement — plus de génération d'IBAN factice : si bankInfo est null,
+   * il n'y a simplement pas encore de mandat actif pour cet abonnement.
+   */
   private async buildLocalMandates(
     subscriptionId: number,
-  ): Promise<{ active: SepaMandate; history: SepaMandate[] }> {
+  ): Promise<{ active: SepaMandate | null; history: SepaMandate[] }> {
     const sub = await this.prisma.subscription.findUniqueOrThrow({
       where: { id: subscriptionId },
       include: {
         beneficiary: true,
-        payer: { include: { beneficiary: true } },
-        passes: { orderBy: { issuedAt: 'desc' } },
+        bankInfo: { include: { account: { include: { beneficiary: true } } } },
       },
     });
 
-    const activePass =
-      sub.passes.find((p) => p.status === PassStatus.active) ?? null;
+    if (!sub.bankInfo) {
+      return { active: null, history: [] };
+    }
 
-    const payer = sub.payer;
-    const debtorName = payer?.beneficiary
-      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
-      : payer?.email
-        ? payer.email
-            .split('@')[0]
-            .replace(/[._]/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase())
-        : `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`;
-
-    // Seed déterministe pour l'IBAN masqué : on retombe sur l'id d'abonnement
-    // si aucun pass actif n'existe (cas juste après un blocage, avant remplacement).
-    const seed =
-      payer?.accountNumber ?? activePass?.navigoNumber ?? String(sub.id);
-    const mask = (tail: string) => `FR76 •••• •••• •••• •••• ••${tail}`;
+    const payerAccount = sub.bankInfo.account;
+    const debtorName =
+      sub.bankInfo.holderName ||
+      (payerAccount.beneficiary
+        ? `${payerAccount.beneficiary.firstName} ${payerAccount.beneficiary.lastName}`
+        : payerAccount.email);
 
     const active: SepaMandate = {
       reference: `IDFM-SUB-${sub.id}`,
@@ -223,31 +213,27 @@ export class BillingService {
       creditorName: CREDITOR_NAME,
       creditorIcs: CREDITOR_ICS,
       debtorName,
-      ibanMasked: mask(this.deriveIbanLast2(seed)),
-      signedAt: sub.startDate.toISOString(),
+      ibanMasked: this.maskIban(sub.bankInfo.iban),
+      signedAt: sub.bankInfo.createdAt.toISOString(),
       revokedAt: null,
       subscriptionId: sub.id,
       source: 'local',
     };
 
-    const prevSigned = new Date(sub.startDate.getTime());
-    prevSigned.setUTCFullYear(prevSigned.getUTCFullYear() - 1);
-    const previous: SepaMandate = {
-      ...active,
-      reference: `IDFM-SUB-${sub.id}-ANT`,
-      status: 'revoked',
-      ibanMasked: mask(this.deriveIbanLast2(`${seed}-prev`)),
-      signedAt: prevSigned.toISOString(),
-      revokedAt: sub.startDate.toISOString(),
-    };
-
-    return { active, history: [previous] };
+    return { active, history: [] };
   }
 
-  private deriveIbanLast2(seed: string): string {
-    let h = 0;
-    for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) % 100;
-    return String(h).padStart(2, '0');
+  /**
+   * Masque un IBAN réel pour l'affichage : conserve le code pays et les 4
+   * derniers chiffres, masque le reste.
+   */
+  private maskIban(iban: string): string {
+    const cleaned = iban.replace(/\s+/g, '');
+    const country = cleaned.slice(0, 2);
+    const last4 = cleaned.slice(-4);
+    return `${country}${'•'.repeat(Math.max(cleaned.length - 6, 0))}${last4}`
+      .replace(/(.{4})/g, '$1 ')
+      .trim();
   }
 
   async getMandateDocumentHtml(
@@ -359,14 +345,22 @@ export class BillingService {
     };
   }
 
+  /**
+   * Le nom de la banque n'est plus déduit d'un hash — on ne le connaît pas
+   * réellement (un IBAN ne porte pas le nom de la banque de façon fiable
+   * sans appel à un service de lookup BIC), donc on l'omet plutôt que de le
+   * fabriquer artificiellement.
+   */
   private async buildLocalPaymentMethod(
     subscriptionId: number,
-  ): Promise<PaymentMethodInfo> {
+  ): Promise<PaymentMethodInfo | null> {
     const { active } = await this.buildLocalMandates(subscriptionId);
+    if (!active) return null;
+
     return {
       type: 'sepa_debit',
       ibanMasked: active.ibanMasked,
-      bankName: BANKS[this.hash(active.ibanMasked) % BANKS.length],
+      bankName: null,
       holderName: active.debtorName,
       isDefault: true,
       source: 'local',
@@ -391,7 +385,7 @@ export class BillingService {
       billingName: null,
       billingEmail: null,
       message:
-        "La collecte du nouvel IBAN se fait à l'inscription. Le changement en self-service sera disponible au branchement de Stripe.",
+        "Utilisez le changement de moyen de paiement depuis la page de l'abonnement pour choisir un nouvel IBAN.",
     };
   }
 
@@ -407,11 +401,5 @@ export class BillingService {
       setupIntentId,
     );
     return { ok: res.ok, connected: true };
-  }
-
-  private hash(seed: string): number {
-    let h = 0;
-    for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) % 100000;
-    return h;
   }
 }
