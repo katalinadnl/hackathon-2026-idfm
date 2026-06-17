@@ -1,8 +1,11 @@
 export type BillingRole = 'holder' | 'referrer' | 'payer';
 
+export type PassStatus = 'active' | 'blocked' | 'replaced';
+
 export interface PassSummary {
   subscriptionId: number;
-  navigoNumber: string;
+  navigoNumber: string | null;
+  passStatus: PassStatus | null;
   subscriptionType: string;
   status: string;
   holderName: string;
@@ -23,7 +26,7 @@ export interface SepaMandate {
   ibanMasked: string;
   signedAt: string;
   revokedAt: string | null;
-  navigoNumber: string;
+  subscriptionId: number;
   source: 'local' | 'stripe';
 }
 
@@ -48,6 +51,7 @@ export interface PaymentMethodResponse {
 }
 
 export type TransactionStatus = 'succeeded' | 'failed' | 'refunded';
+export type TransactionMethod = 'card' | 'direct_debit';
 
 export interface Transaction {
   id: string;
@@ -55,8 +59,9 @@ export interface Transaction {
   label: string;
   amount: number;
   status: TransactionStatus;
-  method: string;
-  navigoNumber: string;
+  method: TransactionMethod;
+  subscriptionId: number;
+  navigoNumber: string | null;
 }
 
 export interface TransactionsResponse {

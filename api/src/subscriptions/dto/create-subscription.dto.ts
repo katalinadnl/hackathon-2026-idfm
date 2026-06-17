@@ -1,4 +1,10 @@
-import { IsDateString, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateSubscriptionDto {
   @IsInt()
@@ -23,8 +29,4 @@ export class CreateSubscriptionDto {
 
   @IsDateString()
   endDate: string;
-
-  @IsOptional()
-  @IsString()
-  status?: string;
 }

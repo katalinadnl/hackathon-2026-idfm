@@ -35,9 +35,7 @@ export class StripeProvider {
       where: { id: subscriptionId },
       include: { payer: { include: { beneficiary: true } } },
     });
-    return sub
-      ? { payer: sub.payer, navigoNumber: sub.navigoNumber }
-      : { payer: null, navigoNumber: '' };
+    return sub ? { payer: sub.payer } : { payer: null };
   }
 
   private maskIban(last4: string | null): string {
@@ -51,19 +49,19 @@ export class StripeProvider {
   }
 
   async getMandate(subscriptionId: number): Promise<SepaMandate | null> {
-    const { payer, navigoNumber } = await this.payerOf(subscriptionId);
+    const { payer } = await this.payerOf(subscriptionId);
     if (!payer?.stripeMandateId) return null;
-    return this.buildMandate(payer.stripeMandateId, navigoNumber);
+    return this.buildMandate(payer.stripeMandateId, subscriptionId);
   }
 
   async getMandateHistory(subscriptionId: number): Promise<SepaMandate[]> {
-    const { payer, navigoNumber } = await this.payerOf(subscriptionId);
+    const { payer } = await this.payerOf(subscriptionId);
     if (!payer?.stripePreviousMandateId) return [];
     try {
       return [
         await this.buildMandate(
           payer.stripePreviousMandateId,
-          navigoNumber,
+          subscriptionId,
           'revoked',
         ),
       ];
@@ -74,7 +72,7 @@ export class StripeProvider {
 
   private async buildMandate(
     mandateId: string,
-    navigoNumber: string,
+    subscriptionId: number,
     statusOverride?: MandateStatus,
   ): Promise<SepaMandate> {
     const stripe = this.getClient();
@@ -99,7 +97,7 @@ export class StripeProvider {
         ? new Date(pm.created * 1000).toISOString()
         : new Date().toISOString(),
       revokedAt: null,
-      navigoNumber,
+      subscriptionId,
       source: 'stripe',
     };
   }

@@ -16,11 +16,8 @@ import { Icon } from "@/components/ui/Icon";
 import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
-import {
-  ApiSubscription,
-  SubscriptionRole,
-  useSubscriptions,
-} from "@/hooks/use-subscriptions";
+import { ApiSubscription, SubscriptionRole } from "@/hooks/use-subscriptions";
+import { useFetch } from "@/hooks/useFetch";
 
 type Section = "dashboard" | "subscriptions" | "billing" | "history";
 
@@ -496,7 +493,15 @@ export default function DashboardPage() {
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
 
   const { user } = useAuth();
-  const { subscriptions, loading, error } = useSubscriptions(user?.id ?? 0);
+  const {
+    data: subscriptions,
+    loading,
+    error,
+  } = useFetch<ApiSubscription[]>(
+    user ? `/accounts/${user.id}/subscriptions` : null,
+  );
+
+  if (!user || !subscriptions) return null;
   const accountName = user?.firstName ?? user?.email ?? "";
 
   return (

@@ -5,6 +5,7 @@ export const subscriptionInclude = {
     include: {
       residenceDepartment: true,
       account: true,
+      addresses: true,
     },
   },
   referrer: {
@@ -15,6 +16,11 @@ export const subscriptionInclude = {
   },
   payments: {
     orderBy: { paidAt: 'desc' as const },
+  },
+  passes: {
+    orderBy: { issuedAt: 'desc' as const },
+    where: { NOT: { status: 'blocked' } },
+    include: { delivery: true },
   },
 } satisfies Prisma.SubscriptionInclude;
 

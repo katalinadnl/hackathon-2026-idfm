@@ -1,0 +1,56 @@
+enum PassStatus {
+  active
+  blocked
+  replaced
+}
+
+model Pass {
+  id             Int        @id @default(autoincrement())
+  subscriptionId Int
+  navigoNumber   String     @unique
+  status         PassStatus @default(active)
+  issuedAt       DateTime   @default(now())
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+  delivery   Delivery?
+  usages       PassUsage[]
+}
+
+model PassUsage {
+  id      Int      @id @default(autoincrement())
+  passId  Int
+  usedAt  DateTime @default(now())
+  station String?
+
+  pass Pass @relation(fields: [passId], references: [id])
+}
+
+model Delivery {
+  id             Int            @id @default(autoincrement())
+  passId          Int @unique
+  addressId      Int
+  reason         DeliveryReason @default(initial_order)
+  status         DeliveryStatus @default(ordered)
+
+  orderedAt      DateTime  @default(now())
+  estimatedAt    DateTime?
+  trackingNumber String?
+
+  pass Pass @relation(fields: [passId], references: [id])
+  address      Address      @relation(fields: [addressId], references: [id])
+
+ }
+
+enum DeliveryStatus {
+  ordered
+  preparing
+  shipped
+  delivered
+}
+
+enum DeliveryReason {
+  initial_order
+  lost
+  stolen
+  damaged
+}

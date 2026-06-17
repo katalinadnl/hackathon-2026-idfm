@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
+import { PassStatus } from 'src/generated/prisma/enums';
 import {
   BillingRole,
   MandateResponse,
@@ -48,6 +49,7 @@ export class BillingService {
       },
       include: {
         beneficiary: { include: { account: true } },
+        passes: { where: { status: PassStatus.active }, take: 1 },
       },
       orderBy: { startDate: 'desc' },
     });
@@ -57,15 +59,16 @@ export class BillingService {
       if (sub.beneficiary.account?.id === accountId) roles.push('holder');
       if (sub.referrerId === accountId) roles.push('referrer');
       if (sub.payerId === accountId) roles.push('payer');
-      return { sub, roles };
+      return { sub, roles, activePass: sub.passes[0] ?? null };
     });
   }
 
   async getPasses(accountId: number): Promise<PassSummary[]> {
     const visible = await this.getVisibleSubscriptions(accountId);
-    return visible.map(({ sub, roles }) => ({
+    return visible.map(({ sub, roles, activePass }) => ({
       subscriptionId: sub.id,
-      navigoNumber: sub.navigoNumber,
+      navigoNumber: activePass?.navigoNumber ?? null,
+      passStatus: activePass?.status ?? null,
       subscriptionType: sub.subscriptionType,
       status: sub.status,
       holderName: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
@@ -96,7 +99,14 @@ export class BillingService {
 
     const payments = await this.prisma.payment.findMany({
       where: { subscriptionId: { in: targetIds } },
-      include: { subscription: { include: { beneficiary: true } } },
+      include: {
+        subscription: {
+          include: {
+            beneficiary: true,
+            passes: { where: { status: PassStatus.active }, take: 1 },
+          },
+        },
+      },
       orderBy: { paidAt: 'desc' },
     });
 
@@ -106,6 +116,8 @@ export class BillingService {
       const signedAmount =
         status === 'refunded' ? Math.abs(p.amount) : -Math.abs(p.amount);
       const holder = p.subscription.beneficiary;
+      const activePass = p.subscription.passes[0] ?? null;
+
       return {
         id: String(p.id),
         date: p.paidAt.toISOString(),
@@ -113,7 +125,8 @@ export class BillingService {
         amount: Number(signedAmount.toFixed(2)),
         status,
         method: p.method,
-        navigoNumber: p.subscription.navigoNumber,
+        subscriptionId: p.subscriptionId,
+        navigoNumber: activePass?.navigoNumber ?? null,
       };
     });
 
@@ -180,8 +193,12 @@ export class BillingService {
       include: {
         beneficiary: true,
         payer: { include: { beneficiary: true } },
+        passes: { orderBy: { issuedAt: 'desc' } },
       },
     });
+
+    const activePass =
+      sub.passes.find((p) => p.status === PassStatus.active) ?? null;
 
     const payer = sub.payer;
     const debtorName = payer?.beneficiary
@@ -193,11 +210,14 @@ export class BillingService {
             .replace(/\b\w/g, (c) => c.toUpperCase())
         : `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`;
 
-    const seed = payer?.accountNumber ?? sub.navigoNumber;
+    // Seed déterministe pour l'IBAN masqué : on retombe sur l'id d'abonnement
+    // si aucun pass actif n'existe (cas juste après un blocage, avant remplacement).
+    const seed =
+      payer?.accountNumber ?? activePass?.navigoNumber ?? String(sub.id);
     const mask = (tail: string) => `FR76 •••• •••• •••• •••• ••${tail}`;
 
     const active: SepaMandate = {
-      reference: `IDFM-${sub.navigoNumber}`,
+      reference: `IDFM-SUB-${sub.id}`,
       status: sub.status === 'active' ? 'active' : 'revoked',
       scheme: 'CORE',
       creditorName: CREDITOR_NAME,
@@ -206,7 +226,7 @@ export class BillingService {
       ibanMasked: mask(this.deriveIbanLast2(seed)),
       signedAt: sub.startDate.toISOString(),
       revokedAt: null,
-      navigoNumber: sub.navigoNumber,
+      subscriptionId: sub.id,
       source: 'local',
     };
 
@@ -214,7 +234,7 @@ export class BillingService {
     prevSigned.setUTCFullYear(prevSigned.getUTCFullYear() - 1);
     const previous: SepaMandate = {
       ...active,
-      reference: `IDFM-${sub.navigoNumber}-ANT`,
+      reference: `IDFM-SUB-${sub.id}-ANT`,
       status: 'revoked',
       ibanMasked: mask(this.deriveIbanLast2(`${seed}-prev`)),
       signedAt: prevSigned.toISOString(),
@@ -234,14 +254,24 @@ export class BillingService {
     accountId: number,
     subscriptionId: number,
   ): Promise<string> {
+    await this.assertCanAccessPass(accountId, subscriptionId);
     const { active } = await this.getMandate(accountId, subscriptionId);
     if (!active) {
       return '<!doctype html><meta charset="utf-8"><p>Aucun mandat disponible pour ce pass.</p>';
     }
-    return this.renderMandateHtml(active);
+
+    const sub = await this.prisma.subscription.findUniqueOrThrow({
+      where: { id: subscriptionId },
+      select: { reference: true },
+    });
+
+    return this.renderMandateHtml(active, sub.reference);
   }
 
-  private renderMandateHtml(m: SepaMandate): string {
+  private renderMandateHtml(
+    m: SepaMandate,
+    subscriptionReference: string,
+  ): string {
     const esc = (s: string) =>
       s.replace(
         /[&<>"]/g,
@@ -288,11 +318,11 @@ export class BillingService {
     <div class="sub">Type : prélèvement récurrent (CORE) · Statut : <span class="badge">${esc(statusLabel)}</span></div>
     <dl class="grid">
       <dt>Référence (RUM)</dt><dd>${esc(m.reference)}</dd>
+      <dt>Référence abonnement</dt><dd>${esc(subscriptionReference)}</dd>
       <dt>Créancier</dt><dd>${esc(m.creditorName)}</dd>
       <dt>ICS</dt><dd>${esc(m.creditorIcs)}</dd>
       <dt>Débiteur</dt><dd>${esc(m.debtorName)}</dd>
       <dt>IBAN</dt><dd>${esc(m.ibanMasked)}</dd>
-      <dt>Pass Navigo</dt><dd>${esc(m.navigoNumber)}</dd>
       <dt>Signé le</dt><dd>${esc(signed)}</dd>
     </dl>
     <p class="legal">

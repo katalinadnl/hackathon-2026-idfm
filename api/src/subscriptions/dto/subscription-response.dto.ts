@@ -1,40 +1,73 @@
-export class AccountInfoDto {
+export type AddressType = 'home' | 'delivery' | 'billing';
+
+export type Address = {
+  id: number;
+  type: AddressType;
+  isDefault: boolean;
+  line1: string;
+  line2: string | null;
+  city: string;
+  postalCode: string;
+  country: string;
+};
+
+export type AccountInfo = {
   id: number;
   email: string;
   accountNumber: string;
   beneficiary: { firstName: string; lastName: string } | null;
-}
+};
 
-export class PaymentDto {
+export type PaymentMethod = 'card' | 'direct_debit';
+export type PaymentStatus = 'succeeded' | 'failed' | 'pending';
+
+export type Payment = {
   id: number;
   paidAt: string;
   amount: number;
-  method: string;
-  status: string;
-}
+  method: PaymentMethod;
+  status: PaymentStatus;
+};
 
-export class DocumentDto {
+export type SubscriptionDocumentType = 'attestation' | 'contrat';
+
+export type SubscriptionDocument = {
   id: number;
-  type: string;
+  type: SubscriptionDocumentType;
   label: string;
   date: string;
   url: string;
-}
+};
 
-export class DeliveryDto {
-  status: 'ordered' | 'preparing' | 'shipped' | 'delivered';
+export type DeliveryReason = 'initial_order' | 'lost' | 'stolen' | 'damaged';
+export type DeliveryStatus = 'ordered' | 'preparing' | 'shipped' | 'delivered';
+
+export type Delivery = {
+  status: DeliveryStatus;
+  reason: DeliveryReason;
   orderedAt: string;
-  estimatedAt: string;
+  estimatedAt: string | null;
   trackingNumber: string | null;
-}
+};
 
-export class SubscriptionResponseDto {
+export type PassStatus = 'active' | 'blocked' | 'replaced';
+
+export type Pass = {
   id: number;
   navigoNumber: string;
+  status: PassStatus;
+  issuedAt: string;
+  delivery: Delivery;
+};
+
+export type SubscriptionStatus = 'active' | 'expired' | 'cancelled';
+
+export type SubscriptionResponse = {
+  id: number;
   subscriptionType: string;
   startDate: string;
   endDate: string;
-  status: string;
+  status: SubscriptionStatus;
   clientNumber: string;
   renewed: boolean;
 
@@ -45,12 +78,13 @@ export class SubscriptionResponseDto {
     email: string;
     birthDate: string;
     residenceDepartment: { name: string };
+    addresses: Address[];
   };
 
   account: { email: string } | null;
-  referrer: AccountInfoDto | null;
-  payer: AccountInfoDto | null;
-  payments: PaymentDto[];
-  documents: DocumentDto[];
-  delivery: DeliveryDto | null;
-}
+  referrer: AccountInfo | null;
+  payer: AccountInfo | null;
+  payments: Payment[];
+  documents: SubscriptionDocument[];
+  passes: Pass[];
+};

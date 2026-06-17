@@ -1,7 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
-  Alert,
   ScrollView,
   StyleSheet,
   View,
@@ -20,15 +19,25 @@ import { DS, MaxContentWidth } from "@/constants/theme";
 import { AccountsSection } from "@/components/subscription/AccountSection";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { PaymentHistoryCta } from "@/components/subscription/PaiementHistory";
-import { useSubscription } from "@/hooks/useSubscription";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, getAge } from "@/lib/subscription-helpers";
+import { useFetch } from "@/hooks/useFetch";
+import { ReportLostOrStolenModal } from "@/components/subscription/CancelPass";
+import { useState } from "react";
+import { SubscriptionResponse } from "@/types/subscription";
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const [reportModalVisible, setReportModalVisible] = useState(false);
 
-  const { data: subscription, loading, error, reload } = useSubscription(id);
+  const {
+    data: subscription,
+    loading,
+    error,
+    reload,
+  } = useFetch<SubscriptionResponse>(id ? `/subscriptions/${id}` : null);
+
   if (loading) {
     return (
       <SafeAreaView style={s.root} edges={["top"]}>
@@ -60,147 +69,140 @@ export default function SubscriptionDetailPage() {
       <View style={s.headerBg}>
         <View style={s.wrapper}>
           <SubscriptionHeader
-        subscription={subscription}
-        onBack={() => router.back()}
-      />
+            subscription={subscription}
+            onBack={() => router.back()}
+          />
         </View>
       </View>
 
       <View style={s.wrapper}>
-      <ScrollView
-        style={s.scroll}
-        contentContainerStyle={s.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {!subscription.renewed && (
-          <RenewalBanner
-            endDate={subscription.endDate}
-            onPress={() =>
-              router.push(`/subscriptions/${subscription.id}/renew` as any)
-            }
-          />
-        )}
-
-        {subscription.delivery &&
-          subscription.delivery.status !== "delivered" && (
-            <DeliveryBanner delivery={subscription.delivery} />
+        <ScrollView
+          style={s.scroll}
+          contentContainerStyle={s.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {!subscription.renewed && (
+            <RenewalBanner
+              endDate={subscription.endDate}
+              onPress={() =>
+                router.push(`/subscriptions/${subscription.id}/renew` as any)
+              }
+            />
           )}
 
-        {/* Abonnement + Titulaire côte à côte */}
-        <View style={s.topGrid}>
-          <View style={s.topGridCol}>
-            <SectionTitle>Abonnement</SectionTitle>
-            <Card style={s.topGridCard}>
-              <InfoRow
-                label="Numéro de pass"
-                value={subscription.navigoNumber}
-              />
-              <InfoRow
-                label="Numéro client"
-                value={subscription.clientNumber}
-                last
-              />
+          {subscription.passes.map(
+            (pass) =>
+              pass.delivery.status !== "delivered" && (
+                <DeliveryBanner delivery={pass.delivery} key={pass.id} />
+              ),
+          )}
+
+          {/* Abonnement + Titulaire côte à côte */}
+          <View style={s.topGrid}>
+            <View style={s.topGridCol}>
+              <SectionTitle>Abonnement</SectionTitle>
+              <Card style={s.topGridCard}>
+                <InfoRow
+                  label="Numéro de pass"
+                  value={subscription.passes[0].navigoNumber}
+                />
+                <InfoRow
+                  label="Numéro client"
+                  value={subscription.clientNumber}
+                  last
+                />
+              </Card>
+            </View>
+            <View style={s.topGridCol}>
+              <SectionTitle>Titulaire</SectionTitle>
+              <Card style={s.topGridCard}>
+                <InfoRow
+                  label="Nom"
+                  value={`${subscription.beneficiary.firstName} ${subscription.beneficiary.lastName}`}
+                />
+                <InfoRow label="Email" value={subscription.beneficiary.email} />
+                <InfoRow
+                  label="Département"
+                  value={subscription.beneficiary.residenceDepartment.name}
+                />
+                <InfoRow
+                  label="Naissance"
+                  value={formatDate(subscription.beneficiary.birthDate)}
+                  last
+                />
+              </Card>
+            </View>
+          </View>
+
+          <AccountsSection
+            isOldEnough={isOldEnough}
+            account={subscription.account}
+            referrer={subscription.referrer}
+            payer={subscription.payer}
+            subscriptionId={subscription.id}
+            onReferrerChanged={reload}
+          />
+
+          <SectionTitle>Mes documents</SectionTitle>
+          {subscription.documents.length === 0 ? (
+            <Card>
+              <InfoRow label="Aucun document disponible" value="" last />
             </Card>
-          </View>
-          <View style={s.topGridCol}>
-            <SectionTitle>Titulaire</SectionTitle>
-            <Card style={s.topGridCard}>
-              <InfoRow
-                label="Nom"
-                value={`${subscription.beneficiary.firstName} ${subscription.beneficiary.lastName}`}
-              />
-              <InfoRow label="Email" value={subscription.beneficiary.email} />
-              <InfoRow
-                label="Département"
-                value={subscription.beneficiary.residenceDepartment.name}
-              />
-              <InfoRow
-                label="Naissance"
-                value={formatDate(subscription.beneficiary.birthDate)}
-                last
-              />
-            </Card>
-          </View>
-        </View>
+          ) : (
+            <View style={s.docGrid}>
+              {subscription.documents.map((doc) => (
+                <DocumentCard key={doc.id} doc={doc} />
+              ))}
+            </View>
+          )}
 
-        <AccountsSection
-          isOldEnough={isOldEnough}
-          account={subscription.account}
-          referrer={subscription.referrer}
-          payer={subscription.payer}
-          onLinkAccount={() =>
-            router.push(`/subscriptions/${subscription.id}/link-account` as any)
-          }
-        />
-
-        <SectionTitle>Mes documents</SectionTitle>
-        {subscription.documents.length === 0 ? (
-          <Card>
-            <InfoRow label="Aucun document disponible" value="" last />
-          </Card>
-        ) : (
-          <View style={s.docGrid}>
-            {subscription.documents.map((doc) => (
-              <DocumentCard key={doc.id} doc={doc} />
-            ))}
-          </View>
-        )}
-
-        <PaymentHistoryCta
-          payments={subscription.payments}
-          onPress={() =>
-            router.push(`/subscriptions/${subscription.id}/payments` as any)
-          }
-        />
-
-        <SectionTitle>Actions</SectionTitle>
-        <Card style={s.actionsCard}>
-          <Button
-            variant="secondary"
-            size="md"
-            leadingIcon="alert-triangle"
-            fullWidth
+          <PaymentHistoryCta
+            payments={subscription.payments}
             onPress={() =>
-              Alert.alert(
-                "Signaler une perte ou un vol",
-                "Cette action bloquera votre pass Navigo immédiatement. Voulez-vous continuer ?",
-                [
-                  { text: "Annuler", style: "cancel" },
-                  {
-                    text: "Bloquer le pass",
-                    style: "destructive",
-                    onPress: () => {},
-                  },
-                ],
-              )
+              router.push(`/subscriptions/${subscription.id}/payments` as any)
             }
-          >
-            Signaler une perte ou un vol
-          </Button>
+          />
 
-          <Button
-            variant="secondary"
-            size="md"
-            leadingIcon="ticket"
-            fullWidth
-            disabled
-            onPress={() => {}}
-          >
-            Commander un nouveau pass
-          </Button>
+          <SectionTitle>Actions</SectionTitle>
+          <Card style={s.actionsCard}>
+            {subscription.passes.some(
+              (pass) =>
+                pass.status === "active" &&
+                pass.delivery.status === "delivered",
+            ) && (
+              <Button
+                variant="secondary"
+                size="md"
+                leadingIcon="alert-triangle"
+                fullWidth
+                onPress={() => setReportModalVisible(true)}
+              >
+                Signaler une perte ou un vol
+              </Button>
+            )}
 
-          <Button
-            variant="danger"
-            size="md"
-            fullWidth
-            disabled
-            onPress={() => {}}
-          >
-            Résilier l&apos;abonnement
-          </Button>
-        </Card>
-      </ScrollView>
+            <Button
+              variant="danger"
+              size="md"
+              fullWidth
+              disabled
+              onPress={() => {}}
+            >
+              Résilier l&apos;abonnement
+            </Button>
+          </Card>
+        </ScrollView>
       </View>
+      <ReportLostOrStolenModal
+        visible={reportModalVisible}
+        subscriptionId={subscription.id}
+        addresses={subscription.beneficiary.addresses}
+        onClose={() => setReportModalVisible(false)}
+        onSuccess={() => {
+          setReportModalVisible(false);
+          reload();
+        }}
+      />
     </SafeAreaView>
   );
 }

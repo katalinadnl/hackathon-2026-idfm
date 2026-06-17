@@ -1,0 +1,72 @@
+enum SubscriptionStatus {
+  active 
+  expired
+  cancelled
+}
+
+model Subscription {
+  id               Int      @id @default(autoincrement())
+  reference String   @unique @default(cuid())
+
+  beneficiaryId    Int
+  referrerId       Int?
+  payerId          Int?
+  subscriptionType String
+  startDate        DateTime
+  endDate          DateTime
+  status           SubscriptionStatus   @default(active)
+
+  beneficiary Beneficiary @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
+  referrer    Account?    @relation("SubscriptionReferrer", fields: [referrerId], references: [id])
+  payer       Account?    @relation("SubscriptionPayer", fields: [payerId], references: [id])
+
+  payments Payment[]
+  passes Pass[]
+}
+enum PaymentMethod {
+  card
+  direct_debit
+}
+enum PaymentStatus {
+  succeeded
+  failed
+  pending
+}
+
+model Payment {
+  id             Int      @id @default(autoincrement())
+  subscriptionId Int
+  amount         Float
+  paidAt         DateTime @default(now())
+  method         PaymentMethod
+  status         PaymentStatus   @default(succeeded)
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+}
+
+enum VerificationSource {
+  MANUAL_DOCUMENT
+  STATE_API
+  DECLARATIVE
+}
+
+model StatusVerification {
+  id            Int                @id @default(autoincrement())
+  beneficiaryId Int
+  status        BeneficiaryStatus
+  source        VerificationSource
+  verified      Boolean            @default(false)
+
+  documentUrl    String?
+  expirationDate DateTime?
+
+  apiName      String?
+  apiReference String?
+  apiQueriedAt DateTime?
+
+  validFrom  DateTime?
+  validUntil DateTime?
+  createdAt  DateTime  @default(now())
+
+  beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
+}

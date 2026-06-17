@@ -4,7 +4,11 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { hash } from 'bcrypt';
 import { PrismaClient } from '../src/generated/prisma/client';
 import {
+  AddressType,
   BeneficiaryStatus,
+  DeliveryReason,
+  DeliveryStatus,
+  PassStatus,
   VerificationSource,
 } from '../src/generated/prisma/enums';
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -127,6 +131,74 @@ async function main() {
     },
   });
 
+  // ── Addresses ─────────────────────────────────────────────────────────────────
+
+  const addressAlice = await prisma.address.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      beneficiaryId: alice.id,
+      type: AddressType.home,
+      isDefault: true,
+      line1: '12 rue de la République',
+      city: 'Paris',
+      postalCode: '75011',
+    },
+  });
+
+  const addressBernard = await prisma.address.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      beneficiaryId: bernard.id,
+      type: AddressType.home,
+      isDefault: true,
+      line1: '5 avenue Charles de Gaulle',
+      city: 'Neuilly-sur-Seine',
+      postalCode: '92200',
+    },
+  });
+
+  await prisma.address.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      beneficiaryId: clara.id,
+      type: AddressType.home,
+      isDefault: true,
+      line1: '8 rue Jean Jaurès',
+      line2: 'Bâtiment B, 3e étage',
+      city: 'Saint-Denis',
+      postalCode: '93200',
+    },
+  });
+
+  await prisma.address.upsert({
+    where: { id: 4 },
+    update: {},
+    create: {
+      beneficiaryId: theo.id,
+      type: AddressType.home,
+      isDefault: true,
+      line1: '20 rue des Tilleuls',
+      city: 'Créteil',
+      postalCode: '94000',
+    },
+  });
+
+  await prisma.address.upsert({
+    where: { id: 5 },
+    update: {},
+    create: {
+      beneficiaryId: emma.id,
+      type: AddressType.home,
+      isDefault: true,
+      line1: '3 place de la Mairie',
+      city: 'Melun',
+      postalCode: '77000',
+    },
+  });
+
   // ── Status verifications ──────────────────────────────────────────────────────
 
   // Alice : étudiante vérifiée via API
@@ -245,16 +317,18 @@ async function main() {
   });
 
   // ── Subscriptions ─────────────────────────────────────────────────────────────
+  // navigoNumber et status (blocked/active du pass) ont migré vers Pass.
+  // Subscription.status reste le statut du CONTRAT (active/expired/cancelled),
+  // indépendant du fait que le support physique ait été perdu/volé.
 
   // Alice : abonnement étudiant, elle paie elle-même
   const subAlice = await prisma.subscription.upsert({
-    where: { navigoNumber: 'NAV-2024-001' },
+    where: { id: 1 },
     update: {},
     create: {
       beneficiaryId: alice.id,
       referrerId: accountAlice.id,
       payerId: accountAlice.id,
-      navigoNumber: 'NAV-2024-001',
       subscriptionType: 'Navigo Mois Étudiant',
       startDate: new Date('2024-09-01'),
       endDate: new Date('2025-06-30'),
@@ -262,15 +336,14 @@ async function main() {
     },
   });
 
-  // Bernard : abonnement senior
+  // Bernard : abonnement senior — toujours actif, c'est le PASS qui sera bloqué
   const subBernard = await prisma.subscription.upsert({
-    where: { navigoNumber: 'NAV-2024-002' },
+    where: { id: 2 },
     update: {},
     create: {
       beneficiaryId: bernard.id,
       referrerId: accountBernard.id,
       payerId: accountBernard.id,
-      navigoNumber: 'NAV-2024-002',
       subscriptionType: 'Navigo Mois Senior',
       startDate: new Date('2024-01-01'),
       endDate: new Date('2024-12-31'),
@@ -280,13 +353,12 @@ async function main() {
 
   // Théo : abonnement mineur, le père est référant et payeur
   const subTheo = await prisma.subscription.upsert({
-    where: { navigoNumber: 'NAV-2024-003' },
+    where: { id: 3 },
     update: {},
     create: {
       beneficiaryId: theo.id,
       referrerId: accountPereTheo.id,
       payerId: accountPereTheo.id,
-      navigoNumber: 'NAV-2024-003',
       subscriptionType: 'Navigo Mois Imagine R',
       startDate: new Date('2024-09-01'),
       endDate: new Date('2025-06-30'),
@@ -296,18 +368,162 @@ async function main() {
 
   // Clara : abonnement handicap, référant = Clara, payeur = Clara
   const subClara = await prisma.subscription.upsert({
-    where: { navigoNumber: 'NAV-2024-004' },
+    where: { id: 4 },
     update: {},
     create: {
       beneficiaryId: clara.id,
       referrerId: accountClara.id,
       payerId: accountClara.id,
-      navigoNumber: 'NAV-2024-004',
       subscriptionType: 'Navigo Mois PMR',
       startDate: new Date('2024-03-01'),
       endDate: new Date('2025-02-28'),
       status: 'active',
     },
+  });
+
+  // ── Passes ────────────────────────────────────────────────────────────────────
+  // Un seul pass ACTIVE par abonnement à la fois. Pour Bernard (volé), l'ancien
+  // pass passe en "blocked" et un nouveau pass "active" est émis — c'est ce
+  // nouveau pass qui reçoit la livraison de remplacement.
+
+  const passAlice = await prisma.pass.upsert({
+    where: { navigoNumber: 'NAV-2024-001' },
+    update: {},
+    create: {
+      subscriptionId: subAlice.id,
+      navigoNumber: 'NAV-2024-001',
+      status: PassStatus.active,
+      issuedAt: new Date('2024-08-25'),
+    },
+  });
+
+  // Pass original de Bernard, désormais bloqué (volé)
+  const passBernardOld = await prisma.pass.upsert({
+    where: { navigoNumber: 'NAV-2024-002' },
+    update: {},
+    create: {
+      subscriptionId: subBernard.id,
+      navigoNumber: 'NAV-2024-002',
+      status: PassStatus.blocked,
+      issuedAt: new Date('2024-01-01'),
+    },
+  });
+
+  // Pass de remplacement de Bernard, actif — un seul pass actif par abonnement
+  const passBernardNew = await prisma.pass.upsert({
+    where: { navigoNumber: 'NAV-2024-002-R1' },
+    update: {},
+    create: {
+      subscriptionId: subBernard.id,
+      navigoNumber: 'NAV-2024-002-R1',
+      status: PassStatus.active,
+      issuedAt: new Date('2024-11-20'),
+    },
+  });
+
+  const passTheo = await prisma.pass.upsert({
+    where: { navigoNumber: 'NAV-2024-003' },
+    update: {},
+    create: {
+      subscriptionId: subTheo.id,
+      navigoNumber: 'NAV-2024-003',
+      status: PassStatus.active,
+      issuedAt: new Date('2024-09-01'),
+    },
+  });
+
+  const passClara = await prisma.pass.upsert({
+    where: { navigoNumber: 'NAV-2024-004' },
+    update: {},
+    create: {
+      subscriptionId: subClara.id,
+      navigoNumber: 'NAV-2024-004',
+      status: PassStatus.active,
+      issuedAt: new Date('2024-03-01'),
+    },
+  });
+
+  // ── Deliveries ────────────────────────────────────────────────────────────────
+  // Chaque livraison concerne un PASS précis, pas l'abonnement directement.
+
+  // Alice : livraison initiale, déjà reçue
+  await prisma.delivery.upsert({
+    where: { id: 1 },
+    update: {},
+    create: {
+      passId: passAlice.id,
+      addressId: addressAlice.id,
+      reason: DeliveryReason.initial_order,
+      status: DeliveryStatus.delivered,
+      orderedAt: new Date('2024-08-25'),
+      estimatedAt: new Date('2024-09-01'),
+      trackingNumber: '8R0001112223FR',
+    },
+  });
+
+  // Bernard : livraison initiale de son premier pass, déjà reçue
+  await prisma.delivery.upsert({
+    where: { id: 2 },
+    update: {},
+    create: {
+      passId: passBernardOld.id,
+      addressId: addressBernard.id,
+      reason: DeliveryReason.initial_order,
+      status: DeliveryStatus.delivered,
+      orderedAt: new Date('2023-12-20'),
+      estimatedAt: new Date('2024-01-01'),
+      trackingNumber: '8R0009998887FR',
+    },
+  });
+
+  // Bernard : pass volé -> livraison du pass de remplacement, en cours d'expédition
+  await prisma.delivery.upsert({
+    where: { id: 3 },
+    update: {},
+    create: {
+      passId: passBernardNew.id,
+      addressId: addressBernard.id,
+      reason: DeliveryReason.stolen,
+      status: DeliveryStatus.shipped,
+      orderedAt: new Date('2024-11-20'),
+      estimatedAt: new Date('2024-11-29'),
+      trackingNumber: '2C4567891234FR',
+    },
+  });
+
+  // ── Pass usages ───────────────────────────────────────────────────────────────
+  // Quelques validations dans le mois en cours, pour Alice et Théo, afin de
+  // pouvoir tester un compteur "utilisations ce mois-ci".
+
+  await prisma.passUsage.createMany({
+    skipDuplicates: true,
+    data: [
+      {
+        passId: passAlice.id,
+        usedAt: new Date('2024-11-04T08:12:00'),
+        station: 'Châtelet',
+      },
+      {
+        passId: passAlice.id,
+        usedAt: new Date('2024-11-04T18:30:00'),
+        station: 'Nation',
+      },
+      {
+        passId: passAlice.id,
+        usedAt: new Date('2024-11-05T08:05:00'),
+        station: 'Châtelet',
+      },
+      {
+        passId: passTheo.id,
+        usedAt: new Date('2024-11-06T07:50:00'),
+        station: 'Créteil-Préfecture',
+      },
+      {
+        passId: passTheo.id,
+        usedAt: new Date('2024-11-06T17:15:00'),
+        station: 'Créteil-Préfecture',
+      },
+    ],
   });
 
   // ── Payments ──────────────────────────────────────────────────────────────────
