@@ -5,20 +5,20 @@ import {
   Get,
   Post,
   Query,
-  Req,
   Res,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
 import { LoginDto, RegisterDto } from './dto';
 import { FranceConnectService } from './france-connect.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { GetMe } from './decorators/get-me.decorator';
+import type { JwtPayload } from './types';
 
-const APP_REDIRECT_URL =
-  process.env.APP_REDIRECT_URL ?? 'application://auth';
+const APP_REDIRECT_URL = process.env.APP_REDIRECT_URL ?? 'application://auth';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -49,8 +49,8 @@ export class AuthController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  me(@Req() req: Request) {
-    const userId = (req as any).user.sub as number;
+  me(@GetMe() user: JwtPayload) {
+    const userId = user.id;
     return this.auth.me(userId);
   }
 

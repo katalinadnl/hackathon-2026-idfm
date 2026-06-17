@@ -1,12 +1,22 @@
-import { ActivityIndicator, Linking, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Linking,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { DS } from '@/constants/theme';
-import { useMandate } from '@/hooks/useBilling';
-import { mandateDocumentUrl, MandateStatus, SepaMandate } from '@/lib/api';
-import { formatDate } from '@/lib/format';
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { DS } from "@/constants/theme";
+import { useMandate } from "@/hooks/useBilling";
+import { formatDate } from "@/lib/format";
+import {
+  mandateDocumentUrl,
+  MandateStatus,
+  SepaMandate,
+} from "@/lib/api/billing";
 
 type Props = {
   accountId: number;
@@ -17,11 +27,11 @@ type Props = {
 
 const STATUS_META: Record<
   MandateStatus,
-  { label: string; tone: 'success' | 'warning' | 'danger' }
+  { label: string; tone: "success" | "warning" | "danger" }
 > = {
-  active: { label: 'Actif', tone: 'success' },
-  pending: { label: 'En attente', tone: 'warning' },
-  revoked: { label: 'Révoqué', tone: 'danger' },
+  active: { label: "Actif", tone: "success" },
+  pending: { label: "En attente", tone: "warning" },
+  revoked: { label: "Révoqué", tone: "danger" },
 };
 
 export function MandateTab({ accountId, subscriptionId, onGoToRib }: Props) {
@@ -49,7 +59,7 @@ export function MandateTab({ accountId, subscriptionId, onGoToRib }: Props) {
     return (
       <Card>
         <Text style={styles.hint}>
-          {error ?? 'Aucun mandat SEPA n’est associé à ce pass.'}
+          {error ?? "Aucun mandat SEPA n’est associé à ce pass."}
         </Text>
       </Card>
     );
@@ -151,7 +161,13 @@ function DetailRow({
   );
 }
 
-function HistoryRow({ mandate, last }: { mandate: SepaMandate; last: boolean }) {
+function HistoryRow({
+  mandate,
+  last,
+}: {
+  mandate: SepaMandate;
+  last: boolean;
+}) {
   return (
     <View style={[styles.histRow, !last && styles.rowBorder]}>
       <View style={styles.histMain}>
@@ -160,7 +176,7 @@ function HistoryRow({ mandate, last }: { mandate: SepaMandate; last: boolean }) 
           {mandate.reference}
           {mandate.revokedAt
             ? ` · révoqué le ${formatDate(mandate.revokedAt)}`
-            : ''}
+            : ""}
         </Text>
       </View>
       <Badge tone="danger">Révoqué</Badge>
@@ -170,15 +186,15 @@ function HistoryRow({ mandate, last }: { mandate: SepaMandate; last: boolean }) 
 
 const styles = StyleSheet.create({
   wrapper: { gap: DS.space3 },
-  center: { paddingVertical: DS.space8, alignItems: 'center' },
+  center: { paddingVertical: DS.space8, alignItems: "center" },
   card: { gap: DS.space4 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: DS.space3 },
-  title: { fontSize: 18, fontWeight: '800', color: DS.textStrong },
+  header: { flexDirection: "row", alignItems: "center", gap: DS.space3 },
+  title: { fontSize: 18, fontWeight: "800", color: DS.textStrong },
   subtitle: { fontSize: 13, color: DS.textMuted, marginTop: 2 },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: DS.space4,
     paddingVertical: DS.space3,
   },
@@ -186,28 +202,28 @@ const styles = StyleSheet.create({
   rowLabel: { fontSize: 14, color: DS.textMuted },
   rowValue: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
     flexShrink: 1,
-    textAlign: 'right',
+    textAlign: "right",
   },
-  mono: { fontVariant: ['tabular-nums'], letterSpacing: 0.5 },
+  mono: { fontVariant: ["tabular-nums"], letterSpacing: 0.5 },
   historyCard: { gap: DS.space2 },
-  historyTitle: { fontSize: 15, fontWeight: '800', color: DS.textStrong },
+  historyTitle: { fontSize: 15, fontWeight: "800", color: DS.textStrong },
   histRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: DS.space3,
     paddingVertical: DS.space3,
   },
   histMain: { flex: 1, gap: 2 },
   histMeta: { fontSize: 12, color: DS.textMuted },
-  hint: { fontSize: 15, color: DS.textMuted, textAlign: 'center' },
+  hint: { fontSize: 15, color: DS.textMuted, textAlign: "center" },
   note: {
     fontSize: 12,
     color: DS.textMuted,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     paddingHorizontal: DS.space2,
   },
 });

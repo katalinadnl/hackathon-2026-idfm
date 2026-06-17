@@ -943,6 +943,7 @@ export const AccountScalarFieldEnum = {
   passwordHash: 'passwordHash',
   accountNumber: 'accountNumber',
   createdAt: 'createdAt',
+  role: 'role',
   beneficiaryId: 'beneficiaryId',
   stripeCustomerId: 'stripeCustomerId',
   stripePaymentMethodId: 'stripePaymentMethodId',
@@ -1084,6 +1085,20 @@ export type ListEnumVerificationSourceFieldRefInput<$PrismaModel> = FieldRefInpu
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'AccountRole'
+ */
+export type EnumAccountRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountRole'>
+    
+
+
+/**
+ * Reference to a field of type 'AccountRole[]'
+ */
+export type ListEnumAccountRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AccountRole[]'>
     
 
 

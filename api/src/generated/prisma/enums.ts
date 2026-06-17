@@ -28,3 +28,11 @@ export const VerificationSource = {
 } as const
 
 export type VerificationSource = (typeof VerificationSource)[keyof typeof VerificationSource]
+
+
+export const AccountRole = {
+  client: 'client',
+  admin: 'admin'
+} as const
+
+export type AccountRole = (typeof AccountRole)[keyof typeof AccountRole]

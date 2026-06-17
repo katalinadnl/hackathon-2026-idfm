@@ -42,6 +42,7 @@ export type AccountMinAggregateOutputType = {
   passwordHash: string | null
   accountNumber: string | null
   createdAt: Date | null
+  role: $Enums.AccountRole | null
   beneficiaryId: number | null
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
@@ -55,6 +56,7 @@ export type AccountMaxAggregateOutputType = {
   passwordHash: string | null
   accountNumber: string | null
   createdAt: Date | null
+  role: $Enums.AccountRole | null
   beneficiaryId: number | null
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
@@ -68,6 +70,7 @@ export type AccountCountAggregateOutputType = {
   passwordHash: number
   accountNumber: number
   createdAt: number
+  role: number
   beneficiaryId: number
   stripeCustomerId: number
   stripePaymentMethodId: number
@@ -93,6 +96,7 @@ export type AccountMinAggregateInputType = {
   passwordHash?: true
   accountNumber?: true
   createdAt?: true
+  role?: true
   beneficiaryId?: true
   stripeCustomerId?: true
   stripePaymentMethodId?: true
@@ -106,6 +110,7 @@ export type AccountMaxAggregateInputType = {
   passwordHash?: true
   accountNumber?: true
   createdAt?: true
+  role?: true
   beneficiaryId?: true
   stripeCustomerId?: true
   stripePaymentMethodId?: true
@@ -119,6 +124,7 @@ export type AccountCountAggregateInputType = {
   passwordHash?: true
   accountNumber?: true
   createdAt?: true
+  role?: true
   beneficiaryId?: true
   stripeCustomerId?: true
   stripePaymentMethodId?: true
@@ -219,6 +225,7 @@ export type AccountGroupByOutputType = {
   passwordHash: string
   accountNumber: string
   createdAt: Date
+  role: $Enums.AccountRole
   beneficiaryId: number | null
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
@@ -255,6 +262,7 @@ export type AccountWhereInput = {
   passwordHash?: Prisma.StringFilter<"Account"> | string
   accountNumber?: Prisma.StringFilter<"Account"> | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
+  role?: Prisma.EnumAccountRoleFilter<"Account"> | $Enums.AccountRole
   beneficiaryId?: Prisma.IntNullableFilter<"Account"> | number | null
   stripeCustomerId?: Prisma.StringNullableFilter<"Account"> | string | null
   stripePaymentMethodId?: Prisma.StringNullableFilter<"Account"> | string | null
@@ -271,6 +279,7 @@ export type AccountOrderByWithRelationInput = {
   passwordHash?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -292,6 +301,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   passwordHash?: Prisma.StringFilter<"Account"> | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
+  role?: Prisma.EnumAccountRoleFilter<"Account"> | $Enums.AccountRole
   stripePaymentMethodId?: Prisma.StringNullableFilter<"Account"> | string | null
   stripeMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
   stripePreviousMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
@@ -306,6 +316,7 @@ export type AccountOrderByWithAggregationInput = {
   passwordHash?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -327,6 +338,7 @@ export type AccountScalarWhereWithAggregatesInput = {
   passwordHash?: Prisma.StringWithAggregatesFilter<"Account"> | string
   accountNumber?: Prisma.StringWithAggregatesFilter<"Account"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
+  role?: Prisma.EnumAccountRoleWithAggregatesFilter<"Account"> | $Enums.AccountRole
   beneficiaryId?: Prisma.IntNullableWithAggregatesFilter<"Account"> | number | null
   stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
   stripePaymentMethodId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
@@ -339,6 +351,7 @@ export type AccountCreateInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -354,6 +367,7 @@ export type AccountUncheckedCreateInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -368,6 +382,7 @@ export type AccountUpdateInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -383,6 +398,7 @@ export type AccountUncheckedUpdateInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -398,6 +414,7 @@ export type AccountCreateManyInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -410,6 +427,7 @@ export type AccountUpdateManyMutationInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -422,6 +440,7 @@ export type AccountUncheckedUpdateManyInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -440,6 +459,7 @@ export type AccountCountOrderByAggregateInput = {
   passwordHash?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrder
@@ -458,6 +478,7 @@ export type AccountMaxOrderByAggregateInput = {
   passwordHash?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrder
@@ -471,6 +492,7 @@ export type AccountMinOrderByAggregateInput = {
   passwordHash?: Prisma.SortOrder
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  role?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrder
@@ -515,6 +537,10 @@ export type AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.AccountUpdateToOneWithWhereWithoutBeneficiaryInput, Prisma.AccountUpdateWithoutBeneficiaryInput>, Prisma.AccountUncheckedUpdateWithoutBeneficiaryInput>
 }
 
+export type EnumAccountRoleFieldUpdateOperationsInput = {
+  set?: $Enums.AccountRole
+}
+
 export type AccountCreateNestedOneWithoutReferredSubscriptionsInput = {
   create?: Prisma.XOR<Prisma.AccountCreateWithoutReferredSubscriptionsInput, Prisma.AccountUncheckedCreateWithoutReferredSubscriptionsInput>
   connectOrCreate?: Prisma.AccountCreateOrConnectWithoutReferredSubscriptionsInput
@@ -552,6 +578,7 @@ export type AccountCreateWithoutBeneficiaryInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -566,6 +593,7 @@ export type AccountUncheckedCreateWithoutBeneficiaryInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -595,6 +623,7 @@ export type AccountUpdateWithoutBeneficiaryInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -609,6 +638,7 @@ export type AccountUncheckedUpdateWithoutBeneficiaryInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -622,6 +652,7 @@ export type AccountCreateWithoutReferredSubscriptionsInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -636,6 +667,7 @@ export type AccountUncheckedCreateWithoutReferredSubscriptionsInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -654,6 +686,7 @@ export type AccountCreateWithoutPaidSubscriptionsInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -668,6 +701,7 @@ export type AccountUncheckedCreateWithoutPaidSubscriptionsInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  role?: $Enums.AccountRole
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -697,6 +731,7 @@ export type AccountUpdateWithoutReferredSubscriptionsInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -711,6 +746,7 @@ export type AccountUncheckedUpdateWithoutReferredSubscriptionsInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -735,6 +771,7 @@ export type AccountUpdateWithoutPaidSubscriptionsInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -749,6 +786,7 @@ export type AccountUncheckedUpdateWithoutPaidSubscriptionsInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -803,6 +841,7 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   passwordHash?: boolean
   accountNumber?: boolean
   createdAt?: boolean
+  role?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -820,6 +859,7 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   passwordHash?: boolean
   accountNumber?: boolean
   createdAt?: boolean
+  role?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -834,6 +874,7 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   passwordHash?: boolean
   accountNumber?: boolean
   createdAt?: boolean
+  role?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -848,6 +889,7 @@ export type AccountSelectScalar = {
   passwordHash?: boolean
   accountNumber?: boolean
   createdAt?: boolean
+  role?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -855,7 +897,7 @@ export type AccountSelectScalar = {
   stripePreviousMandateId?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "accountNumber" | "createdAt" | "beneficiaryId" | "stripeCustomerId" | "stripePaymentMethodId" | "stripeMandateId" | "stripePreviousMandateId", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "accountNumber" | "createdAt" | "role" | "beneficiaryId" | "stripeCustomerId" | "stripePaymentMethodId" | "stripeMandateId" | "stripePreviousMandateId", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.Account$beneficiaryArgs<ExtArgs>
   referredSubscriptions?: boolean | Prisma.Account$referredSubscriptionsArgs<ExtArgs>
@@ -882,6 +924,7 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     passwordHash: string
     accountNumber: string
     createdAt: Date
+    role: $Enums.AccountRole
     beneficiaryId: number | null
     stripeCustomerId: string | null
     stripePaymentMethodId: string | null
@@ -1318,6 +1361,7 @@ export interface AccountFieldRefs {
   readonly passwordHash: Prisma.FieldRef<"Account", 'String'>
   readonly accountNumber: Prisma.FieldRef<"Account", 'String'>
   readonly createdAt: Prisma.FieldRef<"Account", 'DateTime'>
+  readonly role: Prisma.FieldRef<"Account", 'AccountRole'>
   readonly beneficiaryId: Prisma.FieldRef<"Account", 'Int'>
   readonly stripeCustomerId: Prisma.FieldRef<"Account", 'String'>
   readonly stripePaymentMethodId: Prisma.FieldRef<"Account", 'String'>

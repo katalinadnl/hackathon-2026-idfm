@@ -4,13 +4,13 @@ import React, {
   useContext,
   useEffect,
   useState,
-} from 'react';
-import { Platform } from 'react-native';
-import * as Linking from 'expo-linking';
-import * as WebBrowser from 'expo-web-browser';
+} from "react";
+import { Platform } from "react-native";
+import * as Linking from "expo-linking";
+import * as WebBrowser from "expo-web-browser";
 
-import { authApi, AuthUser } from '@/services/api';
-import { clearToken, loadToken, saveToken } from '@/services/storage';
+import { clearToken, loadToken, saveToken } from "@/services/storage";
+import { authApi, AuthUser } from "@/lib/api/auth";
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -90,15 +90,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const loginWithFranceConnect = useCallback(async () => {
-    const returnUrl = Linking.createURL('auth');
+    const returnUrl = Linking.createURL("auth");
     const startUrl = `${authApi.franceConnectUrl()}?redirect=${encodeURIComponent(
       returnUrl,
     )}`;
 
     const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUrl);
-    if (result.type !== 'success' || !result.url) {
-      if (result.type === 'cancel' || result.type === 'dismiss') return;
-      throw new Error('Connexion France Connect annulée.');
+    if (result.type !== "success" || !result.url) {
+      if (result.type === "cancel" || result.type === "dismiss") return;
+      throw new Error("Connexion France Connect annulée.");
     }
 
     const { queryParams } = Linking.parse(result.url);
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (error) throw new Error(`France Connect : ${error}`);
 
     const fcToken = queryParams?.token as string | undefined;
-    if (!fcToken) throw new Error('Aucun jeton reçu de France Connect.');
+    if (!fcToken) throw new Error("Aucun jeton reçu de France Connect.");
 
     await finishWithToken(fcToken);
   }, [finishWithToken]);
@@ -124,10 +124,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Handle deep links that arrive while the app is already foregrounded (native).
   useEffect(() => {
-    if (Platform.OS === 'web') return;
-    const sub = Linking.addEventListener('url', ({ url }) => {
+    if (Platform.OS === "web") return;
+    const sub = Linking.addEventListener("url", ({ url }) => {
       const { path, queryParams } = Linking.parse(url);
-      if (path === 'auth' && queryParams?.token) {
+      if (path === "auth" && queryParams?.token) {
         finishWithToken(queryParams.token as string).catch(() => {});
       }
     });
@@ -153,6 +153,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
   return ctx;
 }

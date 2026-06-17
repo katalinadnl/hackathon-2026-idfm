@@ -126,6 +126,7 @@ export const AccountScalarFieldEnum = {
   passwordHash: 'passwordHash',
   accountNumber: 'accountNumber',
   createdAt: 'createdAt',
+  role: 'role',
   beneficiaryId: 'beneficiaryId',
   stripeCustomerId: 'stripeCustomerId',
   stripePaymentMethodId: 'stripePaymentMethodId',

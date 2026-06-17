@@ -236,6 +236,23 @@ export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
 }
 
+export type EnumAccountRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccountRole | Prisma.EnumAccountRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccountRoleFilter<$PrismaModel> | $Enums.AccountRole
+}
+
+export type EnumAccountRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccountRole | Prisma.EnumAccountRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccountRoleWithAggregatesFilter<$PrismaModel> | $Enums.AccountRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAccountRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAccountRoleFilter<$PrismaModel>
+}
+
 export type FloatFilter<$PrismaModel = never> = {
   equals?: number | Prisma.FloatFieldRefInput<$PrismaModel>
   in?: number[] | Prisma.ListFloatFieldRefInput<$PrismaModel>
@@ -496,6 +513,23 @@ export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDateTimeNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumAccountRoleFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccountRole | Prisma.EnumAccountRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccountRoleFilter<$PrismaModel> | $Enums.AccountRole
+}
+
+export type NestedEnumAccountRoleWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AccountRole | Prisma.EnumAccountRoleFieldRefInput<$PrismaModel>
+  in?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AccountRole[] | Prisma.ListEnumAccountRoleFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAccountRoleWithAggregatesFilter<$PrismaModel> | $Enums.AccountRole
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAccountRoleFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAccountRoleFilter<$PrismaModel>
 }
 
 export type NestedFloatWithAggregatesFilter<$PrismaModel = never> = {

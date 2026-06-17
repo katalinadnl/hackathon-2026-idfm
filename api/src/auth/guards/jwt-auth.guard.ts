@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
+import { JwtPayload } from '../types';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -23,8 +24,8 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Token manquant.');
     }
     try {
-      const payload = this.jwt.verify(token);
-      (req as any).user = payload;
+      const payload: JwtPayload = this.jwt.verify(token);
+      req['user'] = payload;
       return true;
     } catch {
       throw new UnauthorizedException('Token invalide ou expiré.');

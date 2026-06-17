@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useState } from "react";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Icon } from '@/components/ui/Icon';
-import { StripeIbanForm } from '@/components/billing/StripeIbanForm';
-import { DS } from '@/constants/theme';
-import { usePaymentMethod } from '@/hooks/useBilling';
-import { billingApi, RibChangeResponse } from '@/lib/api';
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
+import { StripeIbanForm } from "@/components/billing/StripeIbanForm";
+import { DS } from "@/constants/theme";
+import { usePaymentMethod } from "@/hooks/useBilling";
+import { billingApi, RibChangeResponse } from "@/lib/api/billing";
 
 type Props = { accountId: number; subscriptionId: number | null };
 
@@ -43,7 +43,7 @@ export function RibTab({ accountId, subscriptionId }: Props) {
     return (
       <Card>
         <Text style={styles.hint}>
-          {error ?? 'Aucun RIB enregistré pour ce pass.'}
+          {error ?? "Aucun RIB enregistré pour ce pass."}
         </Text>
       </Card>
     );
@@ -62,7 +62,11 @@ export function RibTab({ accountId, subscriptionId }: Props) {
   };
 
   const handleSuccess = async (setupIntentId: string) => {
-    await billingApi.finalizeRibChange(accountId, subscriptionId, setupIntentId);
+    await billingApi.finalizeRibChange(
+      accountId,
+      subscriptionId,
+      setupIntentId,
+    );
     setChange(null);
     setDone(true);
     reload();
@@ -95,8 +99,12 @@ export function RibTab({ accountId, subscriptionId }: Props) {
         {done && <Text style={styles.success}>RIB mis à jour ✓</Text>}
 
         {!change && (
-          <Button leadingIcon="creditcard" onPress={handleModify} disabled={busy}>
-            {busy ? 'Préparation…' : 'Modifier mon RIB'}
+          <Button
+            leadingIcon="creditcard"
+            onPress={handleModify}
+            disabled={busy}
+          >
+            {busy ? "Préparation…" : "Modifier mon RIB"}
           </Button>
         )}
       </Card>
@@ -141,14 +149,14 @@ export function RibTab({ accountId, subscriptionId }: Props) {
 
 const styles = StyleSheet.create({
   wrapper: { gap: DS.space3 },
-  center: { paddingVertical: DS.space8, alignItems: 'center' },
+  center: { paddingVertical: DS.space8, alignItems: "center" },
   card: { gap: DS.space4 },
-  header: { flexDirection: 'row', alignItems: 'center', gap: DS.space3 },
-  title: { fontSize: 18, fontWeight: '800', color: DS.textStrong },
+  header: { flexDirection: "row", alignItems: "center", gap: DS.space3 },
+  title: { fontSize: 18, fontWeight: "800", color: DS.textStrong },
   subtitle: { fontSize: 13, color: DS.textMuted, marginTop: 2 },
   ibanBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space3,
     backgroundColor: DS.surfaceTint,
     borderRadius: DS.radiusMd,
@@ -156,21 +164,21 @@ const styles = StyleSheet.create({
   },
   iban: {
     fontSize: 17,
-    fontWeight: '800',
+    fontWeight: "800",
     color: DS.textStrong,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
     letterSpacing: 0.5,
   },
   bank: { fontSize: 13, color: DS.textMuted, marginTop: 2 },
-  success: { fontSize: 14, fontWeight: '700', color: DS.successText },
+  success: { fontSize: 14, fontWeight: "700", color: DS.successText },
   changeNote: { fontSize: 13, color: DS.textBody, lineHeight: 19 },
   message: { fontSize: 13, color: DS.infoText },
-  actions: { flexDirection: 'row', gap: DS.space3, justifyContent: 'flex-end' },
-  hint: { fontSize: 15, color: DS.textMuted, textAlign: 'center' },
+  actions: { flexDirection: "row", gap: DS.space3, justifyContent: "flex-end" },
+  hint: { fontSize: 15, color: DS.textMuted, textAlign: "center" },
   note: {
     fontSize: 12,
     color: DS.textMuted,
-    fontStyle: 'italic',
+    fontStyle: "italic",
     paddingHorizontal: DS.space2,
   },
 });

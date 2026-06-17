@@ -9,6 +9,8 @@ import { randomBytes } from 'crypto';
 
 import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto, RegisterDto } from './dto';
+import { AccountRole } from 'src/generated/prisma/enums';
+import { JwtPayload } from './types';
 
 export type AuthUser = {
   id: number;
@@ -16,6 +18,7 @@ export type AuthUser = {
   accountNumber: string;
   firstName: string | null;
   lastName: string | null;
+  role: AccountRole;
 };
 
 @Injectable()
@@ -35,16 +38,19 @@ export class AuthService {
       include: { beneficiary: true },
     });
     return {
-      id: account.id,
-      email: account.email,
-      accountNumber: account.accountNumber,
+      ...account,
       firstName: account.beneficiary?.firstName ?? null,
       lastName: account.beneficiary?.lastName ?? null,
     };
   }
 
   private sign(user: AuthUser): string {
-    return this.jwt.sign({ sub: user.id, email: user.email });
+    const payload: JwtPayload = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+    return this.jwt.sign(payload);
   }
 
   async register(dto: RegisterDto) {
@@ -98,7 +104,10 @@ export class AuthService {
 
     if (!account) {
       // Placeholder password — France Connect accounts authenticate via OIDC.
-      const passwordHash = await bcrypt.hash(randomBytes(16).toString('hex'), 10);
+      const passwordHash = await bcrypt.hash(
+        randomBytes(16).toString('hex'),
+        10,
+      );
       account = await this.prisma.account.create({
         data: {
           email,

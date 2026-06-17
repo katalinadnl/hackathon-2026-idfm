@@ -1,15 +1,10 @@
 import { Platform } from "react-native";
-
+import { API_BASE_URL, http } from "@/services/api";
 import { loadToken } from "@/services/storage";
+export const CURRENT_ACCOUNT_ID = 2;
 
-const BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === "web" ? "/api" : "http://localhost:3000/api");
-
-async function authHeaders(): Promise<Record<string, string>> {
-  const token = await loadToken();
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
+export const STRIPE_PUBLISHABLE_KEY =
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
 
 export type BillingRole = "holder" | "referrer" | "payer";
 
@@ -75,11 +70,6 @@ export interface PaymentMethodInfo {
   source: "local" | "stripe";
 }
 
-export interface PaymentMethodResponse {
-  connected: boolean;
-  paymentMethod: PaymentMethodInfo | null;
-}
-
 export interface RibChangeResponse {
   connected: boolean;
   clientSecret: string | null;
@@ -87,69 +77,26 @@ export interface RibChangeResponse {
   billingEmail: string | null;
   message: string;
 }
-
-export const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
-
-function buildUrl(path: string, params: Record<string, unknown>): string {
-  const qs = new URLSearchParams();
-  for (const [k, v] of Object.entries(params)) {
-    if (v !== undefined && v !== null) qs.append(k, String(v));
-  }
-  return `${BASE_URL}${path}?${qs.toString()}`;
-}
-
-async function get<T>(
-  path: string,
-  params: Record<string, unknown>,
-): Promise<T> {
-  const res = await fetch(buildUrl(path, params), {
-    headers: await authHeaders(),
-  });
-  if (!res.ok) {
-    throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
-  }
-  return res.json() as Promise<T>;
-}
-
-async function post<T>(
-  path: string,
-  params: Record<string, unknown>,
-): Promise<T> {
-  const res = await fetch(buildUrl(path, params), {
-    method: "POST",
-    headers: await authHeaders(),
-  });
-  if (!res.ok) {
-    throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
-  }
-  return res.json() as Promise<T>;
+export interface PaymentMethodResponse {
+  connected: boolean;
+  paymentMethod: PaymentMethodInfo | null;
 }
 
 export const billingApi = {
   getPasses(accountId: number) {
-    return get<PassSummary[]>("/billing/passes", { accountId });
+    return http.get<PassSummary[]>("/billing/passes");
   },
   getTransactions(accountId: number, subscriptionId?: number) {
-    return get<TransactionsResponse>("/billing/transactions", {
-      accountId,
-      subscriptionId,
-    });
+    return http.get<TransactionsResponse>("/billing/transactions");
   },
   getMandate(accountId: number, subscriptionId: number) {
-    return get<MandateResponse>("/billing/mandate", {
-      accountId,
-      subscriptionId,
-    });
+    return http.get<MandateResponse>("/billing/mandate");
   },
   getPaymentMethod(accountId: number, subscriptionId: number) {
-    return get<PaymentMethodResponse>("/billing/payment-method", {
-      accountId,
-      subscriptionId,
-    });
+    return http.get<PaymentMethodResponse>("/billing/payment-method");
   },
   startRibChange(accountId: number, subscriptionId: number) {
-    return post<RibChangeResponse>("/billing/payment-method/change", {
+    return http.post<RibChangeResponse>("/billing/payment-method/change", {
       accountId,
       subscriptionId,
     });
@@ -159,7 +106,7 @@ export const billingApi = {
     subscriptionId: number,
     setupIntentId: string,
   ) {
-    return post<{ ok: boolean; connected: boolean }>(
+    return http.post<{ ok: boolean; connected: boolean }>(
       "/billing/payment-method/finalize",
       { accountId, subscriptionId, setupIntentId },
     );
@@ -174,8 +121,8 @@ export async function mandateDocumentUrl(
   const qs = new URLSearchParams({ subscriptionId: String(subscriptionId) });
   if (token) qs.append("token", token);
   const path = `/billing/mandate/document?${qs.toString()}`;
-  if (Platform.OS === "web" && BASE_URL.startsWith("/")) {
-    return `${window.location.origin}${BASE_URL}${path}`;
+  if (Platform.OS === "web" && API_BASE_URL.startsWith("/")) {
+    return `${window.location.origin}${API_BASE_URL}${path}`;
   }
-  return `${BASE_URL}${path}`;
+  return `${API_BASE_URL}${path}`;
 }

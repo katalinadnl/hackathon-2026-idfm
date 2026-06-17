@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from "react";
 
 import {
   billingApi,
@@ -6,18 +6,10 @@ import {
   PassSummary,
   PaymentMethodResponse,
   TransactionsResponse,
-} from '@/lib/api';
+} from "@/lib/api/billing";
+import { AsyncState } from "@/services/api";
 
-interface AsyncState<T> {
-  data: T | null;
-  loading: boolean;
-  error: string | null;
-  reload: () => void;
-}
-
-export function usePasses(
-  accountId: number | null,
-): AsyncState<PassSummary[]> {
+export function usePasses(accountId: number | null): AsyncState<PassSummary[]> {
   const [data, setData] = useState<PassSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,6 +33,7 @@ export function usePasses(
     };
   }, [accountId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => load(), [load]);
   return { data, loading, error, reload: load };
 }
@@ -49,16 +42,13 @@ export function useMandate(
   accountId: number,
   subscriptionId: number | null,
 ): AsyncState<MandateResponse> {
+  const enabled = subscriptionId !== null;
   const [data, setData] = useState<MandateResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    if (subscriptionId === null) {
-      setData(null);
-      setLoading(false);
-      return;
-    }
+    if (subscriptionId === null) return undefined;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -72,24 +62,30 @@ export function useMandate(
     };
   }, [accountId, subscriptionId]);
 
-  useEffect(() => load(), [load]);
-  return { data, loading, error, reload: load };
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (enabled) return load();
+  }, [enabled, load]);
+
+  return {
+    data: enabled ? data : null,
+    loading: enabled ? loading : false,
+    error,
+    reload: load,
+  };
 }
 
 export function usePaymentMethod(
   accountId: number,
   subscriptionId: number | null,
 ): AsyncState<PaymentMethodResponse> {
+  const enabled = subscriptionId !== null;
   const [data, setData] = useState<PaymentMethodResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    if (subscriptionId === null) {
-      setData(null);
-      setLoading(false);
-      return;
-    }
+    if (subscriptionId === null) return undefined;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -103,8 +99,17 @@ export function usePaymentMethod(
     };
   }, [accountId, subscriptionId]);
 
-  useEffect(() => load(), [load]);
-  return { data, loading, error, reload: load };
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (enabled) return load();
+  }, [enabled, load]);
+
+  return {
+    data: enabled ? data : null,
+    loading: enabled ? loading : false,
+    error,
+    reload: load,
+  };
 }
 
 export function useTransactions(
@@ -129,6 +134,7 @@ export function useTransactions(
     };
   }, [accountId, subscriptionId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => load(), [load]);
   return { data, loading, error, reload: load };
 }

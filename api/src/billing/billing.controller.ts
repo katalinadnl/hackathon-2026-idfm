@@ -11,8 +11,8 @@ import {
 import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { BillingService } from './billing.service';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 function accountIdOf(req: Request): number {
   return (req as any).user.sub as number;
@@ -25,7 +25,9 @@ export class BillingController {
   constructor(private readonly billing: BillingService) {}
 
   @Get('passes')
-  @ApiOkResponse({ description: 'Passes visible to the authenticated account.' })
+  @ApiOkResponse({
+    description: 'Passes visible to the authenticated account.',
+  })
   getPasses(@Req() req: Request) {
     return this.billing.getPasses(accountIdOf(req));
   }
@@ -56,7 +58,10 @@ export class BillingController {
     @Req() req: Request,
     @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
   ) {
-    return this.billing.getMandateDocumentHtml(accountIdOf(req), subscriptionId);
+    return this.billing.getMandateDocumentHtml(
+      accountIdOf(req),
+      subscriptionId,
+    );
   }
 
   @Get('payment-method')

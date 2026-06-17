@@ -1,6 +1,13 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 
+interface FranceConnectClaims {
+  email?: string;
+  given_name?: string;
+  family_name?: string;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class FranceConnectService {
   private readonly logger = new Logger(FranceConnectService.name);
@@ -76,7 +83,9 @@ export class FranceConnectService {
     if (!res.ok) {
       const text = await res.text();
       this.logger.error(`Token exchange failed: ${res.status} ${text}`);
-      throw new BadRequestException('Échec de l’échange du code France Connect.');
+      throw new BadRequestException(
+        'Échec de l’échange du code France Connect.',
+      );
     }
 
     const json = (await res.json()) as { access_token: string };
@@ -94,18 +103,22 @@ export class FranceConnectService {
     if (!res.ok) {
       const text = await res.text();
       this.logger.error(`UserInfo failed: ${res.status} ${text}`);
-      throw new BadRequestException('Échec de la récupération du profil France Connect.');
+      throw new BadRequestException(
+        'Échec de la récupération du profil France Connect.',
+      );
     }
 
     const contentType = res.headers.get('content-type') ?? '';
-    let claims: Record<string, any>;
+    let claims: FranceConnectClaims;
     if (contentType.includes('application/jwt')) {
       // FC v2 returns a signed JWT — decode the payload (not verifying signature here).
       const jwt = await res.text();
       const payload = jwt.split('.')[1];
-      claims = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+      claims = JSON.parse(
+        Buffer.from(payload, 'base64url').toString('utf8'),
+      ) as FranceConnectClaims;
     } else {
-      claims = (await res.json()) as Record<string, any>;
+      claims = (await res.json()) as FranceConnectClaims;
     }
 
     if (!claims.email) {
