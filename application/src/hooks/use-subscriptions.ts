@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
 
-export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
+export type SubscriptionRole = "titulaire" | "payeur" | "gestionnaire";
 
 export interface ApiSubscription {
   id: number;
@@ -17,32 +17,44 @@ export interface ApiSubscription {
 }
 
 export function useSubscriptions(accountId: number | null) {
+  const enabled = accountId !== null;
+
   const [subscriptions, setSubscriptions] = useState<ApiSubscription[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    if (accountId === null) {
-      setSubscriptions([]);
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    fetch(`${API_URL}/accounts/${accountId}/subscriptions`)
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json() as Promise<ApiSubscription[]>;
-      })
-      .then((data) => {
-        setSubscriptions(data);
-        setLoading(false);
-      })
-      .catch((e: Error) => {
-        setError(e);
-        setLoading(false);
-      });
-  }, [accountId]);
+    if (!enabled) return;
 
-  return { subscriptions, loading, error };
+    let cancelled = false;
+
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(
+          `${API_URL}/accounts/${accountId}/subscriptions`,
+        );
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = (await res.json()) as ApiSubscription[];
+        if (!cancelled) setSubscriptions(data);
+      } catch (e) {
+        if (!cancelled) setError(e as Error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled, accountId]);
+
+  return {
+    subscriptions: enabled ? subscriptions : [],
+    loading: enabled ? loading : false,
+    error,
+  };
 }

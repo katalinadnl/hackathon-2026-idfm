@@ -191,7 +191,7 @@ export default function SubscriptionDetailPage() {
             disabled
             onPress={() => {}}
           >
-            Résilier l'abonnement
+            Résilier l&apos;abonnement
           </Button>
         </Card>
       </ScrollView>

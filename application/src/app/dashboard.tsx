@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -8,61 +8,92 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { Icon } from '@/components/ui/Icon';
-import { DS, MaxContentWidth } from '@/constants/theme';
-import { useAuth } from '@/contexts/auth';
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Icon } from "@/components/ui/Icon";
+import { DS, MaxContentWidth } from "@/constants/theme";
+import { useAuth } from "@/contexts/auth";
 import {
   ApiSubscription,
   SubscriptionRole,
   useSubscriptions,
-} from '@/hooks/use-subscriptions';
+} from "@/hooks/use-subscriptions";
 
 const DESKTOP_BP = 768;
 
-type Section = 'dashboard' | 'subscriptions' | 'billing' | 'history';
+type Section = "dashboard" | "subscriptions" | "billing" | "history";
 
 const NAV_ITEMS: { id: Section; icon: string; label: string }[] = [
-  { id: 'dashboard',     icon: 'star',    label: 'Tableau de bord' },
-  { id: 'subscriptions', icon: 'ticket',  label: 'Vos abonnements' },
-  { id: 'billing',       icon: 'receipt', label: 'Facturations'    },
-  { id: 'history',       icon: 'clock',   label: 'Historique'      },
+  { id: "dashboard", icon: "star", label: "Tableau de bord" },
+  { id: "subscriptions", icon: "ticket", label: "Vos abonnements" },
+  { id: "billing", icon: "receipt", label: "Facturations" },
+  { id: "history", icon: "clock", label: "Historique" },
 ];
 
 const HISTORY = [
-  { id: 'H1', date: '15 juin 2026', type: 'Validation', desc: 'Métro ligne 1 — Châtelet',     time: '08:04' },
-  { id: 'H2', date: '15 juin 2026', type: 'Validation', desc: 'RER A — Gare de Lyon',          time: '08:27' },
-  { id: 'H3', date: '14 juin 2026', type: 'Validation', desc: 'Métro ligne 14 — Saint-Lazare', time: '18:12' },
-  { id: 'H4', date: '14 juin 2026', type: 'Validation', desc: 'Métro ligne 6 — Montparnasse',  time: '18:41' },
-  { id: 'H5', date: '13 juin 2026', type: 'Recharge',   desc: 'Navigo Easy — +10 tickets',     time: '12:05' },
+  {
+    id: "H1",
+    date: "15 juin 2026",
+    type: "Validation",
+    desc: "Métro ligne 1 — Châtelet",
+    time: "08:04",
+  },
+  {
+    id: "H2",
+    date: "15 juin 2026",
+    type: "Validation",
+    desc: "RER A — Gare de Lyon",
+    time: "08:27",
+  },
+  {
+    id: "H3",
+    date: "14 juin 2026",
+    type: "Validation",
+    desc: "Métro ligne 14 — Saint-Lazare",
+    time: "18:12",
+  },
+  {
+    id: "H4",
+    date: "14 juin 2026",
+    type: "Validation",
+    desc: "Métro ligne 6 — Montparnasse",
+    time: "18:41",
+  },
+  {
+    id: "H5",
+    date: "13 juin 2026",
+    type: "Recharge",
+    desc: "Navigo Easy — +10 tickets",
+    time: "12:05",
+  },
 ];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('fr-FR', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
   });
 }
 
 function formatAmount(amount: number): string {
-  return `${amount.toFixed(2).replace('.', ',')} €`;
+  return `${amount.toFixed(2).replace(".", ",")} €`;
 }
 
 function isExpiringSoon(endDate: string): boolean {
-  const days = (new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  const days =
+    (new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
   return days > 0 && days <= 30;
 }
 
 const ROLE_LABELS: Record<SubscriptionRole, string> = {
-  titulaire:    'Titulaire',
-  payeur:       'Payeur',
-  gestionnaire: 'Gestionnaire',
+  titulaire: "Titulaire",
+  payeur: "Payeur",
+  gestionnaire: "Gestionnaire",
 };
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
@@ -94,7 +125,11 @@ function SidebarItem({
       accessibilityState={{ selected: active }}
       accessibilityLabel={label}
     >
-      <Icon name={icon} size={20} color={active ? DS.actionPrimary : DS.textMuted} />
+      <Icon
+        name={icon}
+        size={20}
+        color={active ? DS.actionPrimary : DS.textMuted}
+      />
       <Text
         style={[
           styles.navLabel,
@@ -110,9 +145,13 @@ function SidebarItem({
 }
 
 function ActivePassCard({ sub }: { sub: ApiSubscription }) {
-  const gradientStyle = Platform.OS === 'web'
-    ? ({ backgroundImage: 'linear-gradient(135deg, #1972D2 0%, #1242A7 50%, #0B1F5E 100%)' } as any)
-    : {};
+  const gradientStyle =
+    Platform.OS === "web"
+      ? ({
+          backgroundImage:
+            "linear-gradient(135deg, #1972D2 0%, #1242A7 50%, #0B1F5E 100%)",
+        } as any)
+      : {};
   const expiring = isExpiringSoon(sub.endDate);
 
   return (
@@ -121,7 +160,9 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
         <View style={styles.passCardMeta}>
           <Icon name="ticket" size={18} color="rgba(255,255,255,0.7)" />
           <Text style={styles.passCardType}>{sub.subscriptionType}</Text>
-          <Badge tone="success" dot>{sub.status === 'active' ? 'Actif' : sub.status}</Badge>
+          <Badge tone="success" dot>
+            {sub.status === "active" ? "Actif" : sub.status}
+          </Badge>
         </View>
         <Button
           variant="secondary"
@@ -137,8 +178,8 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
         {sub.beneficiary.firstName} {sub.beneficiary.lastName}
       </Text>
       <Text style={styles.passValidity}>
-        Valable jusqu'au {formatDate(sub.endDate)}
-        {expiring ? ' · Renouvellement disponible' : ''}
+        Valable jusqu&apos;au {formatDate(sub.endDate)}
+        {expiring ? " · Renouvellement disponible" : ""}
       </Text>
 
       <View style={styles.passCardFooter}>
@@ -166,8 +207,8 @@ function PassRow({ sub }: { sub: ApiSubscription }) {
       <View style={styles.passRowLeft}>
         <View style={styles.passRowHeader}>
           <Text style={styles.passRowType}>{sub.subscriptionType}</Text>
-          <Badge tone={sub.status === 'active' ? 'success' : 'neutral'} dot>
-            {sub.status === 'active' ? 'Actif' : sub.status}
+          <Badge tone={sub.status === "active" ? "success" : "neutral"} dot>
+            {sub.status === "active" ? "Actif" : sub.status}
           </Badge>
           {expiring && <Badge tone="warning">Renouveler</Badge>}
         </View>
@@ -175,11 +216,13 @@ function PassRow({ sub }: { sub: ApiSubscription }) {
           {sub.beneficiary.firstName} {sub.beneficiary.lastName}
         </Text>
         <Text style={styles.passRowValidity}>
-          Jusqu'au {formatDate(sub.endDate)}
+          Jusqu&apos;au {formatDate(sub.endDate)}
         </Text>
         <View style={styles.roleRowSmall}>
           {sub.roles.map((r) => (
-            <Text key={r} style={styles.roleLabel}>{ROLE_LABELS[r]}</Text>
+            <Text key={r} style={styles.roleLabel}>
+              {ROLE_LABELS[r]}
+            </Text>
           ))}
         </View>
       </View>
@@ -199,31 +242,43 @@ function PaymentRow({ sub }: { sub: ApiSubscription }) {
   const p = sub.latestPayment;
   return (
     <View style={styles.tableRow}>
-      <Text style={[styles.tableCell, styles.tableCellId]}>{sub.navigoNumber}</Text>
-      <Text style={[styles.tableCell, styles.tableCellDesc]}>{sub.subscriptionType}</Text>
-      <Text style={[styles.tableCell, styles.tableCellDate]}>{formatDate(p.paidAt)}</Text>
-      <Text style={[styles.tableCell, styles.tableCellAmount]}>{formatAmount(p.amount)}</Text>
-      <Badge tone={p.status === 'succeeded' ? 'success' : 'warning'}>
-        {p.status === 'succeeded' ? 'Payée' : 'Échec'}
+      <Text style={[styles.tableCell, styles.tableCellId]}>
+        {sub.navigoNumber}
+      </Text>
+      <Text style={[styles.tableCell, styles.tableCellDesc]}>
+        {sub.subscriptionType}
+      </Text>
+      <Text style={[styles.tableCell, styles.tableCellDate]}>
+        {formatDate(p.paidAt)}
+      </Text>
+      <Text style={[styles.tableCell, styles.tableCellAmount]}>
+        {formatAmount(p.amount)}
+      </Text>
+      <Badge tone={p.status === "succeeded" ? "success" : "warning"}>
+        {p.status === "succeeded" ? "Payée" : "Échec"}
       </Badge>
     </View>
   );
 }
 
-function HistoryRow({ entry }: { entry: typeof HISTORY[0] }) {
-  const isRecharge = entry.type === 'Recharge';
+function HistoryRow({ entry }: { entry: (typeof HISTORY)[0] }) {
+  const isRecharge = entry.type === "Recharge";
   return (
     <View style={styles.historyRow}>
-      <View style={[styles.historyIcon, isRecharge && styles.historyIconRecharge]}>
+      <View
+        style={[styles.historyIcon, isRecharge && styles.historyIconRecharge]}
+      >
         <Icon
-          name={isRecharge ? 'creditcard' : 'arrow-right'}
+          name={isRecharge ? "creditcard" : "arrow-right"}
           size={16}
           color={isRecharge ? DS.success : DS.actionPrimary}
         />
       </View>
       <View style={styles.historyInfo}>
         <Text style={styles.historyDesc}>{entry.desc}</Text>
-        <Text style={styles.historyMeta}>{entry.type} · {entry.date}</Text>
+        <Text style={styles.historyMeta}>
+          {entry.type} · {entry.date}
+        </Text>
       </View>
       <Text style={styles.historyTime}>{entry.time}</Text>
     </View>
@@ -276,7 +331,8 @@ function DashboardHome({
   loading: boolean;
   onNav: (s: Section) => void;
 }) {
-  const active = subscriptions.find((s) => s.status === 'active') ?? subscriptions[0];
+  const active =
+    subscriptions.find((s) => s.status === "active") ?? subscriptions[0];
   const withPayments = subscriptions.filter((s) => s.latestPayment);
 
   return (
@@ -287,7 +343,11 @@ function DashboardHome({
         <ActivePassCard sub={active} />
       ) : null}
 
-      <SectionHeader title="Vos abonnements" action="Tout voir" onAction={() => onNav('subscriptions')} />
+      <SectionHeader
+        title="Vos abonnements"
+        action="Tout voir"
+        onAction={() => onNav("subscriptions")}
+      />
       <View style={styles.card}>
         {loading ? (
           <LoadingPlaceholder />
@@ -303,7 +363,11 @@ function DashboardHome({
         )}
       </View>
 
-      <SectionHeader title="Dernières facturations" action="Tout voir" onAction={() => onNav('billing')} />
+      <SectionHeader
+        title="Dernières facturations"
+        action="Tout voir"
+        onAction={() => onNav("billing")}
+      />
       <View style={styles.card}>
         {loading ? (
           <LoadingPlaceholder />
@@ -313,7 +377,9 @@ function DashboardHome({
           withPayments.slice(0, 2).map((s, i) => (
             <View key={s.id}>
               <PaymentRow sub={s} />
-              {i < Math.min(withPayments.length, 2) - 1 && <View style={styles.divider} />}
+              {i < Math.min(withPayments.length, 2) - 1 && (
+                <View style={styles.divider} />
+              )}
             </View>
           ))
         )}
@@ -370,7 +436,7 @@ function BillingView({
     <View style={styles.sectionContent}>
       <Text style={styles.viewTitle}>Facturations</Text>
       <Text style={styles.viewSubtitle}>
-        Retrouvez l'ensemble de vos factures et justificatifs.
+        Retrouvez l&apos;ensemble de vos factures et justificatifs.
       </Text>
 
       <View style={styles.card}>
@@ -420,10 +486,10 @@ function HistoryView() {
 export default function DashboardPage() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= DESKTOP_BP;
-  const [activeSection, setActiveSection] = useState<Section>('dashboard');
+  const [activeSection, setActiveSection] = useState<Section>("dashboard");
 
   const { user } = useAuth();
-  const accountName = user?.firstName ?? user?.email ?? '';
+  const accountName = user?.firstName ?? user?.email ?? "";
   const { subscriptions, loading, error } = useSubscriptions(user?.id ?? null);
 
   return (
@@ -432,7 +498,11 @@ export default function DashboardPage() {
         style={[
           styles.layout,
           isDesktop && styles.layoutDesktop,
-          { maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' as any },
+          {
+            maxWidth: MaxContentWidth,
+            width: "100%",
+            alignSelf: "center" as any,
+          },
         ]}
       >
         {/* ── Sidebar ──────────────────────────────────────────────── */}
@@ -480,7 +550,9 @@ export default function DashboardPage() {
             </View>
             <View>
               <Text style={styles.greetingText}>Bonjour, {accountName}</Text>
-              <Text style={styles.greetingSubtitle}>Voici votre tableau de bord.</Text>
+              <Text style={styles.greetingSubtitle}>
+                Voici votre tableau de bord.
+              </Text>
             </View>
           </View>
 
@@ -488,15 +560,29 @@ export default function DashboardPage() {
             <View style={styles.errorBanner}>
               <Icon name="warning" size={16} color={DS.warning} />
               <Text style={styles.errorText}>
-                Impossible de charger les données. Vérifiez que l'API est démarrée.
+                Impossible de charger les données. Vérifiez que l&apos;API est
+                démarrée.
               </Text>
             </View>
           )}
 
-          {activeSection === 'dashboard'     && <DashboardHome subscriptions={subscriptions} loading={loading} onNav={setActiveSection} />}
-          {activeSection === 'subscriptions' && <SubscriptionsView subscriptions={subscriptions} loading={loading} />}
-          {activeSection === 'billing'       && <BillingView subscriptions={subscriptions} loading={loading} />}
-          {activeSection === 'history'       && <HistoryView />}
+          {activeSection === "dashboard" && (
+            <DashboardHome
+              subscriptions={subscriptions}
+              loading={loading}
+              onNav={setActiveSection}
+            />
+          )}
+          {activeSection === "subscriptions" && (
+            <SubscriptionsView
+              subscriptions={subscriptions}
+              loading={loading}
+            />
+          )}
+          {activeSection === "billing" && (
+            <BillingView subscriptions={subscriptions} loading={loading} />
+          )}
+          {activeSection === "history" && <HistoryView />}
         </View>
       </View>
     </ScrollView>
@@ -518,12 +604,12 @@ const styles = StyleSheet.create({
   },
 
   layout: {
-    flexDirection: 'column',
+    flexDirection: "column",
     gap: DS.space4,
   },
   layoutDesktop: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    alignItems: "flex-start",
     gap: DS.space6,
   },
 
@@ -539,18 +625,18 @@ const styles = StyleSheet.create({
   },
   sidebarTitle: {
     fontSize: 11,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textMuted,
     letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     paddingHorizontal: DS.space3,
     paddingTop: DS.space2,
     paddingBottom: DS.space3,
   },
 
   navItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space3,
     paddingHorizontal: DS.space3,
     paddingVertical: 11,
@@ -564,13 +650,13 @@ const styles = StyleSheet.create({
   },
   navLabel: {
     fontSize: 15,
-    fontWeight: '500',
+    fontWeight: "500",
     color: DS.textStrong,
     flex: 1,
   },
   navLabelActive: {
     color: DS.actionPrimary,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 
   horizNav: {
@@ -583,11 +669,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: DS.space2,
     paddingVertical: DS.space2,
     gap: DS.space1,
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   navItemHoriz: {
-    flexDirection: 'column',
-    alignItems: 'center',
+    flexDirection: "column",
+    alignItems: "center",
     paddingHorizontal: DS.space3,
     paddingVertical: DS.space2,
     gap: DS.space1,
@@ -610,8 +696,8 @@ const styles = StyleSheet.create({
   },
 
   greeting: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space4,
   },
   avatarBubble: {
@@ -619,18 +705,18 @@ const styles = StyleSheet.create({
     height: 52,
     borderRadius: DS.radiusPill,
     backgroundColor: DS.actionPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   avatarText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.white,
     letterSpacing: 0.5,
   },
   greetingText: {
     fontSize: 26,
-    fontWeight: '800',
+    fontWeight: "800",
     color: DS.textStrong,
     lineHeight: 32,
   },
@@ -641,8 +727,8 @@ const styles = StyleSheet.create({
   },
 
   errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space2,
     backgroundColor: DS.warningTint,
     borderRadius: DS.radiusSm,
@@ -655,8 +741,8 @@ const styles = StyleSheet.create({
   },
 
   loadingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space3,
     padding: DS.space5,
   },
@@ -672,19 +758,19 @@ const styles = StyleSheet.create({
   },
 
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginTop: DS.space2,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
   },
   sectionAction: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.textLink,
   },
 
@@ -697,7 +783,7 @@ const styles = StyleSheet.create({
     borderRadius: DS.radiusMd,
     borderWidth: 1,
     borderColor: DS.borderSubtle,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
 
   divider: {
@@ -708,30 +794,30 @@ const styles = StyleSheet.create({
 
   // Active pass card (dark blue)
   passCard: {
-    backgroundColor: '#1242A7',
+    backgroundColor: "#1242A7",
     borderRadius: DS.radiusMd,
     padding: DS.space5,
     gap: DS.space2,
   },
   passCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexWrap: "wrap",
     gap: DS.space3,
     marginBottom: DS.space2,
   },
   passCardMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space2,
   },
   passCardType: {
     fontSize: 13,
-    fontWeight: '700',
-    color: 'rgba(255,255,255,0.75)',
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.75)",
     letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   passCardBtn: {
     backgroundColor: DS.white,
@@ -739,53 +825,53 @@ const styles = StyleSheet.create({
   },
   passZones: {
     fontSize: 28,
-    fontWeight: '800',
+    fontWeight: "800",
     color: DS.white,
     lineHeight: 34,
   },
   passValidity: {
     fontSize: 14,
-    color: 'rgba(255,255,255,0.7)',
+    color: "rgba(255,255,255,0.7)",
   },
   passCardFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space4,
     marginTop: DS.space2,
     paddingTop: DS.space3,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.15)',
-    flexWrap: 'wrap',
+    borderTopColor: "rgba(255,255,255,0.15)",
+    flexWrap: "wrap",
   },
   passPrice: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.white,
   },
   roleRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: DS.space2,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   roleChip: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: DS.radiusPill,
     paddingHorizontal: DS.space2,
     paddingVertical: 2,
   },
   roleChipText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.9)',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.9)",
+    textTransform: "uppercase",
     letterSpacing: 0.4,
   },
 
   // Pass row (white card)
   passRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     padding: DS.space5,
     gap: DS.space4,
   },
@@ -794,21 +880,21 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   passRowHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space2,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   passRowType: {
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textMuted,
     letterSpacing: 0.5,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   passRowZones: {
     fontSize: 17,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
   },
   passRowValidity: {
@@ -816,41 +902,41 @@ const styles = StyleSheet.create({
     color: DS.textMuted,
   },
   roleRowSmall: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: DS.space2,
     marginTop: 2,
   },
   roleLabel: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.actionPrimary,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
     letterSpacing: 0.4,
   },
   passRowRight: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   passRowPrice: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
   },
 
   // Payment table row
   tableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: DS.space5,
     paddingVertical: DS.space4,
     gap: DS.space3,
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   },
   tableCell: {
     fontSize: 14,
     color: DS.textBody,
   },
   tableCellId: {
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.textMuted,
     width: 100,
   },
@@ -863,16 +949,16 @@ const styles = StyleSheet.create({
     width: 110,
   },
   tableCellAmount: {
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
     width: 72,
-    textAlign: 'right',
+    textAlign: "right",
   },
 
   // History rows
   historyRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: DS.space5,
     paddingVertical: DS.space4,
     gap: DS.space3,
@@ -882,8 +968,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: DS.radiusPill,
     backgroundColor: DS.infoTint,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   historyIconRecharge: {
     backgroundColor: DS.successTint,
@@ -894,7 +980,7 @@ const styles = StyleSheet.create({
   },
   historyDesc: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.textStrong,
   },
   historyMeta: {
@@ -903,13 +989,13 @@ const styles = StyleSheet.create({
   },
   historyTime: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.textMuted,
   },
 
   viewTitle: {
     fontSize: 26,
-    fontWeight: '800',
+    fontWeight: "800",
     color: DS.textStrong,
   },
   viewSubtitle: {
@@ -920,6 +1006,6 @@ const styles = StyleSheet.create({
   billingNote: {
     fontSize: 13,
     color: DS.textMuted,
-    fontStyle: 'italic',
+    fontStyle: "italic",
   },
 });

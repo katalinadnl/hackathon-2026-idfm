@@ -31,16 +31,15 @@ export function StripeIbanForm({
   const [name, setName] = useState(billingName);
   const [ready, setReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    STRIPE_PUBLISHABLE_KEY
+      ? null
+      : "Clé publique Stripe absente (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY).",
+  );
 
   useEffect(() => {
+    if (!STRIPE_PUBLISHABLE_KEY) return;
     let active = true;
-    if (!STRIPE_PUBLISHABLE_KEY) {
-      setError(
-        "Clé publique Stripe absente (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY).",
-      );
-      return;
-    }
     loadStripe(STRIPE_PUBLISHABLE_KEY).then((stripe) => {
       if (!active || !stripe || !ibanMountRef.current) return;
       const elements = stripe.elements();
