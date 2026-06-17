@@ -5,6 +5,7 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
 
   app.enableCors({ origin: true, credentials: true });
   // All routes are served under /api (matches the nginx reverse-proxy rule).

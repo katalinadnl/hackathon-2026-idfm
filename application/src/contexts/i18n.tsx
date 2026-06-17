@@ -66,6 +66,40 @@ const translations = {
     visitors_chips_cdg: 'Depuis CDG',
     visitors_chips_orly: 'Depuis Orly',
     visitors_chips_eiffel: 'Vers la Tour Eiffel',
+
+    // Stat pills
+    stat_languages: '6 langues',
+    stat_no_account: 'Sans compte',
+    stat_network: 'Tout le réseau',
+
+    // Network status
+    network_normal: 'Trafic normal',
+    network_disrupted: 'Perturbations en cours',
+    network_major: 'Trafic très perturbé',
+    network_updated: 'Mis à jour à',
+
+    // How to travel (senior-friendly guide)
+    how_title: 'Comment voyager',
+    how_sub: 'En 3 étapes simples — pour la première fois ou la centième.',
+    how_step1_title: 'Achetez votre titre',
+    how_step1_desc: 'Dans cette appli, à une borne en station ou directement avec votre carte bancaire sans contact.',
+    how_step2_title: 'Validez à chaque montée',
+    how_step2_desc: "Posez votre carte, téléphone ou billet sur le valideur à l'entrée — un bip vert confirme.",
+    how_step3_title: 'Voyagez librement',
+    how_step3_desc: 'Métro, RER, bus, tram, train régional — le même titre vous emmène partout en Île-de-France.',
+
+    // FAQ
+    faq_title: 'Questions fréquentes',
+    faq_q1: 'Puis-je payer sans espèces ?',
+    faq_a1: 'Oui. Votre carte bancaire, Apple Pay ou Google Pay sont acceptés partout — en appli, aux bornes et dans certains bus.',
+    faq_q2: 'Comment valider mon titre ?',
+    faq_a2: "Approchez votre carte ou téléphone du lecteur à l'entrée du métro, dans le bus ou sur le quai RER. Un bip et un flash vert confirment la validation.",
+    faq_q3: "Mon pass couvre-t-il le trajet depuis l'aéroport ?",
+    faq_a3: 'Pas toujours — CDG et Orly sont en zones 5. Le billet aéroport ou le RER B direct restent la solution la plus simple depuis CDG.',
+    faq_q4: 'Y a-t-il un pass pour les touristes ?',
+    faq_a4: 'Oui : Paris Visite offre des trajets illimités 1, 2, 3 ou 5 jours sur tout le réseau, plus des réductions musées et attractions.',
+    faq_q5: "L'appli est-elle disponible en anglais ?",
+    faq_a5: 'Oui — tout est disponible en français, anglais, espagnol, allemand, arabe et mandarin. Changez la langue en haut à droite.',
   },
   en: {
     nav_journeys: 'Journeys',
@@ -128,6 +162,36 @@ const translations = {
     visitors_chips_cdg: 'From CDG Airport',
     visitors_chips_orly: 'From Orly',
     visitors_chips_eiffel: 'To Eiffel Tower',
+
+    stat_languages: '6 languages',
+    stat_no_account: 'No account needed',
+    stat_network: 'Full network',
+
+    network_normal: 'Normal service',
+    network_disrupted: 'Disruptions in progress',
+    network_major: 'Severe disruption',
+    network_updated: 'Updated at',
+
+    how_title: 'How to travel',
+    how_sub: "Three simple steps — whether it's your first time or your hundredth.",
+    how_step1_title: 'Buy your ticket',
+    how_step1_desc: 'In this app, at any station machine, or tap your bank card or phone directly at the gate.',
+    how_step2_title: 'Tap at every boarding',
+    how_step2_desc: 'Hold your card, phone or ticket near the reader at the metro gate, bus door or RER platform. A green beep means you\'re in.',
+    how_step3_title: 'Travel freely',
+    how_step3_desc: 'Metro, RER, bus, tram, regional rail — the same ticket takes you everywhere across Île-de-France.',
+
+    faq_title: 'Frequently asked questions',
+    faq_q1: 'Can I pay without cash?',
+    faq_a1: 'Yes. Your bank card, Apple Pay or Google Pay are accepted everywhere — in the app, at machines and on most buses.',
+    faq_q2: 'How do I validate my ticket?',
+    faq_a2: 'Hold your card or phone near the reader at the metro gate, bus door or RER platform. A green beep and light confirm validation.',
+    faq_q3: 'Does my pass cover the airport journey?',
+    faq_a3: 'Not always — CDG and Orly are in zone 5. An airport ticket or the RER B direct service is the simplest option from CDG.',
+    faq_q4: 'Is there a pass for tourists?',
+    faq_a4: 'Yes — Paris Visite gives unlimited travel for 1, 2, 3 or 5 days across the whole network, plus discounts at museums and attractions.',
+    faq_q5: 'Is the app available in English?',
+    faq_a5: 'Yes — everything is available in French, English, Spanish, German, Arabic and Mandarin. Change the language at the top right.',
   },
 } as const;
 
