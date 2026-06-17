@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Switch,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,8 +22,7 @@ import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { LineBadge } from '@/components/ui/LineBadge';
 import { BottomTabInset, DS, MaxContentWidth } from '@/constants/theme';
 import { useI18n } from '@/contexts/i18n';
-
-const DESKTOP_BP = 768;
+import { pageInner, usePageLayout } from '@/hooks/use-page-layout';
 
 // Static data
 const POPULAR_DESTINATIONS = [
@@ -70,8 +68,7 @@ function SectionTitle({ children }: { children: string }) {
 
 export default function HomeScreen() {
   const { lang, setLang, t } = useI18n();
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= DESKTOP_BP;
+  const { isDesktop, hPad } = usePageLayout();
 
   const [from, setFrom] = useState('Gare de Lyon');
   const [to, setTo] = useState('La Défense');
@@ -81,9 +78,10 @@ export default function HomeScreen() {
   const handleSearch = () => setSearched(true);
   const handleSwap = () => { const tmp = from; setFrom(to); setTo(tmp); };
 
-  const sectionPad = isDesktop
-    ? { paddingHorizontal: DS.space8, paddingVertical: DS.space8 }
-    : { paddingHorizontal: DS.space5, paddingVertical: DS.space6 };
+  const sectionPad = {
+    paddingHorizontal: hPad,
+    paddingVertical: isDesktop ? DS.space8 : DS.space6,
+  };
 
   return (
     <ScrollView
@@ -210,7 +208,7 @@ export default function HomeScreen() {
         </View>
 
         {/* ─── Content wrapper (max-width centred on desktop) ──── */}
-        <View style={isDesktop ? styles.pageInner : undefined}>
+        <View style={isDesktop ? pageInner : undefined}>
 
           {/* ─── Results (after search) ─────────────────────────── */}
           {searched && (
@@ -431,12 +429,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: DS.textStrong,
     flex: 1,
-  },
-  // Page content centred on desktop
-  pageInner: {
-    maxWidth: MaxContentWidth,
-    width: '100%',
-    marginHorizontal: 'auto' as any,
   },
   // Sections
   section: {

@@ -6,12 +6,10 @@ import {
   Patch,
   Param,
   Delete,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
-import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('subscriptions')
 export class SubscriptionsController {
@@ -43,10 +41,5 @@ export class SubscriptionsController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.subscriptionsService.remove(+id);
-  }
-  @Get(':id/subscriptions')
-  @ApiOperation({ summary: 'Get all subscriptions for an account with roles' })
-  findByAccount(@Param('id', ParseIntPipe) id: number) {
-    return this.subscriptionsService.findByAccount(id);
   }
 }

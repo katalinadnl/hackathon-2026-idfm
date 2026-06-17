@@ -4,7 +4,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,9 +16,8 @@ import { Icon } from '@/components/ui/Icon';
 import { Input } from '@/components/ui/Input';
 import { JourneyCard } from '@/components/ui/JourneyCard';
 import { LineBadge } from '@/components/ui/LineBadge';
-import { BottomTabInset, DS, MaxContentWidth } from '@/constants/theme';
-
-const DESKTOP_BP = 768;
+import { BottomTabInset, DS } from '@/constants/theme';
+import { pageInner, usePageLayout } from '@/hooks/use-page-layout';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -115,8 +113,7 @@ function IconTile({ name }: { name: string }) {
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function UIKitScreen() {
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= DESKTOP_BP;
+  const { isDesktop } = usePageLayout();
   const [inputVal, setInputVal] = useState('');
   const [inputErr, setInputErr] = useState('');
 
@@ -129,7 +126,7 @@ export default function UIKitScreen() {
 
         {/* ── Page header ───────────────────────────────────────── */}
         <View style={[styles.hero, isDesktop && { paddingHorizontal: DS.space8, paddingVertical: DS.space8 }]}>
-          <View style={isDesktop ? { maxWidth: MaxContentWidth, marginHorizontal: 'auto' as any, width: '100%' } : undefined}>
+          <View style={isDesktop ? pageInner : undefined}>
             <Badge tone="brand" style={{ marginBottom: DS.space3 }}>Design System</Badge>
             <Text style={[styles.heroTitle, isDesktop && { fontSize: 48 }]} accessibilityRole="header">
               Comutitres UI Kit
@@ -141,7 +138,7 @@ export default function UIKitScreen() {
         </View>
 
         {/* ── Content ───────────────────────────────────────────── */}
-        <View style={isDesktop ? styles.pageInner : undefined}>
+        <View style={isDesktop ? pageInner : undefined}>
 
           {/* ────────────────── COULEURS ────────────────────────── */}
           <Section title="Couleurs">
@@ -537,11 +534,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: 'rgba(255,255,255,0.75)',
     lineHeight: 22,
-  },
-  pageInner: {
-    maxWidth: MaxContentWidth,
-    width: '100%',
-    marginHorizontal: 'auto' as any,
   },
   section: {
     paddingHorizontal: DS.space5,

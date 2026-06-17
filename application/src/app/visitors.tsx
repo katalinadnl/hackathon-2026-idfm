@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,8 +20,7 @@ import { LineBadge } from '@/components/ui/LineBadge';
 import { BottomTabInset, DS, MaxContentWidth } from '@/constants/theme';
 import { useI18n } from '@/contexts/i18n';
 import { useNetworkStatus } from '@/hooks/use-network-status';
-
-const DESKTOP_BP = 768;
+import { pageInner, usePageLayout } from '@/hooks/use-page-layout';
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -226,8 +224,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
 
 export default function VisitorsScreen() {
   const { lang, setLang, t } = useI18n();
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= DESKTOP_BP;
+  const { isDesktop, hPad } = usePageLayout();
 
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -246,9 +243,10 @@ export default function VisitorsScreen() {
     { q: t('faq_q5'), a: t('faq_a5') },
   ];
 
-  const sectionPad = isDesktop
-    ? { paddingHorizontal: DS.space8, paddingVertical: DS.space8 }
-    : { paddingHorizontal: DS.space5, paddingVertical: DS.space7 };
+  const sectionPad = {
+    paddingHorizontal: hPad,
+    paddingVertical: isDesktop ? DS.space8 : DS.space7,
+  };
 
   return (
     <ScrollView
@@ -356,7 +354,7 @@ export default function VisitorsScreen() {
 
         {/* ─── How to travel (senior-friendly) ─────────────────── */}
         <View style={styles.howSection}>
-          <View style={[styles.sectionInner, isDesktop && styles.sectionCentered, sectionPad]}>
+          <View style={[styles.sectionInner, isDesktop && pageInner, sectionPad]}>
             <SectionTitle>{t('how_title')}</SectionTitle>
             <Text style={styles.sectionSub}>{t('how_sub')}</Text>
             <HowToTravel lang={lang} />
@@ -364,7 +362,7 @@ export default function VisitorsScreen() {
         </View>
 
         {/* ─── Passes ──────────────────────────────────────────── */}
-        <View style={[styles.sectionInner, isDesktop && styles.sectionCentered, sectionPad]}>
+        <View style={[styles.sectionInner, isDesktop && pageInner, sectionPad]}>
           <SectionTitle>{t('passes_title')}</SectionTitle>
           <Text style={styles.sectionSub}>{t('passes_sub')}</Text>
           <View style={[styles.passesGrid, isDesktop && styles.passesGridDesktop]}>
@@ -430,7 +428,7 @@ export default function VisitorsScreen() {
 
         {/* ─── Top places ──────────────────────────────────────── */}
         <View style={styles.sectionTinted}>
-          <View style={[styles.sectionInner, isDesktop && styles.sectionCentered, sectionPad]}>
+          <View style={[styles.sectionInner, isDesktop && pageInner, sectionPad]}>
             <SectionTitle>{t('places_title')}</SectionTitle>
             <View style={[isDesktop && styles.placesGrid]}>
               {PLACES.map((p, i) => {
@@ -459,7 +457,7 @@ export default function VisitorsScreen() {
         </View>
 
         {/* ─── Airports ────────────────────────────────────────── */}
-        <View style={[styles.sectionInner, isDesktop && styles.sectionCentered, sectionPad]}>
+        <View style={[styles.sectionInner, isDesktop && pageInner, sectionPad]}>
           <SectionTitle>{t('airports_title')}</SectionTitle>
           <View style={[isDesktop && styles.airportsGrid]}>
             {airports.map((a, i) => (
@@ -483,7 +481,7 @@ export default function VisitorsScreen() {
 
         {/* ─── FAQ ─────────────────────────────────────────────── */}
         <View style={styles.sectionTinted}>
-          <View style={[styles.sectionInner, isDesktop && styles.sectionCentered, sectionPad]}>
+          <View style={[styles.sectionInner, isDesktop && pageInner, sectionPad]}>
             <SectionTitle>{t('faq_title')}</SectionTitle>
             <View style={styles.faqList}>
               {faqItems.map((item, i) => (
@@ -494,7 +492,7 @@ export default function VisitorsScreen() {
         </View>
 
         {/* ─── Confidence ──────────────────────────────────────── */}
-        <View style={[styles.sectionInner, isDesktop && styles.sectionCentered, sectionPad]}>
+        <View style={[styles.sectionInner, isDesktop && pageInner, sectionPad]}>
           <SectionTitle>{t('confidence_title')}</SectionTitle>
           <View style={[styles.featureGrid, isDesktop && styles.featureGridDesktop]}>
             {features.map((f, i) => (
@@ -796,11 +794,6 @@ const styles = StyleSheet.create({
   // Sections
   sectionInner: {
     gap: DS.space5,
-  },
-  sectionCentered: {
-    maxWidth: MaxContentWidth,
-    width: '100%',
-    marginHorizontal: 'auto' as any,
   },
   sectionTinted: {
     backgroundColor: DS.surfaceTint,
