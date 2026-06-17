@@ -5,8 +5,8 @@ on:
     branches:
       - main
       - dev
-      # for dev
       - infra/ci-cd
+      # for dev
 
 jobs:
   lint-back:
