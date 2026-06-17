@@ -150,7 +150,10 @@ export const SubscriptionScalarFieldEnum = {
   subscriptionType: 'subscriptionType',
   startDate: 'startDate',
   endDate: 'endDate',
-  status: 'status'
+  status: 'status',
+  paymentMode: 'paymentMode',
+  annualAmount: 'annualAmount',
+  monthlyAmount: 'monthlyAmount'
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]

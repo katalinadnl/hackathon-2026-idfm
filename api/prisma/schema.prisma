@@ -80,6 +80,12 @@ model StatusVerification {
   beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
 }
 
+enum PaymentMode {
+  CARD_ONCE
+  SEPA_ONCE
+  SEPA_MONTHLY
+}
+
 enum AccountRole {
   client
   admin
@@ -115,15 +121,18 @@ model Account {
 }
 
 model Subscription {
-  id               Int      @id @default(autoincrement())
+  id               Int         @id @default(autoincrement())
   beneficiaryId    Int
   referrerId       Int?
   payerId          Int?
-  navigoNumber     String   @unique
+  navigoNumber     String      @unique
   subscriptionType String
   startDate        DateTime
   endDate          DateTime
-  status           String   @default("active")
+  status           String      @default("active")
+  paymentMode      PaymentMode @default(SEPA_MONTHLY)
+  annualAmount     Float       @default(0)
+  monthlyAmount    Float?
 
   beneficiary Beneficiary @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
   referrer    Account?    @relation("SubscriptionReferrer", fields: [referrerId], references: [id])
@@ -141,4 +150,6 @@ model Payment {
   status         String   @default("succeeded")
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@unique([subscriptionId, paidAt, amount])
 }

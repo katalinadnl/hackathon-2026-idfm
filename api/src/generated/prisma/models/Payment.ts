@@ -247,6 +247,7 @@ export type PaymentOrderByWithRelationInput = {
 
 export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   id?: number
+  subscriptionId_paidAt_amount?: Prisma.PaymentSubscriptionIdPaidAtAmountCompoundUniqueInput
   AND?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[]
   OR?: Prisma.PaymentWhereInput[]
   NOT?: Prisma.PaymentWhereInput | Prisma.PaymentWhereInput[]
@@ -256,7 +257,7 @@ export type PaymentWhereUniqueInput = Prisma.AtLeast<{
   method?: Prisma.StringFilter<"Payment"> | string
   status?: Prisma.StringFilter<"Payment"> | string
   subscription?: Prisma.XOR<Prisma.SubscriptionScalarRelationFilter, Prisma.SubscriptionWhereInput>
-}, "id">
+}, "id" | "subscriptionId_paidAt_amount">
 
 export type PaymentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -353,6 +354,12 @@ export type PaymentOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type PaymentSubscriptionIdPaidAtAmountCompoundUniqueInput = {
+  subscriptionId: number
+  paidAt: Date | string
+  amount: number
+}
+
 export type PaymentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   subscriptionId?: Prisma.SortOrder
@@ -432,14 +439,6 @@ export type PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput = {
   update?: Prisma.PaymentUpdateWithWhereUniqueWithoutSubscriptionInput | Prisma.PaymentUpdateWithWhereUniqueWithoutSubscriptionInput[]
   updateMany?: Prisma.PaymentUpdateManyWithWhereWithoutSubscriptionInput | Prisma.PaymentUpdateManyWithWhereWithoutSubscriptionInput[]
   deleteMany?: Prisma.PaymentScalarWhereInput | Prisma.PaymentScalarWhereInput[]
-}
-
-export type FloatFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
 }
 
 export type PaymentCreateWithoutSubscriptionInput = {

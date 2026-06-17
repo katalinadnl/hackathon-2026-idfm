@@ -31,6 +31,8 @@ export type SubscriptionAvgAggregateOutputType = {
   beneficiaryId: number | null
   referrerId: number | null
   payerId: number | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionSumAggregateOutputType = {
@@ -38,6 +40,8 @@ export type SubscriptionSumAggregateOutputType = {
   beneficiaryId: number | null
   referrerId: number | null
   payerId: number | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionMinAggregateOutputType = {
@@ -50,6 +54,9 @@ export type SubscriptionMinAggregateOutputType = {
   startDate: Date | null
   endDate: Date | null
   status: string | null
+  paymentMode: $Enums.PaymentMode | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionMaxAggregateOutputType = {
@@ -62,6 +69,9 @@ export type SubscriptionMaxAggregateOutputType = {
   startDate: Date | null
   endDate: Date | null
   status: string | null
+  paymentMode: $Enums.PaymentMode | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionCountAggregateOutputType = {
@@ -74,6 +84,9 @@ export type SubscriptionCountAggregateOutputType = {
   startDate: number
   endDate: number
   status: number
+  paymentMode: number
+  annualAmount: number
+  monthlyAmount: number
   _all: number
 }
 
@@ -83,6 +96,8 @@ export type SubscriptionAvgAggregateInputType = {
   beneficiaryId?: true
   referrerId?: true
   payerId?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionSumAggregateInputType = {
@@ -90,6 +105,8 @@ export type SubscriptionSumAggregateInputType = {
   beneficiaryId?: true
   referrerId?: true
   payerId?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionMinAggregateInputType = {
@@ -102,6 +119,9 @@ export type SubscriptionMinAggregateInputType = {
   startDate?: true
   endDate?: true
   status?: true
+  paymentMode?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionMaxAggregateInputType = {
@@ -114,6 +134,9 @@ export type SubscriptionMaxAggregateInputType = {
   startDate?: true
   endDate?: true
   status?: true
+  paymentMode?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionCountAggregateInputType = {
@@ -126,6 +149,9 @@ export type SubscriptionCountAggregateInputType = {
   startDate?: true
   endDate?: true
   status?: true
+  paymentMode?: true
+  annualAmount?: true
+  monthlyAmount?: true
   _all?: true
 }
 
@@ -225,6 +251,9 @@ export type SubscriptionGroupByOutputType = {
   startDate: Date
   endDate: Date
   status: string
+  paymentMode: $Enums.PaymentMode
+  annualAmount: number
+  monthlyAmount: number | null
   _count: SubscriptionCountAggregateOutputType | null
   _avg: SubscriptionAvgAggregateOutputType | null
   _sum: SubscriptionSumAggregateOutputType | null
@@ -260,6 +289,9 @@ export type SubscriptionWhereInput = {
   startDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   status?: Prisma.StringFilter<"Subscription"> | string
+  paymentMode?: Prisma.EnumPaymentModeFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableFilter<"Subscription"> | number | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
   referrer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
   payer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
@@ -276,6 +308,9 @@ export type SubscriptionOrderByWithRelationInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiary?: Prisma.BeneficiaryOrderByWithRelationInput
   referrer?: Prisma.AccountOrderByWithRelationInput
   payer?: Prisma.AccountOrderByWithRelationInput
@@ -295,6 +330,9 @@ export type SubscriptionWhereUniqueInput = Prisma.AtLeast<{
   startDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   status?: Prisma.StringFilter<"Subscription"> | string
+  paymentMode?: Prisma.EnumPaymentModeFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableFilter<"Subscription"> | number | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
   referrer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
   payer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
@@ -311,6 +349,9 @@ export type SubscriptionOrderByWithAggregationInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.SubscriptionCountOrderByAggregateInput
   _avg?: Prisma.SubscriptionAvgOrderByAggregateInput
   _max?: Prisma.SubscriptionMaxOrderByAggregateInput
@@ -331,6 +372,9 @@ export type SubscriptionScalarWhereWithAggregatesInput = {
   startDate?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
   status?: Prisma.StringWithAggregatesFilter<"Subscription"> | string
+  paymentMode?: Prisma.EnumPaymentModeWithAggregatesFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatWithAggregatesFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableWithAggregatesFilter<"Subscription"> | number | null
 }
 
 export type SubscriptionCreateInput = {
@@ -339,6 +383,9 @@ export type SubscriptionCreateInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
   payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
@@ -355,6 +402,9 @@ export type SubscriptionUncheckedCreateInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
@@ -364,6 +414,9 @@ export type SubscriptionUpdateInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
   payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
@@ -380,6 +433,9 @@ export type SubscriptionUncheckedUpdateInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
@@ -393,6 +449,9 @@ export type SubscriptionCreateManyInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateManyMutationInput = {
@@ -401,6 +460,9 @@ export type SubscriptionUpdateManyMutationInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionUncheckedUpdateManyInput = {
@@ -413,6 +475,9 @@ export type SubscriptionUncheckedUpdateManyInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionListRelationFilter = {
@@ -435,6 +500,9 @@ export type SubscriptionCountOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionAvgOrderByAggregateInput = {
@@ -442,6 +510,8 @@ export type SubscriptionAvgOrderByAggregateInput = {
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
   payerId?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionMaxOrderByAggregateInput = {
@@ -454,6 +524,9 @@ export type SubscriptionMaxOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionMinOrderByAggregateInput = {
@@ -466,6 +539,9 @@ export type SubscriptionMinOrderByAggregateInput = {
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionSumOrderByAggregateInput = {
@@ -473,6 +549,8 @@ export type SubscriptionSumOrderByAggregateInput = {
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
   payerId?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionScalarRelationFilter = {
@@ -606,6 +684,26 @@ export type SubscriptionUncheckedUpdateManyWithoutPayerNestedInput = {
   deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
 }
 
+export type EnumPaymentModeFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentMode
+}
+
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type SubscriptionCreateNestedOneWithoutPaymentsInput = {
   create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPaymentsInput, Prisma.SubscriptionUncheckedCreateWithoutPaymentsInput>
   connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPaymentsInput
@@ -626,6 +724,9 @@ export type SubscriptionCreateWithoutBeneficiaryInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
   payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
@@ -640,6 +741,9 @@ export type SubscriptionUncheckedCreateWithoutBeneficiaryInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
@@ -682,6 +786,9 @@ export type SubscriptionScalarWhereInput = {
   startDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   status?: Prisma.StringFilter<"Subscription"> | string
+  paymentMode?: Prisma.EnumPaymentModeFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableFilter<"Subscription"> | number | null
 }
 
 export type SubscriptionCreateWithoutReferrerInput = {
@@ -690,6 +797,9 @@ export type SubscriptionCreateWithoutReferrerInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
@@ -704,6 +814,9 @@ export type SubscriptionUncheckedCreateWithoutReferrerInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
@@ -723,6 +836,9 @@ export type SubscriptionCreateWithoutPayerInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
@@ -737,6 +853,9 @@ export type SubscriptionUncheckedCreateWithoutPayerInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
@@ -788,6 +907,9 @@ export type SubscriptionCreateWithoutPaymentsInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
   payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
@@ -803,6 +925,9 @@ export type SubscriptionUncheckedCreateWithoutPaymentsInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionCreateOrConnectWithoutPaymentsInput = {
@@ -827,6 +952,9 @@ export type SubscriptionUpdateWithoutPaymentsInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
   payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
@@ -842,6 +970,9 @@ export type SubscriptionUncheckedUpdateWithoutPaymentsInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionCreateManyBeneficiaryInput = {
@@ -853,6 +984,9 @@ export type SubscriptionCreateManyBeneficiaryInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateWithoutBeneficiaryInput = {
@@ -861,6 +995,9 @@ export type SubscriptionUpdateWithoutBeneficiaryInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
   payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
@@ -875,6 +1012,9 @@ export type SubscriptionUncheckedUpdateWithoutBeneficiaryInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
@@ -887,6 +1027,9 @@ export type SubscriptionUncheckedUpdateManyWithoutBeneficiaryInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionCreateManyReferrerInput = {
@@ -898,6 +1041,9 @@ export type SubscriptionCreateManyReferrerInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionCreateManyPayerInput = {
@@ -909,6 +1055,9 @@ export type SubscriptionCreateManyPayerInput = {
   startDate: Date | string
   endDate: Date | string
   status?: string
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateWithoutReferrerInput = {
@@ -917,6 +1066,9 @@ export type SubscriptionUpdateWithoutReferrerInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
@@ -931,6 +1083,9 @@ export type SubscriptionUncheckedUpdateWithoutReferrerInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
@@ -943,6 +1098,9 @@ export type SubscriptionUncheckedUpdateManyWithoutReferrerInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionUpdateWithoutPayerInput = {
@@ -951,6 +1109,9 @@ export type SubscriptionUpdateWithoutPayerInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
@@ -965,6 +1126,9 @@ export type SubscriptionUncheckedUpdateWithoutPayerInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
@@ -977,6 +1141,9 @@ export type SubscriptionUncheckedUpdateManyWithoutPayerInput = {
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.StringFieldUpdateOperationsInput | string
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 
@@ -1020,6 +1187,9 @@ export type SubscriptionSelect<ExtArgs extends runtime.Types.Extensions.Internal
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
   payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
@@ -1037,6 +1207,9 @@ export type SubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
   payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
@@ -1052,6 +1225,9 @@ export type SubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
   payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
@@ -1067,9 +1243,12 @@ export type SubscriptionSelectScalar = {
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
 }
 
-export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "beneficiaryId" | "referrerId" | "payerId" | "navigoNumber" | "subscriptionType" | "startDate" | "endDate" | "status", ExtArgs["result"]["subscription"]>
+export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "beneficiaryId" | "referrerId" | "payerId" | "navigoNumber" | "subscriptionType" | "startDate" | "endDate" | "status" | "paymentMode" | "annualAmount" | "monthlyAmount", ExtArgs["result"]["subscription"]>
 export type SubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
@@ -1106,6 +1285,9 @@ export type $SubscriptionPayload<ExtArgs extends runtime.Types.Extensions.Intern
     startDate: Date
     endDate: Date
     status: string
+    paymentMode: $Enums.PaymentMode
+    annualAmount: number
+    monthlyAmount: number | null
   }, ExtArgs["result"]["subscription"]>
   composites: {}
 }
@@ -1542,6 +1724,9 @@ export interface SubscriptionFieldRefs {
   readonly startDate: Prisma.FieldRef<"Subscription", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"Subscription", 'DateTime'>
   readonly status: Prisma.FieldRef<"Subscription", 'String'>
+  readonly paymentMode: Prisma.FieldRef<"Subscription", 'PaymentMode'>
+  readonly annualAmount: Prisma.FieldRef<"Subscription", 'Float'>
+  readonly monthlyAmount: Prisma.FieldRef<"Subscription", 'Float'>
 }
     
 

@@ -30,6 +30,15 @@ export const VerificationSource = {
 export type VerificationSource = (typeof VerificationSource)[keyof typeof VerificationSource]
 
 
+export const PaymentMode = {
+  CARD_ONCE: 'CARD_ONCE',
+  SEPA_ONCE: 'SEPA_ONCE',
+  SEPA_MONTHLY: 'SEPA_MONTHLY'
+} as const
+
+export type PaymentMode = (typeof PaymentMode)[keyof typeof PaymentMode]
+
+
 export const AccountRole = {
   client: 'client',
   admin: 'admin'
