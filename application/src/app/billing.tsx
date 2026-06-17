@@ -15,12 +15,10 @@ import { RibTab } from "@/components/billing/RibTab";
 import { SegmentedTabs } from "@/components/billing/SegmentedTabs";
 import { TransactionsTab } from "@/components/billing/TransactionsTab";
 import { Card } from "@/components/ui/Card";
-import { pageInner, usePageLayout } from '@/hooks/use-page-layout';
+import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { BottomTabInset, DS, MaxContentWidth } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
-
-const DESKTOP_BP = 768;
 
 type TabKey = "transactions" | "mandate" | "rib";
 

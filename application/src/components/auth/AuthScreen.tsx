@@ -197,7 +197,9 @@ export function AuthScreen() {
             >
               <Icon name="shield" size={22} color={DS.white} />
               <View>
-                <Text style={styles.fcButtonKicker}>S'identifier avec</Text>
+                <Text style={styles.fcButtonKicker}>
+                  S&apos;identifier avec
+                </Text>
                 <Text style={styles.fcButtonBrand}>FranceConnect</Text>
               </View>
             </Pressable>

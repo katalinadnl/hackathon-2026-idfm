@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
   Modal,
   Pressable,
@@ -6,21 +6,19 @@ import {
   Text,
   TouchableWithoutFeedback,
   View,
-} from 'react-native';
+} from "react-native";
 
-import { DS } from '@/constants/theme';
-import { Icon } from './Icon';
+import { DS } from "@/constants/theme";
+import { Icon } from "./Icon";
 
 const DEFAULT_LANGS = [
-  { code: 'fr', label: 'Français' },
-  { code: 'en', label: 'English' },
-  { code: 'es', label: 'Español' },
-  { code: 'de', label: 'Deutsch' },
-  { code: 'ar', label: 'العربية' },
-  { code: 'zh', label: '中文' },
+  { code: "fr", label: "Français" },
+  { code: "en", label: "English" },
+  { code: "es", label: "Español" },
+  { code: "de", label: "Deutsch" },
+  { code: "ar", label: "العربية" },
+  { code: "zh", label: "中文" },
 ] as const;
-
-type LangCode = (typeof DEFAULT_LANGS)[number]['code'];
 
 type LanguageSwitcherProps = {
   languages?: readonly { code: string; label: string }[];
@@ -30,7 +28,7 @@ type LanguageSwitcherProps = {
 
 export function LanguageSwitcher({
   languages = DEFAULT_LANGS,
-  value = 'fr',
+  value = "fr",
   onChange,
 }: LanguageSwitcherProps) {
   const [open, setOpen] = useState(false);
@@ -45,7 +43,10 @@ export function LanguageSwitcher({
     <View>
       <Pressable
         onPress={() => setOpen(true)}
-        style={({ pressed }) => [styles.trigger, pressed && styles.triggerPressed]}
+        style={({ pressed }) => [
+          styles.trigger,
+          pressed && styles.triggerPressed,
+        ]}
         accessible
         accessibilityRole="button"
         accessibilityLabel={`Langue : ${current.label}. Appuyez pour changer de langue.`}
@@ -64,11 +65,18 @@ export function LanguageSwitcher({
         accessible
         accessibilityViewIsModal
       >
-        <TouchableWithoutFeedback onPress={() => setOpen(false)} accessible={false}>
+        <TouchableWithoutFeedback
+          onPress={() => setOpen(false)}
+          accessible={false}
+        >
           <View style={styles.overlay} />
         </TouchableWithoutFeedback>
 
-        <View style={styles.sheet} accessibilityRole="menu" accessibilityLabel="Choisir une langue">
+        <View
+          style={styles.sheet}
+          accessibilityRole="menu"
+          accessibilityLabel="Choisir une langue"
+        >
           <Text style={styles.sheetTitle}>Choisir une langue</Text>
           {languages.map((lang) => {
             const selected = lang.code === value;
@@ -86,11 +94,21 @@ export function LanguageSwitcher({
                 accessibilityLabel={lang.label}
                 accessibilityState={{ selected }}
               >
-                <Text style={[styles.langLabel, selected && styles.langLabelSelected]}>
+                <Text
+                  style={[
+                    styles.langLabel,
+                    selected && styles.langLabelSelected,
+                  ]}
+                >
                   {lang.label}
                 </Text>
                 {selected && (
-                  <Icon name="check" size={18} color={DS.actionPrimary} label="Sélectionné" />
+                  <Icon
+                    name="check"
+                    size={18}
+                    color={DS.actionPrimary}
+                    label="Sélectionné"
+                  />
                 )}
               </Pressable>
             );
@@ -103,30 +121,30 @@ export function LanguageSwitcher({
 
 const styles = StyleSheet.create({
   trigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space2,
     minHeight: DS.targetMin,
     paddingHorizontal: DS.space4,
     borderRadius: DS.radiusSm,
     borderWidth: 1.5,
     borderColor: DS.borderDefault,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   triggerPressed: {
     backgroundColor: DS.bluePale,
   },
   triggerText: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
   },
   overlay: {
     ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: "rgba(0,0,0,0.3)",
   },
   sheet: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
@@ -144,7 +162,7 @@ const styles = StyleSheet.create({
   },
   sheetTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
     paddingBottom: DS.space3,
     borderBottomWidth: 1,
@@ -152,9 +170,9 @@ const styles = StyleSheet.create({
     marginBottom: DS.space2,
   },
   langItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     minHeight: DS.targetMin,
     paddingHorizontal: DS.space4,
     borderRadius: DS.radiusSm,
@@ -167,10 +185,10 @@ const styles = StyleSheet.create({
   },
   langLabel: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: DS.textStrong,
   },
   langLabelSelected: {
-    fontWeight: '700',
+    fontWeight: "700",
   },
 });

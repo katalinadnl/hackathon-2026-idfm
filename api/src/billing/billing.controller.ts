@@ -5,17 +5,17 @@ import {
   ParseIntPipe,
   Post,
   Query,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
-import type { Request } from 'express';
 
 import { BillingService } from './billing.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { GetMe } from 'src/auth/decorators/get-me.decorator';
+import type { JwtPayload } from 'src/auth/types';
 
-function accountIdOf(req: Request): number {
-  return (req as any).user.sub as number;
+function accountIdOf(user: JwtPayload): number {
+  return user.id;
 }
 
 @ApiTags('Billing')
@@ -28,38 +28,38 @@ export class BillingController {
   @ApiOkResponse({
     description: 'Passes visible to the authenticated account.',
   })
-  getPasses(@Req() req: Request) {
-    return this.billing.getPasses(accountIdOf(req));
+  getPasses(@GetMe() user: JwtPayload) {
+    return this.billing.getPasses(accountIdOf(user));
   }
 
   @Get('transactions')
   @ApiQuery({ name: 'subscriptionId', type: Number, required: false })
   getTransactions(
-    @Req() req: Request,
+    @GetMe() user: JwtPayload,
     @Query('subscriptionId') subscriptionId?: string,
   ) {
     const subId = subscriptionId ? Number(subscriptionId) : undefined;
-    return this.billing.getTransactions(accountIdOf(req), subId);
+    return this.billing.getTransactions(accountIdOf(user), subId);
   }
 
   @Get('mandate')
   @ApiQuery({ name: 'subscriptionId', type: Number })
   getMandate(
-    @Req() req: Request,
+    @GetMe() user: JwtPayload,
     @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
   ) {
-    return this.billing.getMandate(accountIdOf(req), subscriptionId);
+    return this.billing.getMandate(accountIdOf(user), subscriptionId);
   }
 
   @Get('mandate/document')
   @Header('Content-Type', 'text/html; charset=utf-8')
   @ApiQuery({ name: 'subscriptionId', type: Number })
   getMandateDocument(
-    @Req() req: Request,
+    @GetMe() user: JwtPayload,
     @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
   ) {
     return this.billing.getMandateDocumentHtml(
-      accountIdOf(req),
+      accountIdOf(user),
       subscriptionId,
     );
   }
@@ -67,31 +67,31 @@ export class BillingController {
   @Get('payment-method')
   @ApiQuery({ name: 'subscriptionId', type: Number })
   getPaymentMethod(
-    @Req() req: Request,
+    @GetMe() user: JwtPayload,
     @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
   ) {
-    return this.billing.getPaymentMethod(accountIdOf(req), subscriptionId);
+    return this.billing.getPaymentMethod(accountIdOf(user), subscriptionId);
   }
 
   @Post('payment-method/change')
   @ApiQuery({ name: 'subscriptionId', type: Number })
   startRibChange(
-    @Req() req: Request,
+    @GetMe() user: JwtPayload,
     @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
   ) {
-    return this.billing.startRibChange(accountIdOf(req), subscriptionId);
+    return this.billing.startRibChange(accountIdOf(user), subscriptionId);
   }
 
   @Post('payment-method/finalize')
   @ApiQuery({ name: 'subscriptionId', type: Number })
   @ApiQuery({ name: 'setupIntentId', type: String })
   finalizeRibChange(
-    @Req() req: Request,
+    @GetMe() user: JwtPayload,
     @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
     @Query('setupIntentId') setupIntentId: string,
   ) {
     return this.billing.finalizeRibChange(
-      accountIdOf(req),
+      accountIdOf(user),
       subscriptionId,
       setupIntentId,
     );
