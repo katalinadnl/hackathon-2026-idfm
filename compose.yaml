@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: docker/api/Dockerfile
+      target: dev
     command: npm run start:dev
     environment:
       PORT: 3000
@@ -13,16 +14,29 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     restart: unless-stopped
 
   app:
     build:
       context: .
       dockerfile: docker/app/Dockerfile
+      target: dev
     command: npm run web
     volumes:
       - ./application:/app
       - /app/node_modules
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     restart: unless-stopped
 
   database:

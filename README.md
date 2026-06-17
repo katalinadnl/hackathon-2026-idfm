@@ -2,64 +2,115 @@
 
 ## Architecture
 
-| Service | Description                                                  | Techno                  |
-| ------- | ------------------------------------------------------------ | ----------------------- |
-| `nginx` | Gateway / reverse-proxy, seul port exposé (`80`)             | nginx alpine            |
-| `app`   | Application front, build web statique d'Expo servi par nginx | Expo / React Native Web |
-| `api`   | API back-end                                                 | Nest Js                 |
+| Service    | Description                                          | Techno                  |
+|------------|------------------------------------------------------|-------------------------|
+| `traefik`  | Reverse proxy, TLS automatique via Let's Encrypt     | Traefik v3              |
+| `app`      | Frontend statique Expo/web servi par nginx           | Expo / React Native Web |
+| `api`      | API REST                                             | NestJS                  |
+| `database` | Base de données relationnelle                        | PostgreSQL 16           |
+| `umami`    | Analytics RGPD-compliant (prod uniquement)           | Umami                   |
 
-## Initialisation
+## Prérequis
 
-Copy `api/.env.exemple` to `api/.env` in backend
-Copy `application/.env` to `application/.env` in frontend
+- Docker + Docker Compose
+- Node 20+
 
-```bash
-cd application
-npm i
-cd ..
-cd api
-npm i
-npx prisma generate
-npx prisma migrate dev
-npm run seed
-cd ..
-```
-
-## Démarrage
+## Démarrage local
 
 ```bash
+# 1. Variables d'environnement
+cp api/.env.example api/.env
+cp application/.env.example application/.env
+
+# 2. Générer le client Prisma et migrer
+cd api && npm i && npx prisma generate && npx prisma migrate dev && npm run seed && cd ..
+
+# 3. Lancer
 docker compose up --build
 ```
 
-Une fois les conteneurs démarrés :
-
-| URL                     | Cible                  |
-| ----------------------- | ---------------------- |
-| <http://localhost/>     | Application Expo (web) |
-| <http://localhost/api/> | API Nest               |
-
-Pour arrêter :
+| URL                        | Cible                  |
+|----------------------------|------------------------|
+| http://localhost/          | Application Expo (web) |
+| http://localhost/api/      | API NestJS             |
+| http://localhost/api/docs  | Swagger UI             |
+| http://localhost:8080/     | Adminer (DB)           |
 
 ```bash
 docker compose down
 ```
 
-## Routing de l'API
+## Déploiement en production
 
-La gateway transmet les requêtes commençant par `/api` à l'api **en conservant
-le préfixe** (nécessaire pour Swagger, qui génère ses routes et sa doc à
-partir de ce chemin). Les assets statiques des UIs de doc sont servis depuis
-`/bundles/`.
+### Prérequis VPS
 
-### Documentation API (API Platform)
+- Docker installé (`curl -fsSL https://get.docker.com | sh`)
+- Ports 80 et 443 ouverts
+- Enregistrements DNS pointant vers l'IP du VPS :
+  - `app.vetpawtrol.com`
+  - `api.vetpawtrol.com`
+  - `stats.vetpawtrol.com`
+  - `traefik.vetpawtrol.com`
 
-Disponible une fois les conteneurs lancés :
+### Déploiement via Docker Context
 
-| Type                  | URL                         |
-| --------------------- | --------------------------- |
-| Doc HTML (Swagger UI) | <http://localhost/api/docs> |
+```bash
+# 1. Créer le fichier d'environnement de prod
+make prod-env   # puis éditer .env.prod avec les vraies valeurs
+
+# 2. Créer le contexte Docker pointant vers le VPS
+make context-create VPS_HOST=<IP_DU_VPS>
+
+# 3. Déployer
+make deploy
+```
+
+### URLs de production
+
+| URL                              | Cible              |
+|----------------------------------|--------------------|
+| https://app.vetpawtrol.com       | Frontend           |
+| https://api.vetpawtrol.com       | API                |
+| https://stats.vetpawtrol.com     | Umami analytics    |
+| https://traefik.vetpawtrol.com   | Dashboard Traefik  |
+
+## Haute disponibilité — Docker Swarm
+
+Configuration d'un cluster 2 managers + 5 workers pour la haute disponibilité.
+
+```bash
+# Sur manager-1 : initialiser le Swarm
+make swarm-init
+
+# Récupérer les tokens et les coller sur les autres noeuds
+make swarm-token-manager   # → coller sur manager-2
+make swarm-token-worker    # → coller sur worker-1..5
+
+# Poser le label de stockage sur manager-1 (nécessaire pour la DB)
+make swarm-label-db
+
+# Déployer la stack
+make swarm-deploy
+
+# Vérifier l'état du cluster
+make swarm-nodes
+make swarm-status
+make swarm-ps
+```
+
+Topologie des services :
+
+| Service    | Placement    | Replicas              |
+|------------|--------------|-----------------------|
+| `traefik`  | managers     | 1 par manager (global)|
+| `api`      | workers      | 5 (1 par worker)      |
+| `app`      | workers      | 5 (1 par worker)      |
+| `database` | manager-1    | 1 (volume local)      |
 
 ## Variables d'environnement
 
-L'API charge ses variables depuis `api/.env` (voir `api/.env.example` pour un exemple).
-L'app charge ses variables depuis `applicatiion/.env` (voir `application/.env.example` pour un exemple).
+| Fichier               | Usage                                     |
+|-----------------------|-------------------------------------------|
+| `api/.env`            | Dev local — voir `api/.env.example`       |
+| `application/.env`    | Dev local — voir `application/.env.example` |
+| `.env.prod`           | Production — voir `.env.prod.example`     |
