@@ -8,7 +8,13 @@ import { TransportModule } from './transport/transport.module';
 import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [PrismaModule, AuthModule, SubscriptionsModule, TransportModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    SubscriptionsModule,
+    TransportModule,
+    BillingModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
