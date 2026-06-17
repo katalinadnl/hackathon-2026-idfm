@@ -58,8 +58,8 @@ export function MandateTab({ accountId, subscriptionId, onGoToRib }: Props) {
   const m = data.active;
   const meta = STATUS_META[m.status];
 
-  const handleDownload = () => {
-    Linking.openURL(mandateDocumentUrl(accountId, subscriptionId));
+  const handleDownload = async () => {
+    Linking.openURL(await mandateDocumentUrl(subscriptionId));
   };
 
   return (

@@ -16,12 +16,17 @@ export interface ApiSubscription {
   latestPayment: { amount: number; paidAt: string; status: string } | null;
 }
 
-export function useSubscriptions(accountId: number) {
+export function useSubscriptions(accountId: number | null) {
   const [subscriptions, setSubscriptions] = useState<ApiSubscription[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
+    if (accountId === null) {
+      setSubscriptions([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setError(null);
     fetch(`${API_URL}/accounts/${accountId}/subscriptions`)

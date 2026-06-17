@@ -1,10 +1,15 @@
 import { Platform } from "react-native";
 
+import { loadToken } from "@/services/storage";
+
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   (Platform.OS === "web" ? "/api" : "http://localhost:3000/api");
 
-export const CURRENT_ACCOUNT_ID = 2;
+async function authHeaders(): Promise<Record<string, string>> {
+  const token = await loadToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 export type BillingRole = "holder" | "referrer" | "payer";
 
@@ -98,7 +103,9 @@ async function get<T>(
   path: string,
   params: Record<string, unknown>,
 ): Promise<T> {
-  const res = await fetch(buildUrl(path, params));
+  const res = await fetch(buildUrl(path, params), {
+    headers: await authHeaders(),
+  });
   if (!res.ok) {
     throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
   }
@@ -109,7 +116,10 @@ async function post<T>(
   path: string,
   params: Record<string, unknown>,
 ): Promise<T> {
-  const res = await fetch(buildUrl(path, params), { method: "POST" });
+  const res = await fetch(buildUrl(path, params), {
+    method: "POST",
+    headers: await authHeaders(),
+  });
   if (!res.ok) {
     throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
   }
@@ -156,11 +166,14 @@ export const billingApi = {
   },
 };
 
-export function mandateDocumentUrl(
-  accountId: number,
+export async function mandateDocumentUrl(
   subscriptionId: number,
-): string {
-  const path = `/billing/mandate/document?accountId=${accountId}&subscriptionId=${subscriptionId}`;
+): Promise<string> {
+  const token = await loadToken();
+
+  const qs = new URLSearchParams({ subscriptionId: String(subscriptionId) });
+  if (token) qs.append("token", token);
+  const path = `/billing/mandate/document?${qs.toString()}`;
   if (Platform.OS === "web" && BASE_URL.startsWith("/")) {
     return `${window.location.origin}${BASE_URL}${path}`;
   }

@@ -15,12 +15,19 @@ interface AsyncState<T> {
   reload: () => void;
 }
 
-export function usePasses(accountId: number): AsyncState<PassSummary[]> {
+export function usePasses(
+  accountId: number | null,
+): AsyncState<PassSummary[]> {
   const [data, setData] = useState<PassSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
+    if (accountId === null) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
