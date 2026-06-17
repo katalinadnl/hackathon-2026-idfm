@@ -12,7 +12,9 @@ export interface NetworkStatus {
 @Controller('transport')
 export class TransportController {
   @Get('status')
-  @ApiOperation({ summary: 'Get current network status (ready for PRIM API integration)' })
+  @ApiOperation({
+    summary: 'Get current network status (ready for PRIM API integration)',
+  })
   getStatus(): NetworkStatus {
     return {
       status: 'normal',

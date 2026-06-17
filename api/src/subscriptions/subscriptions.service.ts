@@ -4,6 +4,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
 import { SubscriptionResponseDto } from './dto/subscription-response.dto';
+import {
+  subscriptionInclude,
+  SubscriptionWithRelations,
+} from './subscriptions.type';
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 
@@ -78,26 +82,12 @@ export class SubscriptionsService {
 
   // Include partagé entre findAll et findOne pour rester cohérent
   private includeClause() {
-    return {
-      beneficiary: {
-        include: {
-          residenceDepartment: true,
-          account: true,
-        },
-      },
-      referrer: {
-        include: { beneficiary: true },
-      },
-      payer: {
-        include: { beneficiary: true },
-      },
-      payments: {
-        orderBy: { paidAt: 'desc' as const },
-      },
-    };
+    return subscriptionInclude;
   }
 
-  private toResponseDto(subscription: any): SubscriptionResponseDto {
+  private toResponseDto(
+    subscription: SubscriptionWithRelations,
+  ): SubscriptionResponseDto {
     const beneficiary = subscription.beneficiary;
     const account = beneficiary.account;
 
@@ -150,7 +140,7 @@ export class SubscriptionsService {
           }
         : null,
 
-      payments: subscription.payments.map((p: any) => ({
+      payments: subscription.payments.map((p) => ({
         id: p.id,
         paidAt: p.paidAt.toISOString(),
         amount: p.amount,

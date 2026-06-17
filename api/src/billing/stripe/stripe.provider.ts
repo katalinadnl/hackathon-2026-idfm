@@ -95,7 +95,9 @@ export class StripeProvider {
       creditorIcs: CREDITOR_ICS,
       debtorName: pm?.billing_details?.name ?? '—',
       ibanMasked: this.maskIban(sepa?.last4 ?? null),
-      signedAt: pm ? new Date(pm.created * 1000).toISOString() : new Date().toISOString(),
+      signedAt: pm
+        ? new Date(pm.created * 1000).toISOString()
+        : new Date().toISOString(),
       revokedAt: null,
       navigoNumber,
       source: 'stripe',

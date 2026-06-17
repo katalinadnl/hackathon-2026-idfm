@@ -194,8 +194,7 @@ export class BillingService {
         : `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`;
 
     const seed = payer?.accountNumber ?? sub.navigoNumber;
-    const mask = (tail: string) =>
-      `FR76 •••• •••• •••• •••• ••${tail}`;
+    const mask = (tail: string) => `FR76 •••• •••• •••• •••• ••${tail}`;
 
     const active: SepaMandate = {
       reference: `IDFM-${sub.navigoNumber}`,
@@ -247,7 +246,9 @@ export class BillingService {
       s.replace(
         /[&<>"]/g,
         (c) =>
-          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] as string,
+          ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[
+            c
+          ] as string,
       );
     const signed = new Date(m.signedAt).toLocaleDateString('fr-FR', {
       day: '2-digit',
@@ -318,7 +319,8 @@ export class BillingService {
     if (this.stripe.isConnected) {
       return {
         connected: true,
-        paymentMethod: await this.stripe.getDefaultPaymentMethod(subscriptionId),
+        paymentMethod:
+          await this.stripe.getDefaultPaymentMethod(subscriptionId),
       };
     }
     return {
