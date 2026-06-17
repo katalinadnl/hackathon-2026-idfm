@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -13,10 +14,17 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { DS, MaxContentWidth } from '@/constants/theme';
+import {
+  ApiSubscription,
+  SubscriptionRole,
+  useSubscriptions,
+} from '@/hooks/use-subscriptions';
 
 const DESKTOP_BP = 768;
 
-// ─── Types & static data ───────────────────────────────────────────────────────
+// Hardcoded until auth context is wired up (account id=1 = Alice Martin in seed)
+const CURRENT_ACCOUNT_ID = 1;
+const CURRENT_ACCOUNT_NAME = 'Alice';
 
 type Section = 'dashboard' | 'subscriptions' | 'billing' | 'history';
 
@@ -27,43 +35,38 @@ const NAV_ITEMS: { id: Section; icon: string; label: string }[] = [
   { id: 'history',       icon: 'clock',   label: 'Historique'      },
 ];
 
-const PASSES = [
-  {
-    id: '1',
-    type: 'NAVIGO MENSUEL',
-    zones: 'Zones 1–5',
-    status: 'Actif',
-    validity: 'Valable jusqu\'au 30 juin 2026',
-    renewal: 'renouvellement auto activé',
-    price: '86,40 €/mois',
-    card: '•••• •••• •••• 4821',
-  },
-  {
-    id: '2',
-    type: 'NAVIGO EASY',
-    zones: 'Tickets individuels',
-    status: 'Actif',
-    validity: 'Valable jusqu\'au 31 déc. 2026',
-    renewal: null,
-    price: 'Solde : 3,20 €',
-    card: null,
-  },
-];
-
-const INVOICES = [
-  { id: 'F2026-042', date: '01 juin 2026',   amount: '86,40 €', desc: 'Navigo Mensuel – Zones 1-5', status: 'Payée' },
-  { id: 'F2026-031', date: '01 mai 2026',    amount: '86,40 €', desc: 'Navigo Mensuel – Zones 1-5', status: 'Payée' },
-  { id: 'F2026-020', date: '01 avr. 2026',   amount: '86,40 €', desc: 'Navigo Mensuel – Zones 1-5', status: 'Payée' },
-  { id: 'F2026-009', date: '01 mars 2026',   amount: '86,40 €', desc: 'Navigo Mensuel – Zones 1-5', status: 'Payée' },
-];
-
 const HISTORY = [
-  { id: 'H1', date: '15 juin 2026', type: 'Validation', desc: 'Métro ligne 1 — Châtelet',       time: '08:04' },
-  { id: 'H2', date: '15 juin 2026', type: 'Validation', desc: 'RER A — Gare de Lyon',            time: '08:27' },
-  { id: 'H3', date: '14 juin 2026', type: 'Validation', desc: 'Métro ligne 14 — Saint-Lazare',   time: '18:12' },
-  { id: 'H4', date: '14 juin 2026', type: 'Validation', desc: 'Métro ligne 6 — Montparnasse',    time: '18:41' },
-  { id: 'H5', date: '13 juin 2026', type: 'Recharge',   desc: 'Navigo Easy — +10 tickets',       time: '12:05' },
+  { id: 'H1', date: '15 juin 2026', type: 'Validation', desc: 'Métro ligne 1 — Châtelet',     time: '08:04' },
+  { id: 'H2', date: '15 juin 2026', type: 'Validation', desc: 'RER A — Gare de Lyon',          time: '08:27' },
+  { id: 'H3', date: '14 juin 2026', type: 'Validation', desc: 'Métro ligne 14 — Saint-Lazare', time: '18:12' },
+  { id: 'H4', date: '14 juin 2026', type: 'Validation', desc: 'Métro ligne 6 — Montparnasse',  time: '18:41' },
+  { id: 'H5', date: '13 juin 2026', type: 'Recharge',   desc: 'Navigo Easy — +10 tickets',     time: '12:05' },
 ];
+
+// ─── Helpers ───────────────────────────────────────────────────────────────────
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+}
+
+function formatAmount(amount: number): string {
+  return `${amount.toFixed(2).replace('.', ',')} €`;
+}
+
+function isExpiringSoon(endDate: string): boolean {
+  const days = (new Date(endDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+  return days > 0 && days <= 30;
+}
+
+const ROLE_LABELS: Record<SubscriptionRole, string> = {
+  titulaire:    'Titulaire',
+  payeur:       'Payeur',
+  gestionnaire: 'Gestionnaire',
+};
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
@@ -94,11 +97,7 @@ function SidebarItem({
       accessibilityState={{ selected: active }}
       accessibilityLabel={label}
     >
-      <Icon
-        name={icon}
-        size={20}
-        color={active ? DS.actionPrimary : DS.textMuted}
-      />
+      <Icon name={icon} size={20} color={active ? DS.actionPrimary : DS.textMuted} />
       <Text
         style={[
           styles.navLabel,
@@ -113,19 +112,19 @@ function SidebarItem({
   );
 }
 
-// Main active pass card with gradient background
-function ActivePassCard({ pass }: { pass: typeof PASSES[0] }) {
+function ActivePassCard({ sub }: { sub: ApiSubscription }) {
   const gradientStyle = Platform.OS === 'web'
     ? ({ backgroundImage: 'linear-gradient(135deg, #1972D2 0%, #1242A7 50%, #0B1F5E 100%)' } as any)
     : {};
+  const expiring = isExpiringSoon(sub.endDate);
 
   return (
     <View style={[styles.passCard, gradientStyle]}>
       <View style={styles.passCardTop}>
         <View style={styles.passCardMeta}>
           <Icon name="ticket" size={18} color="rgba(255,255,255,0.7)" />
-          <Text style={styles.passCardType}>{pass.type}</Text>
-          <Badge tone="success" dot>{pass.status}</Badge>
+          <Text style={styles.passCardType}>{sub.subscriptionType}</Text>
+          <Badge tone="success" dot>{sub.status === 'active' ? 'Actif' : sub.status}</Badge>
         </View>
         <Button
           variant="secondary"
@@ -133,54 +132,83 @@ function ActivePassCard({ pass }: { pass: typeof PASSES[0] }) {
           trailingIcon="arrow-right"
           style={styles.passCardBtn}
         >
-          Gérer mon Navigo
+          Gérer
         </Button>
       </View>
 
-      <Text style={styles.passZones}>{pass.zones}</Text>
+      <Text style={styles.passZones}>
+        {sub.beneficiary.firstName} {sub.beneficiary.lastName}
+      </Text>
       <Text style={styles.passValidity}>
-        {pass.validity} · {pass.renewal}
+        Valable jusqu'au {formatDate(sub.endDate)}
+        {expiring ? ' · Renouvellement disponible' : ''}
       </Text>
 
       <View style={styles.passCardFooter}>
-        <Text style={styles.passPrice}>{pass.price}</Text>
-        {pass.card && (
-          <Text style={styles.passCard_}>CB {pass.card}</Text>
+        {sub.latestPayment && (
+          <Text style={styles.passPrice}>
+            {formatAmount(sub.latestPayment.amount)}/mois
+          </Text>
+        )}
+        <View style={styles.roleRow}>
+          {sub.roles.map((r) => (
+            <View key={r} style={styles.roleChip}>
+              <Text style={styles.roleChipText}>{ROLE_LABELS[r]}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function PassRow({ sub }: { sub: ApiSubscription }) {
+  const expiring = isExpiringSoon(sub.endDate);
+  return (
+    <View style={styles.passRow}>
+      <View style={styles.passRowLeft}>
+        <View style={styles.passRowHeader}>
+          <Text style={styles.passRowType}>{sub.subscriptionType}</Text>
+          <Badge tone={sub.status === 'active' ? 'success' : 'neutral'} dot>
+            {sub.status === 'active' ? 'Actif' : sub.status}
+          </Badge>
+          {expiring && <Badge tone="warning">Renouveler</Badge>}
+        </View>
+        <Text style={styles.passRowZones}>
+          {sub.beneficiary.firstName} {sub.beneficiary.lastName}
+        </Text>
+        <Text style={styles.passRowValidity}>
+          Jusqu'au {formatDate(sub.endDate)}
+        </Text>
+        <View style={styles.roleRowSmall}>
+          {sub.roles.map((r) => (
+            <Text key={r} style={styles.roleLabel}>{ROLE_LABELS[r]}</Text>
+          ))}
+        </View>
+      </View>
+      <View style={styles.passRowRight}>
+        {sub.latestPayment && (
+          <Text style={styles.passRowPrice}>
+            {formatAmount(sub.latestPayment.amount)}
+          </Text>
         )}
       </View>
     </View>
   );
 }
 
-// Secondary pass card (simpler, white card)
-function PassRow({ pass }: { pass: typeof PASSES[0] }) {
-  return (
-    <View style={styles.passRow}>
-      <View style={styles.passRowLeft}>
-        <View style={styles.passRowHeader}>
-          <Text style={styles.passRowType}>{pass.type}</Text>
-          <Badge tone={pass.status === 'Actif' ? 'success' : 'neutral'} dot>
-            {pass.status}
-          </Badge>
-        </View>
-        <Text style={styles.passRowZones}>{pass.zones}</Text>
-        <Text style={styles.passRowValidity}>{pass.validity}</Text>
-      </View>
-      <View style={styles.passRowRight}>
-        <Text style={styles.passRowPrice}>{pass.price}</Text>
-      </View>
-    </View>
-  );
-}
-
-function InvoiceRow({ invoice }: { invoice: typeof INVOICES[0] }) {
+function PaymentRow({ sub }: { sub: ApiSubscription }) {
+  if (!sub.latestPayment) return null;
+  const p = sub.latestPayment;
   return (
     <View style={styles.tableRow}>
-      <Text style={[styles.tableCell, styles.tableCellId]}>{invoice.id}</Text>
-      <Text style={[styles.tableCell, styles.tableCellDesc]}>{invoice.desc}</Text>
-      <Text style={[styles.tableCell, styles.tableCellDate]}>{invoice.date}</Text>
-      <Text style={[styles.tableCell, styles.tableCellAmount]}>{invoice.amount}</Text>
-      <Badge tone="success">{invoice.status}</Badge>
+      <Text style={[styles.tableCell, styles.tableCellId]}>{sub.navigoNumber}</Text>
+      <Text style={[styles.tableCell, styles.tableCellDesc]}>{sub.subscriptionType}</Text>
+      <Text style={[styles.tableCell, styles.tableCellDate]}>{formatDate(p.paidAt)}</Text>
+      <Text style={[styles.tableCell, styles.tableCellAmount]}>{formatAmount(p.amount)}</Text>
+      <Badge tone={p.status === 'succeeded' ? 'success' : 'warning'}>
+        {p.status === 'succeeded' ? 'Payée' : 'Échec'}
+      </Badge>
     </View>
   );
 }
@@ -205,7 +233,6 @@ function HistoryRow({ entry }: { entry: typeof HISTORY[0] }) {
   );
 }
 
-// Section header
 function SectionHeader({
   title,
   action,
@@ -232,37 +259,79 @@ function SectionHeader({
   );
 }
 
-// ─── Section content renderers ──────────────────────────────────────────────
+function LoadingPlaceholder() {
+  return (
+    <View style={styles.loadingRow}>
+      <ActivityIndicator color={DS.actionPrimary} />
+      <Text style={styles.loadingText}>Chargement…</Text>
+    </View>
+  );
+}
 
-function DashboardHome() {
+// ─── Section content renderers ─────────────────────────────────────────────────
+
+function DashboardHome({
+  subscriptions,
+  loading,
+  onNav,
+}: {
+  subscriptions: ApiSubscription[];
+  loading: boolean;
+  onNav: (s: Section) => void;
+}) {
+  const active = subscriptions.find((s) => s.status === 'active') ?? subscriptions[0];
+  const withPayments = subscriptions.filter((s) => s.latestPayment);
+
   return (
     <View style={styles.sectionContent}>
-      <ActivePassCard pass={PASSES[0]} />
+      {loading ? (
+        <LoadingPlaceholder />
+      ) : active ? (
+        <ActivePassCard sub={active} />
+      ) : null}
 
-      <SectionHeader title="Vos abonnements" action="Tout voir" />
+      <SectionHeader title="Vos abonnements" action="Tout voir" onAction={() => onNav('subscriptions')} />
       <View style={styles.card}>
-        {PASSES.map((p, i) => (
-          <View key={p.id}>
-            <PassRow pass={p} />
-            {i < PASSES.length - 1 && <View style={styles.divider} />}
-          </View>
-        ))}
+        {loading ? (
+          <LoadingPlaceholder />
+        ) : subscriptions.length === 0 ? (
+          <Text style={styles.emptyText}>Aucun abonnement trouvé.</Text>
+        ) : (
+          subscriptions.map((s, i) => (
+            <View key={s.id}>
+              <PassRow sub={s} />
+              {i < subscriptions.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))
+        )}
       </View>
 
-      <SectionHeader title="Dernières facturations" action="Tout voir" />
+      <SectionHeader title="Dernières facturations" action="Tout voir" onAction={() => onNav('billing')} />
       <View style={styles.card}>
-        {INVOICES.slice(0, 2).map((inv, i) => (
-          <View key={inv.id}>
-            <InvoiceRow invoice={inv} />
-            {i < 1 && <View style={styles.divider} />}
-          </View>
-        ))}
+        {loading ? (
+          <LoadingPlaceholder />
+        ) : withPayments.length === 0 ? (
+          <Text style={styles.emptyText}>Aucune facturation.</Text>
+        ) : (
+          withPayments.slice(0, 2).map((s, i) => (
+            <View key={s.id}>
+              <PaymentRow sub={s} />
+              {i < Math.min(withPayments.length, 2) - 1 && <View style={styles.divider} />}
+            </View>
+          ))
+        )}
       </View>
     </View>
   );
 }
 
-function SubscriptionsView() {
+function SubscriptionsView({
+  subscriptions,
+  loading,
+}: {
+  subscriptions: ApiSubscription[];
+  loading: boolean;
+}) {
   return (
     <View style={styles.sectionContent}>
       <Text style={styles.viewTitle}>Vos abonnements</Text>
@@ -271,12 +340,18 @@ function SubscriptionsView() {
       </Text>
 
       <View style={styles.card}>
-        {PASSES.map((p, i) => (
-          <View key={p.id}>
-            <PassRow pass={p} />
-            {i < PASSES.length - 1 && <View style={styles.divider} />}
-          </View>
-        ))}
+        {loading ? (
+          <LoadingPlaceholder />
+        ) : subscriptions.length === 0 ? (
+          <Text style={styles.emptyText}>Aucun abonnement trouvé.</Text>
+        ) : (
+          subscriptions.map((s, i) => (
+            <View key={s.id}>
+              <PassRow sub={s} />
+              {i < subscriptions.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))
+        )}
       </View>
 
       <Button variant="secondary" size="md" leadingIcon="ticket">
@@ -286,7 +361,14 @@ function SubscriptionsView() {
   );
 }
 
-function BillingView() {
+function BillingView({
+  subscriptions,
+  loading,
+}: {
+  subscriptions: ApiSubscription[];
+  loading: boolean;
+}) {
+  const withPayments = subscriptions.filter((s) => s.latestPayment);
   return (
     <View style={styles.sectionContent}>
       <Text style={styles.viewTitle}>Facturations</Text>
@@ -295,12 +377,18 @@ function BillingView() {
       </Text>
 
       <View style={styles.card}>
-        {INVOICES.map((inv, i) => (
-          <View key={inv.id}>
-            <InvoiceRow invoice={inv} />
-            {i < INVOICES.length - 1 && <View style={styles.divider} />}
-          </View>
-        ))}
+        {loading ? (
+          <LoadingPlaceholder />
+        ) : withPayments.length === 0 ? (
+          <Text style={styles.emptyText}>Aucune facturation.</Text>
+        ) : (
+          withPayments.map((s, i) => (
+            <View key={s.id}>
+              <PaymentRow sub={s} />
+              {i < withPayments.length - 1 && <View style={styles.divider} />}
+            </View>
+          ))
+        )}
       </View>
 
       <Text style={styles.billingNote}>
@@ -337,11 +425,10 @@ export default function DashboardPage() {
   const isDesktop = width >= DESKTOP_BP;
   const [activeSection, setActiveSection] = useState<Section>('dashboard');
 
+  const { subscriptions, loading, error } = useSubscriptions(CURRENT_ACCOUNT_ID);
+
   return (
-    <ScrollView
-      style={styles.page}
-      contentContainerStyle={styles.pageContent}
-    >
+    <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
       <View
         style={[
           styles.layout,
@@ -349,7 +436,7 @@ export default function DashboardPage() {
           { maxWidth: MaxContentWidth, width: '100%', alignSelf: 'center' as any },
         ]}
       >
-        {/* ── Sidebar ──────────────────────────────────────────────────── */}
+        {/* ── Sidebar ──────────────────────────────────────────────── */}
         {isDesktop ? (
           <View style={styles.sidebar}>
             <Text style={styles.sidebarTitle}>Mon espace</Text>
@@ -383,23 +470,33 @@ export default function DashboardPage() {
           </ScrollView>
         )}
 
-        {/* ── Main content ─────────────────────────────────────────────── */}
+        {/* ── Main content ─────────────────────────────────────────── */}
         <View style={[styles.main, isDesktop && styles.mainDesktop]}>
           {/* Greeting */}
           <View style={styles.greeting}>
             <View style={styles.avatarBubble}>
-              <Text style={styles.avatarText}>CL</Text>
+              <Text style={styles.avatarText}>
+                {CURRENT_ACCOUNT_NAME.slice(0, 2).toUpperCase()}
+              </Text>
             </View>
             <View>
-              <Text style={styles.greetingText}>Bonjour, Camille</Text>
+              <Text style={styles.greetingText}>Bonjour, {CURRENT_ACCOUNT_NAME}</Text>
               <Text style={styles.greetingSubtitle}>Voici votre tableau de bord.</Text>
             </View>
           </View>
 
-          {/* Dynamic section content */}
-          {activeSection === 'dashboard'     && <DashboardHome />}
-          {activeSection === 'subscriptions' && <SubscriptionsView />}
-          {activeSection === 'billing'       && <BillingView />}
+          {error && (
+            <View style={styles.errorBanner}>
+              <Icon name="warning" size={16} color={DS.warning} />
+              <Text style={styles.errorText}>
+                Impossible de charger les données. Vérifiez que l'API est démarrée.
+              </Text>
+            </View>
+          )}
+
+          {activeSection === 'dashboard'     && <DashboardHome subscriptions={subscriptions} loading={loading} onNav={setActiveSection} />}
+          {activeSection === 'subscriptions' && <SubscriptionsView subscriptions={subscriptions} loading={loading} />}
+          {activeSection === 'billing'       && <BillingView subscriptions={subscriptions} loading={loading} />}
           {activeSection === 'history'       && <HistoryView />}
         </View>
       </View>
@@ -421,7 +518,6 @@ const styles = StyleSheet.create({
     paddingBottom: DS.space9,
   },
 
-  // Layout
   layout: {
     flexDirection: 'column',
     gap: DS.space4,
@@ -432,7 +528,6 @@ const styles = StyleSheet.create({
     gap: DS.space6,
   },
 
-  // Sidebar (desktop)
   sidebar: {
     width: 228,
     flexShrink: 0,
@@ -454,7 +549,6 @@ const styles = StyleSheet.create({
     paddingBottom: DS.space3,
   },
 
-  // Nav items (sidebar)
   navItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -480,7 +574,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 
-  // Nav items (horizontal mobile)
   horizNav: {
     backgroundColor: DS.surfaceCard,
     borderRadius: DS.radiusMd,
@@ -509,7 +602,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  // Main area
   main: {
     flex: 1,
     gap: DS.space5,
@@ -518,7 +610,6 @@ const styles = StyleSheet.create({
     gap: DS.space6,
   },
 
-  // Greeting
   greeting: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -550,7 +641,37 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Section header
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.space2,
+    backgroundColor: DS.warningTint,
+    borderRadius: DS.radiusSm,
+    padding: DS.space3,
+  },
+  errorText: {
+    fontSize: 14,
+    color: DS.warningText,
+    flex: 1,
+  },
+
+  loadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: DS.space3,
+    padding: DS.space5,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: DS.textMuted,
+  },
+
+  emptyText: {
+    fontSize: 14,
+    color: DS.textMuted,
+    padding: DS.space5,
+  },
+
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -568,12 +689,10 @@ const styles = StyleSheet.create({
     color: DS.textLink,
   },
 
-  // Section content wrapper
   sectionContent: {
     gap: DS.space4,
   },
 
-  // White card container
   card: {
     backgroundColor: DS.surfaceCard,
     borderRadius: DS.radiusMd,
@@ -620,10 +739,10 @@ const styles = StyleSheet.create({
     borderColor: DS.white,
   },
   passZones: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '800',
     color: DS.white,
-    lineHeight: 38,
+    lineHeight: 34,
   },
   passValidity: {
     fontSize: 14,
@@ -637,15 +756,30 @@ const styles = StyleSheet.create({
     paddingTop: DS.space3,
     borderTopWidth: 1,
     borderTopColor: 'rgba(255,255,255,0.15)',
+    flexWrap: 'wrap',
   },
   passPrice: {
     fontSize: 16,
     fontWeight: '700',
     color: DS.white,
   },
-  passCard_: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.6)',
+  roleRow: {
+    flexDirection: 'row',
+    gap: DS.space2,
+    flexWrap: 'wrap',
+  },
+  roleChip: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: DS.radiusPill,
+    paddingHorizontal: DS.space2,
+    paddingVertical: 2,
+  },
+  roleChipText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.9)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
   },
 
   // Pass row (white card)
@@ -682,6 +816,18 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: DS.textMuted,
   },
+  roleRowSmall: {
+    flexDirection: 'row',
+    gap: DS.space2,
+    marginTop: 2,
+  },
+  roleLabel: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: DS.actionPrimary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.4,
+  },
   passRowRight: {
     alignItems: 'flex-end',
   },
@@ -691,7 +837,7 @@ const styles = StyleSheet.create({
     color: DS.textStrong,
   },
 
-  // Invoice table row
+  // Payment table row
   tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -762,7 +908,6 @@ const styles = StyleSheet.create({
     color: DS.textMuted,
   },
 
-  // Section views (subscriptions, billing, history)
   viewTitle: {
     fontSize: 26,
     fontWeight: '800',
