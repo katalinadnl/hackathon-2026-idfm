@@ -77,6 +77,15 @@ const SYMBOL_MAP: Record<
   },
   receipt: { ios: "doc.text", android: "receipt", web: "receipt" },
   creditcard: { ios: "creditcard", android: "credit_card", web: "credit_card" },
+
+  "log-out": {
+    ios: "rectangle.portrait.and.arrow.right",
+    android: "logout",
+    web: "logout",
+  },
+  "log-in": { ios: "arrow.right.to.line", android: "login", web: "login" },
+  lock: { ios: "lock", android: "lock", web: "lock" },
+
   "chevron-left": {
     ios: "chevron.left",
     android: "chevron_left",
