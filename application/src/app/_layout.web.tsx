@@ -105,6 +105,7 @@ function SiteHeader() {
           <NavLink href="/visitors">Visiteurs</NavLink>
           <NavLink href="/uikit">UI Kit</NavLink>
           <NavLink href="/subscriptions/1">Abonnement 1</NavLink>
+          <NavLink href="/billing">Facturation</NavLink>
         </View>
 
         <View style={styles.right}>

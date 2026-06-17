@@ -1,57 +1,187 @@
 import { Injectable } from '@nestjs/common';
+import Stripe from 'stripe';
 
-/**
- * Stripe seam.
- * --------------------------------------------------------------------------
- * This is the single place that knows how billing data is sourced. Today it
- * returns data derived from our own Postgres (no Stripe account wired yet).
- *
- * When we connect the real Stripe account, we ONLY change this file:
- *   1. `npm i stripe` in /api
- *   2. add STRIPE_SECRET_KEY to api/.env
- *   3. replace the stub bodies below with real SDK calls
- *      (stripe.charges.list, stripe.paymentMethods.retrieve, mandates, ...)
- * The controller, service and frontend stay untouched.
- */
+import { PrismaService } from '../../prisma/prisma.service';
+import {
+  MandateStatus,
+  PaymentMethodInfo,
+  SepaMandate,
+} from '../dto/billing.types';
 
-export interface StripeMandate {
-  id: string;
-  status: 'active' | 'pending' | 'inactive';
-  reference: string; // RUM — Référence Unique de Mandat
-  scheme: 'sepa_debit';
-  signedAt: string | null; // ISO
-  creditorName: string;
-  ibanLast4: string | null;
-}
+type StripeClient = InstanceType<typeof Stripe>;
 
-export interface StripePaymentMethod {
-  id: string;
-  type: string; // sepa_debit | card | ...
-  ibanLast4: string | null;
-  bankName: string | null;
-  isDefault: boolean;
-}
+const CREDITOR_NAME = 'Île-de-France Mobilités';
+const CREDITOR_ICS = 'FR93ZZZ123456';
 
 @Injectable()
 export class StripeProvider {
-  /** True once a real Stripe key is configured. Drives "coming soon" UX. */
+  private client: StripeClient | null = null;
+
+  constructor(private readonly prisma: PrismaService) {}
+
   get isConnected(): boolean {
     return Boolean(process.env.STRIPE_SECRET_KEY);
   }
 
-  // ── Onglet 2 — Mandat SEPA ───────────────────────────────────────────────
-  // TODO(stripe): retrieve the PaymentMethod (sepa_debit) of the customer tied
-  // to this subscription and return its mandate.
-  async getMandate(_subscriptionId: number): Promise<StripeMandate | null> {
-    return null;
+  private getClient(): StripeClient {
+    if (!this.client) {
+      this.client = new Stripe(process.env.STRIPE_SECRET_KEY as string);
+    }
+    return this.client;
   }
 
-  // ── Onglet 3 — RIB / moyen de paiement par défaut ────────────────────────
-  // TODO(stripe): retrieve the customer's default PaymentMethod (sepa_debit)
-  // and expose the masked IBAN.
+  private async payerOf(subscriptionId: number) {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { payer: { include: { beneficiary: true } } },
+    });
+    return sub
+      ? { payer: sub.payer, navigoNumber: sub.navigoNumber }
+      : { payer: null, navigoNumber: '' };
+  }
+
+  private maskIban(last4: string | null): string {
+    return `FR76 •••• •••• •••• •••• ${last4 ?? '••••'}`;
+  }
+
+  private mapMandateStatus(status: string): MandateStatus {
+    if (status === 'active') return 'active';
+    if (status === 'pending') return 'pending';
+    return 'revoked';
+  }
+
+  async getMandate(subscriptionId: number): Promise<SepaMandate | null> {
+    const { payer, navigoNumber } = await this.payerOf(subscriptionId);
+    if (!payer?.stripeMandateId) return null;
+    return this.buildMandate(payer.stripeMandateId, navigoNumber);
+  }
+
+  async getMandateHistory(subscriptionId: number): Promise<SepaMandate[]> {
+    const { payer, navigoNumber } = await this.payerOf(subscriptionId);
+    if (!payer?.stripePreviousMandateId) return [];
+    try {
+      return [
+        await this.buildMandate(
+          payer.stripePreviousMandateId,
+          navigoNumber,
+          'revoked',
+        ),
+      ];
+    } catch {
+      return [];
+    }
+  }
+
+  private async buildMandate(
+    mandateId: string,
+    navigoNumber: string,
+    statusOverride?: MandateStatus,
+  ): Promise<SepaMandate> {
+    const stripe = this.getClient();
+    const mandate = await stripe.mandates.retrieve(mandateId);
+    const pmId =
+      typeof mandate.payment_method === 'string'
+        ? mandate.payment_method
+        : mandate.payment_method?.id;
+    const pm = pmId ? await stripe.paymentMethods.retrieve(pmId) : null;
+    const sepa = pm?.sepa_debit;
+
+    return {
+      reference:
+        mandate.payment_method_details?.sepa_debit?.reference ?? mandateId,
+      status: statusOverride ?? this.mapMandateStatus(mandate.status),
+      scheme: 'CORE',
+      creditorName: CREDITOR_NAME,
+      creditorIcs: CREDITOR_ICS,
+      debtorName: pm?.billing_details?.name ?? '—',
+      ibanMasked: this.maskIban(sepa?.last4 ?? null),
+      signedAt: pm ? new Date(pm.created * 1000).toISOString() : new Date().toISOString(),
+      revokedAt: null,
+      navigoNumber,
+      source: 'stripe',
+    };
+  }
+
   async getDefaultPaymentMethod(
-    _subscriptionId: number,
-  ): Promise<StripePaymentMethod | null> {
-    return null;
+    subscriptionId: number,
+  ): Promise<PaymentMethodInfo | null> {
+    const { payer } = await this.payerOf(subscriptionId);
+    if (!payer?.stripePaymentMethodId) return null;
+
+    const pm = await this.getClient().paymentMethods.retrieve(
+      payer.stripePaymentMethodId,
+    );
+    const sepa = pm.sepa_debit;
+
+    return {
+      type: 'sepa_debit',
+      ibanMasked: this.maskIban(sepa?.last4 ?? null),
+      bankName: sepa?.bank_code ? `Banque ${sepa.bank_code}` : 'Compte SEPA',
+      holderName: pm.billing_details?.name ?? '—',
+      isDefault: true,
+      source: 'stripe',
+    };
+  }
+
+  async createSepaSetupIntent(subscriptionId: number): Promise<{
+    clientSecret: string;
+    billingName: string;
+    billingEmail: string;
+  } | null> {
+    const { payer } = await this.payerOf(subscriptionId);
+    if (!payer?.stripeCustomerId) return null;
+
+    const intent = await this.getClient().setupIntents.create({
+      customer: payer.stripeCustomerId,
+      payment_method_types: ['sepa_debit'],
+      usage: 'off_session',
+    });
+    if (!intent.client_secret) return null;
+
+    const billingName = payer.beneficiary
+      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+      : payer.email.split('@')[0];
+    return {
+      clientSecret: intent.client_secret,
+      billingName,
+      billingEmail: payer.email,
+    };
+  }
+
+  async finalizeRibChange(
+    subscriptionId: number,
+    setupIntentId: string,
+  ): Promise<{ ok: boolean }> {
+    const { payer } = await this.payerOf(subscriptionId);
+    if (!payer?.stripeCustomerId) return { ok: false };
+
+    try {
+      const stripe = this.getClient();
+      const intent = await stripe.setupIntents.retrieve(setupIntentId);
+      const pmId =
+        typeof intent.payment_method === 'string'
+          ? intent.payment_method
+          : (intent.payment_method?.id ?? null);
+      const mandateId =
+        typeof intent.mandate === 'string'
+          ? intent.mandate
+          : (intent.mandate?.id ?? null);
+      if (!pmId) return { ok: false };
+
+      await stripe.customers.update(payer.stripeCustomerId, {
+        invoice_settings: { default_payment_method: pmId },
+      });
+      await this.prisma.account.update({
+        where: { id: payer.id },
+        data: {
+          stripePreviousMandateId: payer.stripeMandateId,
+          stripePaymentMethodId: pmId,
+          stripeMandateId: mandateId,
+        },
+      });
+      return { ok: true };
+    } catch {
+      return { ok: false };
+    }
   }
 }

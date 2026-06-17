@@ -23,11 +23,10 @@ const STATUS_META: Record<
 
 type Props = {
   accountId: number;
-  /** null = all passes (global view). */
+
   subscriptionId: number | null;
 };
 
-/** Onglet 1 — chronological list of debits/refunds for the selected pass(es). */
 export function TransactionsTab({ accountId, subscriptionId }: Props) {
   const { data, loading, error, reload } = useTransactions(
     accountId,
@@ -62,15 +61,30 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
     );
   }
 
+  const settled = data.outstanding <= 0;
+  const unpaidCount = data.transactions.filter(
+    (t) => t.status === 'failed',
+  ).length;
+
   return (
     <View style={styles.wrapper}>
-      {/* Net total summary */}
-      <Card style={styles.totalCard}>
-        <Text style={styles.totalLabel}>Total prélevé</Text>
-        <Text style={styles.totalValue}>{formatEuroPlain(data.total)}</Text>
+
+      <Card style={[styles.totalCard, settled ? styles.cardOk : styles.cardDue]}>
+        <Text style={styles.totalLabel}>Restant à payer</Text>
+        <Text
+          style={[
+            styles.totalValue,
+            settled ? styles.valueOk : styles.valueDue,
+          ]}
+        >
+          {formatEuroPlain(data.outstanding)}
+        </Text>
         <Text style={styles.totalMeta}>
-          {data.transactions.length} transaction
-          {data.transactions.length > 1 ? 's' : ''}
+          {settled
+            ? 'Tout est réglé ✓'
+            : `${unpaidCount} paiement${unpaidCount > 1 ? 's' : ''} impayé${
+                unpaidCount > 1 ? 's' : ''
+              }`}
         </Text>
       </Card>
 
@@ -123,16 +137,16 @@ function Row({ tx, last }: { tx: Transaction; last: boolean }) {
 const styles = StyleSheet.create({
   wrapper: { gap: DS.space4 },
   center: { paddingVertical: DS.space8, alignItems: 'center' },
-  // Total
-  totalCard: {
-    backgroundColor: DS.surfaceTint,
-    borderColor: DS.borderBrand,
-    gap: 2,
-  },
+
+  totalCard: { gap: 2 },
+  cardOk: { backgroundColor: DS.successTint, borderColor: DS.success },
+  cardDue: { backgroundColor: DS.dangerTint, borderColor: DS.danger },
   totalLabel: { fontSize: 14, color: DS.textMuted, fontWeight: '600' },
-  totalValue: { fontSize: 28, fontWeight: '800', color: DS.textStrong },
+  totalValue: { fontSize: 28, fontWeight: '800' },
+  valueOk: { color: DS.successText },
+  valueDue: { color: DS.dangerText },
   totalMeta: { fontSize: 13, color: DS.textMuted },
-  // List
+
   listCard: { padding: 0 },
   row: {
     flexDirection: 'row',
@@ -158,7 +172,7 @@ const styles = StyleSheet.create({
   },
   amountPositive: { color: DS.successText },
   amountFailed: { color: DS.textMuted, textDecorationLine: 'line-through' },
-  // States
+
   errorTitle: { fontSize: 15, fontWeight: '700', color: DS.dangerText },
   errorBody: { fontSize: 13, color: DS.textMuted, marginTop: 4 },
   retry: {

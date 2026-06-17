@@ -7,16 +7,14 @@ import { ROLE_LABELS } from '@/lib/format';
 
 type Props = {
   passes: PassSummary[];
-  /** null = "Tous mes passes" (global view). */
+
   selectedId: number | null;
   onSelect: (id: number | null) => void;
 };
 
-/**
- * Top-of-page selector: switch between the global view ("Tous mes passes")
- * and a single pass. Horizontally scrollable row of pills.
- */
 export function PassSelector({ passes, selectedId, onSelect }: Props) {
+
+  const showAll = passes.length > 1;
   return (
     <ScrollView
       horizontal
@@ -24,11 +22,13 @@ export function PassSelector({ passes, selectedId, onSelect }: Props) {
       contentContainerStyle={styles.row}
       accessibilityRole="tablist"
     >
-      <Pill
-        label="Tous mes passes"
-        selected={selectedId === null}
-        onPress={() => onSelect(null)}
-      />
+      {showAll && (
+        <Pill
+          label="Tous mes passes"
+          selected={selectedId === null}
+          onPress={() => onSelect(null)}
+        />
+      )}
       {passes.map((p) => (
         <Pill
           key={p.subscriptionId}

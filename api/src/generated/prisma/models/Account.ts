@@ -43,6 +43,10 @@ export type AccountMinAggregateOutputType = {
   accountNumber: string | null
   createdAt: Date | null
   beneficiaryId: number | null
+  stripeCustomerId: string | null
+  stripePaymentMethodId: string | null
+  stripeMandateId: string | null
+  stripePreviousMandateId: string | null
 }
 
 export type AccountMaxAggregateOutputType = {
@@ -52,6 +56,10 @@ export type AccountMaxAggregateOutputType = {
   accountNumber: string | null
   createdAt: Date | null
   beneficiaryId: number | null
+  stripeCustomerId: string | null
+  stripePaymentMethodId: string | null
+  stripeMandateId: string | null
+  stripePreviousMandateId: string | null
 }
 
 export type AccountCountAggregateOutputType = {
@@ -61,6 +69,10 @@ export type AccountCountAggregateOutputType = {
   accountNumber: number
   createdAt: number
   beneficiaryId: number
+  stripeCustomerId: number
+  stripePaymentMethodId: number
+  stripeMandateId: number
+  stripePreviousMandateId: number
   _all: number
 }
 
@@ -82,6 +94,10 @@ export type AccountMinAggregateInputType = {
   accountNumber?: true
   createdAt?: true
   beneficiaryId?: true
+  stripeCustomerId?: true
+  stripePaymentMethodId?: true
+  stripeMandateId?: true
+  stripePreviousMandateId?: true
 }
 
 export type AccountMaxAggregateInputType = {
@@ -91,6 +107,10 @@ export type AccountMaxAggregateInputType = {
   accountNumber?: true
   createdAt?: true
   beneficiaryId?: true
+  stripeCustomerId?: true
+  stripePaymentMethodId?: true
+  stripeMandateId?: true
+  stripePreviousMandateId?: true
 }
 
 export type AccountCountAggregateInputType = {
@@ -100,6 +120,10 @@ export type AccountCountAggregateInputType = {
   accountNumber?: true
   createdAt?: true
   beneficiaryId?: true
+  stripeCustomerId?: true
+  stripePaymentMethodId?: true
+  stripeMandateId?: true
+  stripePreviousMandateId?: true
   _all?: true
 }
 
@@ -196,6 +220,10 @@ export type AccountGroupByOutputType = {
   accountNumber: string
   createdAt: Date
   beneficiaryId: number | null
+  stripeCustomerId: string | null
+  stripePaymentMethodId: string | null
+  stripeMandateId: string | null
+  stripePreviousMandateId: string | null
   _count: AccountCountAggregateOutputType | null
   _avg: AccountAvgAggregateOutputType | null
   _sum: AccountSumAggregateOutputType | null
@@ -228,6 +256,10 @@ export type AccountWhereInput = {
   accountNumber?: Prisma.StringFilter<"Account"> | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   beneficiaryId?: Prisma.IntNullableFilter<"Account"> | number | null
+  stripeCustomerId?: Prisma.StringNullableFilter<"Account"> | string | null
+  stripePaymentMethodId?: Prisma.StringNullableFilter<"Account"> | string | null
+  stripeMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
+  stripePreviousMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryNullableScalarRelationFilter, Prisma.BeneficiaryWhereInput> | null
   referredSubscriptions?: Prisma.SubscriptionListRelationFilter
   paidSubscriptions?: Prisma.SubscriptionListRelationFilter
@@ -240,6 +272,10 @@ export type AccountOrderByWithRelationInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripePaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeMandateId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripePreviousMandateId?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiary?: Prisma.BeneficiaryOrderByWithRelationInput
   referredSubscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
   paidSubscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
@@ -250,15 +286,19 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   email?: string
   accountNumber?: string
   beneficiaryId?: number
+  stripeCustomerId?: string
   AND?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   OR?: Prisma.AccountWhereInput[]
   NOT?: Prisma.AccountWhereInput | Prisma.AccountWhereInput[]
   passwordHash?: Prisma.StringFilter<"Account"> | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
+  stripePaymentMethodId?: Prisma.StringNullableFilter<"Account"> | string | null
+  stripeMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
+  stripePreviousMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryNullableScalarRelationFilter, Prisma.BeneficiaryWhereInput> | null
   referredSubscriptions?: Prisma.SubscriptionListRelationFilter
   paidSubscriptions?: Prisma.SubscriptionListRelationFilter
-}, "id" | "email" | "accountNumber" | "beneficiaryId">
+}, "id" | "email" | "accountNumber" | "beneficiaryId" | "stripeCustomerId">
 
 export type AccountOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -267,6 +307,10 @@ export type AccountOrderByWithAggregationInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripePaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripeMandateId?: Prisma.SortOrderInput | Prisma.SortOrder
+  stripePreviousMandateId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.AccountCountOrderByAggregateInput
   _avg?: Prisma.AccountAvgOrderByAggregateInput
   _max?: Prisma.AccountMaxOrderByAggregateInput
@@ -284,6 +328,10 @@ export type AccountScalarWhereWithAggregatesInput = {
   accountNumber?: Prisma.StringWithAggregatesFilter<"Account"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   beneficiaryId?: Prisma.IntNullableWithAggregatesFilter<"Account"> | number | null
+  stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
+  stripePaymentMethodId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
+  stripeMandateId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
+  stripePreviousMandateId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
 }
 
 export type AccountCreateInput = {
@@ -291,6 +339,10 @@ export type AccountCreateInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   beneficiary?: Prisma.BeneficiaryCreateNestedOneWithoutAccountInput
   referredSubscriptions?: Prisma.SubscriptionCreateNestedManyWithoutReferrerInput
   paidSubscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPayerInput
@@ -303,6 +355,10 @@ export type AccountUncheckedCreateInput = {
   accountNumber: string
   createdAt?: Date | string
   beneficiaryId?: number | null
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   referredSubscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutReferrerInput
   paidSubscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPayerInput
 }
@@ -312,6 +368,10 @@ export type AccountUpdateInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiary?: Prisma.BeneficiaryUpdateOneWithoutAccountNestedInput
   referredSubscriptions?: Prisma.SubscriptionUpdateManyWithoutReferrerNestedInput
   paidSubscriptions?: Prisma.SubscriptionUpdateManyWithoutPayerNestedInput
@@ -324,6 +384,10 @@ export type AccountUncheckedUpdateInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredSubscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutReferrerNestedInput
   paidSubscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPayerNestedInput
 }
@@ -335,6 +399,10 @@ export type AccountCreateManyInput = {
   accountNumber: string
   createdAt?: Date | string
   beneficiaryId?: number | null
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
 }
 
 export type AccountUpdateManyMutationInput = {
@@ -342,6 +410,10 @@ export type AccountUpdateManyMutationInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AccountUncheckedUpdateManyInput = {
@@ -351,6 +423,10 @@ export type AccountUncheckedUpdateManyInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type AccountNullableScalarRelationFilter = {
@@ -365,6 +441,10 @@ export type AccountCountOrderByAggregateInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
+  stripePaymentMethodId?: Prisma.SortOrder
+  stripeMandateId?: Prisma.SortOrder
+  stripePreviousMandateId?: Prisma.SortOrder
 }
 
 export type AccountAvgOrderByAggregateInput = {
@@ -379,6 +459,10 @@ export type AccountMaxOrderByAggregateInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
+  stripePaymentMethodId?: Prisma.SortOrder
+  stripeMandateId?: Prisma.SortOrder
+  stripePreviousMandateId?: Prisma.SortOrder
 }
 
 export type AccountMinOrderByAggregateInput = {
@@ -388,6 +472,10 @@ export type AccountMinOrderByAggregateInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
+  stripeCustomerId?: Prisma.SortOrder
+  stripePaymentMethodId?: Prisma.SortOrder
+  stripeMandateId?: Prisma.SortOrder
+  stripePreviousMandateId?: Prisma.SortOrder
 }
 
 export type AccountSumOrderByAggregateInput = {
@@ -464,6 +552,10 @@ export type AccountCreateWithoutBeneficiaryInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   referredSubscriptions?: Prisma.SubscriptionCreateNestedManyWithoutReferrerInput
   paidSubscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPayerInput
 }
@@ -474,6 +566,10 @@ export type AccountUncheckedCreateWithoutBeneficiaryInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   referredSubscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutReferrerInput
   paidSubscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPayerInput
 }
@@ -499,6 +595,10 @@ export type AccountUpdateWithoutBeneficiaryInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredSubscriptions?: Prisma.SubscriptionUpdateManyWithoutReferrerNestedInput
   paidSubscriptions?: Prisma.SubscriptionUpdateManyWithoutPayerNestedInput
 }
@@ -509,6 +609,10 @@ export type AccountUncheckedUpdateWithoutBeneficiaryInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredSubscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutReferrerNestedInput
   paidSubscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPayerNestedInput
 }
@@ -518,6 +622,10 @@ export type AccountCreateWithoutReferredSubscriptionsInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   beneficiary?: Prisma.BeneficiaryCreateNestedOneWithoutAccountInput
   paidSubscriptions?: Prisma.SubscriptionCreateNestedManyWithoutPayerInput
 }
@@ -529,6 +637,10 @@ export type AccountUncheckedCreateWithoutReferredSubscriptionsInput = {
   accountNumber: string
   createdAt?: Date | string
   beneficiaryId?: number | null
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   paidSubscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutPayerInput
 }
 
@@ -542,6 +654,10 @@ export type AccountCreateWithoutPaidSubscriptionsInput = {
   passwordHash: string
   accountNumber: string
   createdAt?: Date | string
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   beneficiary?: Prisma.BeneficiaryCreateNestedOneWithoutAccountInput
   referredSubscriptions?: Prisma.SubscriptionCreateNestedManyWithoutReferrerInput
 }
@@ -553,6 +669,10 @@ export type AccountUncheckedCreateWithoutPaidSubscriptionsInput = {
   accountNumber: string
   createdAt?: Date | string
   beneficiaryId?: number | null
+  stripeCustomerId?: string | null
+  stripePaymentMethodId?: string | null
+  stripeMandateId?: string | null
+  stripePreviousMandateId?: string | null
   referredSubscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutReferrerInput
 }
 
@@ -577,6 +697,10 @@ export type AccountUpdateWithoutReferredSubscriptionsInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiary?: Prisma.BeneficiaryUpdateOneWithoutAccountNestedInput
   paidSubscriptions?: Prisma.SubscriptionUpdateManyWithoutPayerNestedInput
 }
@@ -588,6 +712,10 @@ export type AccountUncheckedUpdateWithoutReferredSubscriptionsInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paidSubscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutPayerNestedInput
 }
 
@@ -607,6 +735,10 @@ export type AccountUpdateWithoutPaidSubscriptionsInput = {
   passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   beneficiary?: Prisma.BeneficiaryUpdateOneWithoutAccountNestedInput
   referredSubscriptions?: Prisma.SubscriptionUpdateManyWithoutReferrerNestedInput
 }
@@ -618,6 +750,10 @@ export type AccountUncheckedUpdateWithoutPaidSubscriptionsInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  stripePreviousMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   referredSubscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutReferrerNestedInput
 }
 
@@ -668,6 +804,10 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   accountNumber?: boolean
   createdAt?: boolean
   beneficiaryId?: boolean
+  stripeCustomerId?: boolean
+  stripePaymentMethodId?: boolean
+  stripeMandateId?: boolean
+  stripePreviousMandateId?: boolean
   beneficiary?: boolean | Prisma.Account$beneficiaryArgs<ExtArgs>
   referredSubscriptions?: boolean | Prisma.Account$referredSubscriptionsArgs<ExtArgs>
   paidSubscriptions?: boolean | Prisma.Account$paidSubscriptionsArgs<ExtArgs>
@@ -681,6 +821,10 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   accountNumber?: boolean
   createdAt?: boolean
   beneficiaryId?: boolean
+  stripeCustomerId?: boolean
+  stripePaymentMethodId?: boolean
+  stripeMandateId?: boolean
+  stripePreviousMandateId?: boolean
   beneficiary?: boolean | Prisma.Account$beneficiaryArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -691,6 +835,10 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   accountNumber?: boolean
   createdAt?: boolean
   beneficiaryId?: boolean
+  stripeCustomerId?: boolean
+  stripePaymentMethodId?: boolean
+  stripeMandateId?: boolean
+  stripePreviousMandateId?: boolean
   beneficiary?: boolean | Prisma.Account$beneficiaryArgs<ExtArgs>
 }, ExtArgs["result"]["account"]>
 
@@ -701,9 +849,13 @@ export type AccountSelectScalar = {
   accountNumber?: boolean
   createdAt?: boolean
   beneficiaryId?: boolean
+  stripeCustomerId?: boolean
+  stripePaymentMethodId?: boolean
+  stripeMandateId?: boolean
+  stripePreviousMandateId?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "accountNumber" | "createdAt" | "beneficiaryId", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "accountNumber" | "createdAt" | "beneficiaryId" | "stripeCustomerId" | "stripePaymentMethodId" | "stripeMandateId" | "stripePreviousMandateId", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.Account$beneficiaryArgs<ExtArgs>
   referredSubscriptions?: boolean | Prisma.Account$referredSubscriptionsArgs<ExtArgs>
@@ -731,6 +883,10 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     accountNumber: string
     createdAt: Date
     beneficiaryId: number | null
+    stripeCustomerId: string | null
+    stripePaymentMethodId: string | null
+    stripeMandateId: string | null
+    stripePreviousMandateId: string | null
   }, ExtArgs["result"]["account"]>
   composites: {}
 }
@@ -1163,6 +1319,10 @@ export interface AccountFieldRefs {
   readonly accountNumber: Prisma.FieldRef<"Account", 'String'>
   readonly createdAt: Prisma.FieldRef<"Account", 'DateTime'>
   readonly beneficiaryId: Prisma.FieldRef<"Account", 'Int'>
+  readonly stripeCustomerId: Prisma.FieldRef<"Account", 'String'>
+  readonly stripePaymentMethodId: Prisma.FieldRef<"Account", 'String'>
+  readonly stripeMandateId: Prisma.FieldRef<"Account", 'String'>
+  readonly stripePreviousMandateId: Prisma.FieldRef<"Account", 'String'>
 }
     
 

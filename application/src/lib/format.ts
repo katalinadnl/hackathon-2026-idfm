@@ -1,6 +1,5 @@
 import { BillingRole } from '@/lib/api';
 
-/** Signed euros → "−38,10 €" / "+22,50 €" (French formatting). */
 export function formatEuro(amount: number): string {
   const sign = amount < 0 ? '−' : '+';
   const abs = Math.abs(amount).toLocaleString('fr-FR', {
@@ -10,7 +9,6 @@ export function formatEuro(amount: number): string {
   return `${sign}${abs} €`;
 }
 
-/** Unsigned euros for totals — "112,30 €". */
 export function formatEuroPlain(amount: number): string {
   return `${Math.abs(amount).toLocaleString('fr-FR', {
     minimumFractionDigits: 2,
@@ -18,7 +16,6 @@ export function formatEuroPlain(amount: number): string {
   })} €`;
 }
 
-/** ISO date → "1 oct. 2024". */
 export function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', {
     day: 'numeric',

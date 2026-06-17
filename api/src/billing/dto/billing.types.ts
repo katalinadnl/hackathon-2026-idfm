@@ -1,41 +1,67 @@
-// Shared response shapes for the Billing module.
-// Kept framework-agnostic so the same types can be reused by a Stripe-backed
-// implementation later (see stripe/stripe.provider.ts).
-
 export type BillingRole = 'holder' | 'referrer' | 'payer';
 
 export interface PassSummary {
   subscriptionId: number;
   navigoNumber: string;
   subscriptionType: string;
-  status: string; // active | expired | ...
-  /** Full name of the pass holder (beneficiary). */
+  status: string;
   holderName: string;
-  /** Roles the current account has on this pass. */
   roles: BillingRole[];
-  startDate: string; // ISO
-  endDate: string; // ISO
+  startDate: string;
+  endDate: string;
+}
+
+export type MandateStatus = 'active' | 'pending' | 'revoked';
+
+export interface SepaMandate {
+  reference: string;
+  status: MandateStatus;
+  scheme: 'CORE';
+  creditorName: string;
+  creditorIcs: string;
+  debtorName: string;
+  ibanMasked: string;
+  signedAt: string;
+  revokedAt: string | null;
+  navigoNumber: string;
+  source: 'local' | 'stripe';
+}
+
+export interface MandateResponse {
+  connected: boolean;
+  active: SepaMandate | null;
+  history: SepaMandate[];
+}
+
+export interface PaymentMethodInfo {
+  type: 'sepa_debit';
+  ibanMasked: string;
+  bankName: string;
+  holderName: string;
+  isDefault: boolean;
+  source: 'local' | 'stripe';
+}
+
+export interface PaymentMethodResponse {
+  connected: boolean;
+  paymentMethod: PaymentMethodInfo | null;
 }
 
 export type TransactionStatus = 'succeeded' | 'failed' | 'refunded';
 
 export interface Transaction {
   id: string;
-  /** ISO date of the debit/refund. */
   date: string;
-  /** Human-readable label, e.g. "Navigo Mois Étudiant — Alice Martin". */
   label: string;
-  /** Signed amount in euros: negative for a debit, positive for a refund. */
   amount: number;
   status: TransactionStatus;
-  /** card | direct_debit | sepa_debit ... */
   method: string;
   navigoNumber: string;
 }
 
 export interface TransactionsResponse {
-  /** Net total of the listed transactions, in euros. */
   total: number;
+  outstanding: number;
   currency: 'EUR';
   transactions: Transaction[];
 }

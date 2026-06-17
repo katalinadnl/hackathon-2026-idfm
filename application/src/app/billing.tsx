@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   Platform,
@@ -37,9 +37,14 @@ export default function BillingScreen() {
   const accountId = CURRENT_ACCOUNT_ID;
   const { data: passes, loading, error } = usePasses(accountId);
 
-  // null = global view ("Tous mes passes")
   const [selectedPassId, setSelectedPassId] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<TabKey>('transactions');
+
+  useEffect(() => {
+    if (passes && passes.length === 1 && selectedPassId === null) {
+      setSelectedPassId(passes[0].subscriptionId);
+    }
+  }, [passes, selectedPassId]);
 
   const sectionPad = isDesktop
     ? { paddingHorizontal: DS.space8 }
@@ -55,7 +60,7 @@ export default function BillingScreen() {
     >
       <SafeAreaView edges={Platform.OS === 'web' ? [] : ['top']}>
         <View style={[isDesktop && styles.pageInner]}>
-          {/* ─── Header ─────────────────────────────────────────── */}
+
           <View style={[styles.header, sectionPad]}>
             <Text style={styles.title} accessibilityRole="header">
               Facturation
@@ -66,7 +71,6 @@ export default function BillingScreen() {
             </Text>
           </View>
 
-          {/* ─── Pass selector ──────────────────────────────────── */}
           <View style={[styles.block, sectionPad]}>
             {loading && (
               <View style={styles.center}>
@@ -90,7 +94,6 @@ export default function BillingScreen() {
             )}
           </View>
 
-          {/* ─── Tabs ───────────────────────────────────────────── */}
           <View style={[styles.block, sectionPad]}>
             <SegmentedTabs
               segments={TABS}
@@ -99,7 +102,6 @@ export default function BillingScreen() {
             />
           </View>
 
-          {/* ─── Active tab content ─────────────────────────────── */}
           <View style={[styles.block, sectionPad]}>
             {activeTab === 'transactions' && (
               <TransactionsTab
@@ -111,6 +113,7 @@ export default function BillingScreen() {
               <MandateTab
                 accountId={accountId}
                 subscriptionId={selectedPassId}
+                onGoToRib={() => setActiveTab('rib')}
               />
             )}
             {activeTab === 'rib' && (

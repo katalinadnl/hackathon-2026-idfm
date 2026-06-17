@@ -1,21 +1,9 @@
 import { Platform } from 'react-native';
 
-// Minimal typed HTTP client for the NestJS billing API.
-//
-// Base URL resolution:
-//  - EXPO_PUBLIC_API_URL wins (e.g. your LAN IP when testing on a device).
-//  - On web, default to the same-origin "/api" — nginx proxies it to api:3000.
-//  - On native, default to the local Nest dev server.
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ??
   (Platform.OS === 'web' ? '/api' : 'http://localhost:3000/api');
 
-// No auth layer in the repo yet → the current account is passed explicitly.
-// Demo personas (see prisma/seeds.ts):
-//   1 = Alice (holder + payer, own pass)
-//   2 = Bernard (2 passes: active w/ a failed debit + expired w/ 12 months) ← richest demo
-//   3 = Pierre Moreau (référent-payeur of Théo, no pass of his own)
-//   4 = Clara
 export const CURRENT_ACCOUNT_ID = 2;
 
 export type BillingRole = 'holder' | 'referrer' | 'payer';
@@ -45,16 +33,77 @@ export interface Transaction {
 
 export interface TransactionsResponse {
   total: number;
+
+  outstanding: number;
   currency: 'EUR';
   transactions: Transaction[];
 }
 
-async function get<T>(path: string, params: Record<string, unknown>): Promise<T> {
+export type MandateStatus = 'active' | 'pending' | 'revoked';
+
+export interface SepaMandate {
+  reference: string;
+  status: MandateStatus;
+  scheme: 'CORE';
+  creditorName: string;
+  creditorIcs: string;
+  debtorName: string;
+  ibanMasked: string;
+  signedAt: string;
+  revokedAt: string | null;
+  navigoNumber: string;
+  source: 'local' | 'stripe';
+}
+
+export interface MandateResponse {
+  connected: boolean;
+  active: SepaMandate | null;
+  history: SepaMandate[];
+}
+
+export interface PaymentMethodInfo {
+  type: 'sepa_debit';
+  ibanMasked: string;
+  bankName: string;
+  holderName: string;
+  isDefault: boolean;
+  source: 'local' | 'stripe';
+}
+
+export interface PaymentMethodResponse {
+  connected: boolean;
+  paymentMethod: PaymentMethodInfo | null;
+}
+
+export interface RibChangeResponse {
+  connected: boolean;
+  clientSecret: string | null;
+  billingName: string | null;
+  billingEmail: string | null;
+  message: string;
+}
+
+export const STRIPE_PUBLISHABLE_KEY =
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+
+function buildUrl(path: string, params: Record<string, unknown>): string {
   const qs = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v !== undefined && v !== null) qs.append(k, String(v));
   }
-  const res = await fetch(`${BASE_URL}${path}?${qs.toString()}`);
+  return `${BASE_URL}${path}?${qs.toString()}`;
+}
+
+async function get<T>(path: string, params: Record<string, unknown>): Promise<T> {
+  const res = await fetch(buildUrl(path, params));
+  if (!res.ok) {
+    throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
+  }
+  return res.json() as Promise<T>;
+}
+
+async function post<T>(path: string, params: Record<string, unknown>): Promise<T> {
+  const res = await fetch(buildUrl(path, params), { method: 'POST' });
   if (!res.ok) {
     throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
   }
@@ -71,4 +120,43 @@ export const billingApi = {
       subscriptionId,
     });
   },
+  getMandate(accountId: number, subscriptionId: number) {
+    return get<MandateResponse>('/billing/mandate', {
+      accountId,
+      subscriptionId,
+    });
+  },
+  getPaymentMethod(accountId: number, subscriptionId: number) {
+    return get<PaymentMethodResponse>('/billing/payment-method', {
+      accountId,
+      subscriptionId,
+    });
+  },
+  startRibChange(accountId: number, subscriptionId: number) {
+    return post<RibChangeResponse>('/billing/payment-method/change', {
+      accountId,
+      subscriptionId,
+    });
+  },
+  finalizeRibChange(
+    accountId: number,
+    subscriptionId: number,
+    setupIntentId: string,
+  ) {
+    return post<{ ok: boolean; connected: boolean }>(
+      '/billing/payment-method/finalize',
+      { accountId, subscriptionId, setupIntentId },
+    );
+  },
 };
+
+export function mandateDocumentUrl(
+  accountId: number,
+  subscriptionId: number,
+): string {
+  const path = `/billing/mandate/document?accountId=${accountId}&subscriptionId=${subscriptionId}`;
+  if (Platform.OS === 'web' && BASE_URL.startsWith('/')) {
+    return `${window.location.origin}${BASE_URL}${path}`;
+  }
+  return `${BASE_URL}${path}`;
+}

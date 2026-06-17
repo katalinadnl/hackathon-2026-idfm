@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import {
   billingApi,
+  MandateResponse,
   PassSummary,
+  PaymentMethodResponse,
   TransactionsResponse,
 } from '@/lib/api';
 
@@ -13,7 +15,6 @@ interface AsyncState<T> {
   reload: () => void;
 }
 
-/** Passes the account can bill — feeds the pass selector. */
 export function usePasses(accountId: number): AsyncState<PassSummary[]> {
   const [data, setData] = useState<PassSummary[] | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,9 +38,68 @@ export function usePasses(accountId: number): AsyncState<PassSummary[]> {
   return { data, loading, error, reload: load };
 }
 
-/**
- * Transaction history. `subscriptionId === null` → global view (all passes).
- */
+export function useMandate(
+  accountId: number,
+  subscriptionId: number | null,
+): AsyncState<MandateResponse> {
+  const [data, setData] = useState<MandateResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    if (subscriptionId === null) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    billingApi
+      .getMandate(accountId, subscriptionId)
+      .then((res) => !cancelled && setData(res))
+      .catch((e) => !cancelled && setError(e.message))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId, subscriptionId]);
+
+  useEffect(() => load(), [load]);
+  return { data, loading, error, reload: load };
+}
+
+export function usePaymentMethod(
+  accountId: number,
+  subscriptionId: number | null,
+): AsyncState<PaymentMethodResponse> {
+  const [data, setData] = useState<PaymentMethodResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(() => {
+    if (subscriptionId === null) {
+      setData(null);
+      setLoading(false);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    billingApi
+      .getPaymentMethod(accountId, subscriptionId)
+      .then((res) => !cancelled && setData(res))
+      .catch((e) => !cancelled && setError(e.message))
+      .finally(() => !cancelled && setLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [accountId, subscriptionId]);
+
+  useEffect(() => load(), [load]);
+  return { data, loading, error, reload: load };
+}
+
 export function useTransactions(
   accountId: number,
   subscriptionId: number | null,

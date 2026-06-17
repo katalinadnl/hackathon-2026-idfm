@@ -12,7 +12,6 @@ type Props = {
   onChange: (key: SegmentKey) => void;
 };
 
-/** Segmented control to switch between the 3 billing tabs. */
 export function SegmentedTabs({ segments, active, onChange }: Props) {
   return (
     <View style={styles.container} accessibilityRole="tablist">
