@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -7,27 +7,27 @@ import {
   Text,
   useWindowDimensions,
   View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { MandateTab } from '@/components/billing/MandateTab';
-import { PassSelector } from '@/components/billing/PassSelector';
-import { RibTab } from '@/components/billing/RibTab';
-import { SegmentedTabs } from '@/components/billing/SegmentedTabs';
-import { TransactionsTab } from '@/components/billing/TransactionsTab';
-import { Card } from '@/components/ui/Card';
-import { BottomTabInset, DS, MaxContentWidth } from '@/constants/theme';
-import { usePasses } from '@/hooks/useBilling';
-import { CURRENT_ACCOUNT_ID } from '@/lib/api';
+import { MandateTab } from "@/components/billing/MandateTab";
+import { PassSelector } from "@/components/billing/PassSelector";
+import { RibTab } from "@/components/billing/RibTab";
+import { SegmentedTabs } from "@/components/billing/SegmentedTabs";
+import { TransactionsTab } from "@/components/billing/TransactionsTab";
+import { Card } from "@/components/ui/Card";
+import { BottomTabInset, DS, MaxContentWidth } from "@/constants/theme";
+import { usePasses } from "@/hooks/useBilling";
+import { CURRENT_ACCOUNT_ID } from "@/lib/api/billing";
 
 const DESKTOP_BP = 768;
 
-type TabKey = 'transactions' | 'mandate' | 'rib';
+type TabKey = "transactions" | "mandate" | "rib";
 
 const TABS = [
-  { key: 'transactions', label: 'Historique' },
-  { key: 'mandate', label: 'Mandat SEPA' },
-  { key: 'rib', label: 'RIB' },
+  { key: "transactions", label: "Historique" },
+  { key: "mandate", label: "Mandat SEPA" },
+  { key: "rib", label: "RIB" },
 ];
 
 export default function BillingScreen() {
@@ -37,14 +37,10 @@ export default function BillingScreen() {
   const accountId = CURRENT_ACCOUNT_ID;
   const { data: passes, loading, error } = usePasses(accountId);
 
-  const [selectedPassId, setSelectedPassId] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>('transactions');
-
-  useEffect(() => {
-    if (passes && passes.length === 1 && selectedPassId === null) {
-      setSelectedPassId(passes[0].subscriptionId);
-    }
-  }, [passes, selectedPassId]);
+  const [selectedPassId, setSelectedPassId] = useState<number | null>(
+    passes?.length === 1 ? passes[0].subscriptionId : null,
+  );
+  const [activeTab, setActiveTab] = useState<TabKey>("transactions");
 
   const sectionPad = isDesktop
     ? { paddingHorizontal: DS.space8 }
@@ -58,9 +54,8 @@ export default function BillingScreen() {
         { paddingBottom: BottomTabInset + DS.space8 },
       ]}
     >
-      <SafeAreaView edges={Platform.OS === 'web' ? [] : ['top']}>
+      <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]}>
         <View style={[isDesktop && styles.pageInner]}>
-
           <View style={[styles.header, sectionPad]}>
             <Text style={styles.title} accessibilityRole="header">
               Facturation
@@ -103,20 +98,20 @@ export default function BillingScreen() {
           </View>
 
           <View style={[styles.block, sectionPad]}>
-            {activeTab === 'transactions' && (
+            {activeTab === "transactions" && (
               <TransactionsTab
                 accountId={accountId}
                 subscriptionId={selectedPassId}
               />
             )}
-            {activeTab === 'mandate' && (
+            {activeTab === "mandate" && (
               <MandateTab
                 accountId={accountId}
                 subscriptionId={selectedPassId}
-                onGoToRib={() => setActiveTab('rib')}
+                onGoToRib={() => setActiveTab("rib")}
               />
             )}
-            {activeTab === 'rib' && (
+            {activeTab === "rib" && (
               <RibTab accountId={accountId} subscriptionId={selectedPassId} />
             )}
           </View>
@@ -131,8 +126,8 @@ const styles = StyleSheet.create({
   content: { flexGrow: 1 },
   pageInner: {
     maxWidth: MaxContentWidth,
-    width: '100%',
-    marginHorizontal: 'auto' as any,
+    width: "100%",
+    marginHorizontal: "auto" as any,
   },
   header: {
     paddingTop: DS.space6,
@@ -141,13 +136,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '800',
+    fontWeight: "800",
     color: DS.textStrong,
     letterSpacing: -0.6,
   },
   subtitle: { fontSize: 16, color: DS.textBody, lineHeight: 24, maxWidth: 520 },
   block: { paddingVertical: DS.space3 },
-  center: { paddingVertical: DS.space6, alignItems: 'center' },
-  errorTitle: { fontSize: 15, fontWeight: '700', color: DS.dangerText },
+  center: { paddingVertical: DS.space6, alignItems: "center" },
+  errorTitle: { fontSize: 15, fontWeight: "700", color: DS.dangerText },
   errorBody: { fontSize: 13, color: DS.textMuted, marginTop: 4 },
 });

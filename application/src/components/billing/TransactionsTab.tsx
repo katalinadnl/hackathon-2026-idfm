@@ -1,24 +1,24 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { Badge } from '@/components/ui/Badge';
-import { Card } from '@/components/ui/Card';
-import { DS } from '@/constants/theme';
-import { Transaction, TransactionStatus } from '@/lib/api';
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+import { DS } from "@/constants/theme";
+import { Transaction, TransactionStatus } from "@/lib/api";
 import {
   formatDate,
   formatEuro,
   formatEuroPlain,
   METHOD_LABELS,
-} from '@/lib/format';
-import { useTransactions } from '@/hooks/useBilling';
+} from "@/lib/format";
+import { useTransactions } from "@/hooks/useBilling";
 
 const STATUS_META: Record<
   TransactionStatus,
-  { label: string; tone: 'success' | 'danger' | 'info' }
+  { label: string; tone: "success" | "danger" | "info" }
 > = {
-  succeeded: { label: 'Payé', tone: 'success' },
-  failed: { label: 'Échoué', tone: 'danger' },
-  refunded: { label: 'Remboursé', tone: 'info' },
+  succeeded: { label: "Payé", tone: "success" },
+  failed: { label: "Échoué", tone: "danger" },
+  refunded: { label: "Remboursé", tone: "info" },
 };
 
 type Props = {
@@ -44,7 +44,9 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
   if (error) {
     return (
       <Card>
-        <Text style={styles.errorTitle}>Impossible de charger l’historique</Text>
+        <Text style={styles.errorTitle}>
+          Impossible de charger l’historique
+        </Text>
         <Text style={styles.errorBody}>{error}</Text>
         <Text style={styles.retry} onPress={reload} accessibilityRole="button">
           Réessayer
@@ -56,20 +58,23 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
   if (!data || data.transactions.length === 0) {
     return (
       <Card>
-        <Text style={styles.empty}>Aucun prélèvement pour cette sélection.</Text>
+        <Text style={styles.empty}>
+          Aucun prélèvement pour cette sélection.
+        </Text>
       </Card>
     );
   }
 
   const settled = data.outstanding <= 0;
   const unpaidCount = data.transactions.filter(
-    (t) => t.status === 'failed',
+    (t) => t.status === "failed",
   ).length;
 
   return (
     <View style={styles.wrapper}>
-
-      <Card style={[styles.totalCard, settled ? styles.cardOk : styles.cardDue]}>
+      <Card
+        style={[styles.totalCard, settled ? styles.cardOk : styles.cardDue]}
+      >
         <Text style={styles.totalLabel}>Restant à payer</Text>
         <Text
           style={[
@@ -81,9 +86,9 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
         </Text>
         <Text style={styles.totalMeta}>
           {settled
-            ? 'Tout est réglé ✓'
-            : `${unpaidCount} paiement${unpaidCount > 1 ? 's' : ''} impayé${
-                unpaidCount > 1 ? 's' : ''
+            ? "Tout est réglé ✓"
+            : `${unpaidCount} paiement${unpaidCount > 1 ? "s" : ""} impayé${
+                unpaidCount > 1 ? "s" : ""
               }`}
         </Text>
       </Card>
@@ -125,7 +130,7 @@ function Row({ tx, last }: { tx: Transaction; last: boolean }) {
         style={[
           styles.amount,
           positive && styles.amountPositive,
-          tx.status === 'failed' && styles.amountFailed,
+          tx.status === "failed" && styles.amountFailed,
         ]}
       >
         {formatEuro(tx.amount)}
@@ -136,22 +141,22 @@ function Row({ tx, last }: { tx: Transaction; last: boolean }) {
 
 const styles = StyleSheet.create({
   wrapper: { gap: DS.space4 },
-  center: { paddingVertical: DS.space8, alignItems: 'center' },
+  center: { paddingVertical: DS.space8, alignItems: "center" },
 
   totalCard: { gap: 2 },
   cardOk: { backgroundColor: DS.successTint, borderColor: DS.success },
   cardDue: { backgroundColor: DS.dangerTint, borderColor: DS.danger },
-  totalLabel: { fontSize: 14, color: DS.textMuted, fontWeight: '600' },
-  totalValue: { fontSize: 28, fontWeight: '800' },
+  totalLabel: { fontSize: 14, color: DS.textMuted, fontWeight: "600" },
+  totalValue: { fontSize: 28, fontWeight: "800" },
   valueOk: { color: DS.successText },
   valueDue: { color: DS.dangerText },
   totalMeta: { fontSize: 13, color: DS.textMuted },
 
   listCard: { padding: 0 },
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: DS.space3,
     paddingHorizontal: DS.space5,
     paddingVertical: DS.space4,
@@ -161,25 +166,25 @@ const styles = StyleSheet.create({
     borderBottomColor: DS.borderSubtle,
   },
   rowMain: { flex: 1, gap: 4 },
-  rowLabel: { fontSize: 15, fontWeight: '700', color: DS.textStrong },
+  rowLabel: { fontSize: 15, fontWeight: "700", color: DS.textStrong },
   rowMeta: { fontSize: 13, color: DS.textMuted },
   rowBadge: { marginTop: 2 },
   amount: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: "800",
     color: DS.textStrong,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
   },
   amountPositive: { color: DS.successText },
-  amountFailed: { color: DS.textMuted, textDecorationLine: 'line-through' },
+  amountFailed: { color: DS.textMuted, textDecorationLine: "line-through" },
 
-  errorTitle: { fontSize: 15, fontWeight: '700', color: DS.dangerText },
+  errorTitle: { fontSize: 15, fontWeight: "700", color: DS.dangerText },
   errorBody: { fontSize: 13, color: DS.textMuted, marginTop: 4 },
   retry: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.actionPrimary,
     marginTop: DS.space3,
   },
-  empty: { fontSize: 15, color: DS.textMuted, textAlign: 'center' },
+  empty: { fontSize: 15, color: DS.textMuted, textAlign: "center" },
 });

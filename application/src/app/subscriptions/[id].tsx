@@ -17,7 +17,6 @@ import { DocumentCard } from "@/components/subscription/DocumentCard";
 import { RenewalBanner } from "@/components/subscription/RenewalBanner";
 import { SubscriptionHeader } from "@/components/subscription/SubscriptionHeader";
 import { DS } from "@/constants/theme";
-import { Subscription } from "@/types/subscription";
 import { AccountsSection } from "@/components/subscription/AccountSection";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { PaymentHistoryCta } from "@/components/subscription/PaiementHistory";
@@ -29,7 +28,7 @@ export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
 
-  const { subscription: sub, loading, error, refetch } = useSubscription(id);
+  const { data: subscription, loading, error, reload } = useSubscription(id);
   if (loading) {
     return (
       <SafeAreaView style={s.root} edges={["top"]}>
@@ -40,13 +39,13 @@ export default function SubscriptionDetailPage() {
     );
   }
 
-  if (error || !sub) {
+  if (error || !subscription) {
     return (
       <SafeAreaView style={s.root} edges={["top"]}>
         <View style={s.centered}>
           <Icon name="alert-triangle" size={32} color={DS.danger} />
           <Text style={s.errorText}>{error ?? "Abonnement introuvable"}</Text>
-          <Button variant="secondary" size="sm" onPress={refetch}>
+          <Button variant="secondary" size="sm" onPress={reload}>
             Réessayer
           </Button>
         </View>
@@ -54,35 +53,48 @@ export default function SubscriptionDetailPage() {
     );
   }
 
-  const isOldEnough = getAge(sub.beneficiary.birthDate) >= 16;
+  const isOldEnough = getAge(subscription.beneficiary.birthDate) >= 16;
 
   return (
     <SafeAreaView style={s.root} edges={["top"]}>
-      <SubscriptionHeader subscription={sub} onBack={() => router.back()} />
+      <SubscriptionHeader
+        subscription={subscription}
+        onBack={() => router.back()}
+      />
 
       <ScrollView
         style={s.scroll}
         contentContainerStyle={s.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {!sub.renewed && (
+        {!subscription.renewed && (
           <RenewalBanner
-            endDate={sub.endDate}
-            onPress={() => router.push(`/subscriptions/${sub.id}/renew` as any)}
+            endDate={subscription.endDate}
+            onPress={() =>
+              router.push(`/subscriptions/${subscription.id}/renew` as any)
+            }
           />
         )}
 
-        {sub.delivery && sub.delivery.status !== "delivered" && (
-          <DeliveryBanner delivery={sub.delivery} />
-        )}
+        {subscription.delivery &&
+          subscription.delivery.status !== "delivered" && (
+            <DeliveryBanner delivery={subscription.delivery} />
+          )}
 
         {/* Abonnement + Titulaire côte à côte */}
         <View style={s.topGrid}>
           <View style={s.topGridCol}>
             <SectionTitle>Abonnement</SectionTitle>
             <Card style={s.topGridCard}>
-              <InfoRow label="Numéro de pass" value={sub.navigoNumber} />
-              <InfoRow label="Numéro client" value={sub.clientNumber} last />
+              <InfoRow
+                label="Numéro de pass"
+                value={subscription.navigoNumber}
+              />
+              <InfoRow
+                label="Numéro client"
+                value={subscription.clientNumber}
+                last
+              />
             </Card>
           </View>
           <View style={s.topGridCol}>
@@ -90,16 +102,16 @@ export default function SubscriptionDetailPage() {
             <Card style={s.topGridCard}>
               <InfoRow
                 label="Nom"
-                value={`${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`}
+                value={`${subscription.beneficiary.firstName} ${subscription.beneficiary.lastName}`}
               />
-              <InfoRow label="Email" value={sub.beneficiary.email} />
+              <InfoRow label="Email" value={subscription.beneficiary.email} />
               <InfoRow
                 label="Département"
-                value={sub.beneficiary.residenceDepartment.name}
+                value={subscription.beneficiary.residenceDepartment.name}
               />
               <InfoRow
                 label="Naissance"
-                value={formatDate(sub.beneficiary.birthDate)}
+                value={formatDate(subscription.beneficiary.birthDate)}
                 last
               />
             </Card>
@@ -108,31 +120,31 @@ export default function SubscriptionDetailPage() {
 
         <AccountsSection
           isOldEnough={isOldEnough}
-          account={sub.account}
-          referrer={sub.referrer}
-          payer={sub.payer}
+          account={subscription.account}
+          referrer={subscription.referrer}
+          payer={subscription.payer}
           onLinkAccount={() =>
-            router.push(`/subscriptions/${sub.id}/link-account` as any)
+            router.push(`/subscriptions/${subscription.id}/link-account` as any)
           }
         />
 
         <SectionTitle>Mes documents</SectionTitle>
-        {sub.documents.length === 0 ? (
+        {subscription.documents.length === 0 ? (
           <Card>
             <InfoRow label="Aucun document disponible" value="" last />
           </Card>
         ) : (
           <View style={s.docGrid}>
-            {sub.documents.map((doc) => (
+            {subscription.documents.map((doc) => (
               <DocumentCard key={doc.id} doc={doc} />
             ))}
           </View>
         )}
 
         <PaymentHistoryCta
-          payments={sub.payments}
+          payments={subscription.payments}
           onPress={() =>
-            router.push(`/subscriptions/${sub.id}/payments` as any)
+            router.push(`/subscriptions/${subscription.id}/payments` as any)
           }
         />
 

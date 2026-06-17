@@ -1,16 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
 
-import {
-  loadStripe,
-  Stripe,
-  StripeIbanElement,
-} from '@stripe/stripe-js';
+import { loadStripe, Stripe, StripeIbanElement } from "@stripe/stripe-js";
 
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { DS } from '@/constants/theme';
-import { STRIPE_PUBLISHABLE_KEY } from '@/lib/api';
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { DS } from "@/constants/theme";
+import { STRIPE_PUBLISHABLE_KEY } from "@/lib/api";
 
 type Props = {
   clientSecret: string;
@@ -40,21 +36,23 @@ export function StripeIbanForm({
   useEffect(() => {
     let active = true;
     if (!STRIPE_PUBLISHABLE_KEY) {
-      setError('Clé publique Stripe absente (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY).');
+      setError(
+        "Clé publique Stripe absente (EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY).",
+      );
       return;
     }
     loadStripe(STRIPE_PUBLISHABLE_KEY).then((stripe) => {
       if (!active || !stripe || !ibanMountRef.current) return;
       const elements = stripe.elements();
-      const iban = elements.create('iban', {
-        supportedCountries: ['SEPA'],
-        placeholderCountry: 'FR',
+      const iban = elements.create("iban", {
+        supportedCountries: ["SEPA"],
+        placeholderCountry: "FR",
         style: {
-          base: { fontSize: '16px', color: DS.textStrong },
+          base: { fontSize: "16px", color: DS.textStrong },
         },
       });
       iban.mount(ibanMountRef.current);
-      iban.on('change', (e) => setError(e.error?.message ?? null));
+      iban.on("change", (e) => setError(e.error?.message ?? null));
       stripeRef.current = stripe;
       ibanElRef.current = iban;
       setReady(true);
@@ -82,7 +80,7 @@ export function StripeIbanForm({
       });
 
     if (confirmError) {
-      setError(confirmError.message ?? 'Échec de la validation du RIB.');
+      setError(confirmError.message ?? "Échec de la validation du RIB.");
       setSubmitting(false);
       return;
     }
@@ -107,7 +105,7 @@ export function StripeIbanForm({
       </View>
 
       <View style={styles.field}>
-        <div ref={ibanMountRef} style={{ width: '100%' }} />
+        <div ref={ibanMountRef} style={{ width: "100%" }} />
       </View>
 
       {error && <Text style={styles.error}>{error}</Text>}
@@ -116,8 +114,12 @@ export function StripeIbanForm({
         <Button variant="tertiary" onPress={onCancel} disabled={submitting}>
           Annuler
         </Button>
-        <Button leadingIcon="check" onPress={handleSubmit} disabled={!canSubmit}>
-          {submitting ? 'Validation…' : 'Valider le nouveau RIB'}
+        <Button
+          leadingIcon="check"
+          onPress={handleSubmit}
+          disabled={!canSubmit}
+        >
+          {submitting ? "Validation…" : "Valider le nouveau RIB"}
         </Button>
       </View>
     </View>
@@ -127,16 +129,16 @@ export function StripeIbanForm({
 const styles = StyleSheet.create({
   wrapper: { gap: DS.space3 },
   label: {},
-  labelText: { fontSize: 13, fontWeight: '600', color: DS.textMuted },
+  labelText: { fontSize: 13, fontWeight: "600", color: DS.textMuted },
   field: {
     borderWidth: 1.5,
     borderColor: DS.borderDefault,
     borderRadius: DS.radiusSm,
     paddingHorizontal: DS.space4,
     paddingVertical: DS.space4,
-    justifyContent: 'center',
+    justifyContent: "center",
     minHeight: DS.targetMin,
   },
   error: { fontSize: 13, color: DS.dangerText },
-  actions: { flexDirection: 'row', gap: DS.space3, justifyContent: 'flex-end' },
+  actions: { flexDirection: "row", gap: DS.space3, justifyContent: "flex-end" },
 });

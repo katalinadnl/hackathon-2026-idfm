@@ -1,9 +1,9 @@
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Badge } from '@/components/ui/Badge';
-import { DS } from '@/constants/theme';
-import { PassSummary } from '@/lib/api';
-import { ROLE_LABELS } from '@/lib/format';
+import { Badge } from "@/components/ui/Badge";
+import { DS } from "@/constants/theme";
+import { PassSummary } from "@/lib/api";
+import { ROLE_LABELS } from "@/lib/format";
 
 type Props = {
   passes: PassSummary[];
@@ -13,7 +13,6 @@ type Props = {
 };
 
 export function PassSelector({ passes, selectedId, onSelect }: Props) {
-
   const showAll = passes.length > 1;
   return (
     <ScrollView
@@ -79,7 +78,7 @@ function Pill({
       {roles && roles.length > 0 && (
         <View style={styles.roleRow}>
           {roles.map((r) => (
-            <Badge key={r} tone={selected ? 'brand' : 'info'}>
+            <Badge key={r} tone={selected ? "brand" : "info"}>
               {r}
             </Badge>
           ))}
@@ -104,7 +103,7 @@ const styles = StyleSheet.create({
     borderColor: DS.borderDefault,
     backgroundColor: DS.surfaceCard,
     gap: 4,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   pillSelected: {
     borderColor: DS.actionPrimary,
@@ -115,7 +114,7 @@ const styles = StyleSheet.create({
   },
   pillLabel: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: "700",
     color: DS.textStrong,
   },
   pillLabelSelected: {
@@ -129,8 +128,8 @@ const styles = StyleSheet.create({
     color: DS.actionPrimary,
   },
   roleRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 4,
     marginTop: 2,
   },

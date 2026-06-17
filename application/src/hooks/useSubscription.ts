@@ -1,18 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Subscription } from "@/types/subscription";
-import { api, ApiError } from "@/lib/api";
-
-type UseSubscriptionResult = {
-  subscription: Subscription | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
-};
+import { ApiError, AsyncState, http } from "@/lib/api";
 
 export function useSubscription(
   id: string | number | undefined,
-): UseSubscriptionResult {
+): AsyncState<Subscription | null> {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +17,7 @@ export function useSubscription(
     setError(null);
 
     try {
-      const data = await api.get<Subscription>(`/subscriptions/${id}`);
+      const data = await http.get<Subscription>(`/subscriptions/${id}`);
       setSubscription(data);
     } catch (err) {
       if (err instanceof ApiError) {
@@ -38,8 +31,9 @@ export function useSubscription(
   }, [id]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchSubscription();
   }, [fetchSubscription]);
 
-  return { subscription, loading, error, refetch: fetchSubscription };
+  return { data: subscription, loading, error, reload: fetchSubscription };
 }
