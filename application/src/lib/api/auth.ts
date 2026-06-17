@@ -9,6 +9,9 @@ export type AuthUser = {
 };
 
 export type AuthResponse = { token: string; user: AuthUser };
+export type LoginResponse =
+  | AuthResponse
+  | { requires2FA: true; message: string };
 
 // ── Auth API ──────────────────────────────────────────────────────────────────
 
@@ -21,7 +24,16 @@ export const authApi = {
   }) => http.post<AuthResponse>("/auth/register", body),
 
   login: (body: { email: string; password: string }) =>
-    http.post<AuthResponse>("/auth/login", body),
+    http.post<LoginResponse>("/auth/login", body),
+
+  verifyOtp: (body: { email: string; code: string }) =>
+    http.post<AuthResponse>("/auth/2fa/verify", body),
+
+  forgotPassword: (body: { email: string }) =>
+    http.post<{ message: string }>("/auth/forgot-password", body),
+
+  resetPassword: (body: { token: string; newPassword: string }) =>
+    http.post<{ message: string }>("/auth/reset-password", body),
 
   logout: (token: string) =>
     http.post<{ success: boolean }>("/auth/logout", token),
