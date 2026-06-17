@@ -58,6 +58,27 @@ export default function WebLayout() {
   );
 }
 
+function SkipLink() {
+  const [focused, setFocused] = useState(false);
+  return (
+    <Pressable
+      onFocus={() => setFocused(true)}
+      onBlur={() => setFocused(false)}
+      onPress={() => {
+        if (typeof document !== "undefined") {
+          const el = document.getElementById("main-content");
+          if (el) el.focus();
+        }
+      }}
+      accessibilityRole="link"
+      accessibilityLabel="Aller au contenu principal"
+      style={[styles.skipLink, focused && styles.skipLinkVisible]}
+    >
+      <Text style={styles.skipLinkText}>Aller au contenu principal</Text>
+    </Pressable>
+  );
+}
+
 function AuthGate() {
   const { loading } = useAuth();
 
@@ -71,8 +92,9 @@ function AuthGate() {
 
   return (
     <View style={styles.root}>
+      <SkipLink />
       <SiteHeader />
-      <View style={styles.pageSlot}>
+      <View style={styles.pageSlot} nativeID="main-content" role="main" {...({ tabIndex: -1 } as any)}>
         <Slot />
       </View>
     </View>
@@ -91,7 +113,7 @@ function NavLink({ href, children }: { href: string; children: string }) {
           pressed && styles.navLinkPressed,
         ]}
         accessibilityRole="link"
-        accessibilityState={{ selected: isActive }}
+        aria-current={isActive ? 'page' : undefined}
         accessibilityLabel={children}
       >
         <Text style={[styles.navLinkText, isActive && styles.navLinkTextActive]}>
@@ -157,7 +179,7 @@ function MobileNavItem({ href, children, onPress }: { href: string; children: st
       <Pressable
         onPress={onPress}
         accessibilityRole="link"
-        accessibilityState={{ selected: isActive }}
+        aria-current={isActive ? 'page' : undefined}
         style={({ pressed }) => [
           styles.mobileNavItem,
           isActive && styles.mobileNavItemActive,
@@ -197,6 +219,7 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
             <Pressable
               onPress={() => { onClose(); logout(); }}
               accessibilityRole="button"
+              accessibilityLabel="Se déconnecter"
               style={({ pressed }) => [styles.mobileLogoutBtn, pressed && styles.btnPressed]}
             >
               <Icon name="log-out" size={16} color={DS.danger} />
@@ -293,6 +316,25 @@ const styles = StyleSheet.create({
   },
   pageSlot: {
     flex: 1,
+    outlineWidth: 0,
+  },
+  skipLink: {
+    position: "absolute" as any,
+    top: -100,
+    left: DS.space4,
+    zIndex: 200,
+    backgroundColor: DS.actionPrimary,
+    borderRadius: DS.radiusSm,
+    paddingHorizontal: DS.space4,
+    paddingVertical: DS.space2,
+  },
+  skipLinkVisible: {
+    top: DS.space2,
+  },
+  skipLinkText: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: DS.white,
   },
   header: {
     position: "sticky" as any,
