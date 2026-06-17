@@ -40,6 +40,21 @@ export function AuthScreen() {
 
   const [mode, setMode] = useState<Mode>("login");
 
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      const titles: Record<Mode, string> = {
+        login: 'Connexion – Comutitres',
+        register: 'Créer un compte – Comutitres',
+        otp: 'Vérification – Comutitres',
+        forgot: 'Mot de passe oublié – Comutitres',
+        'forgot-sent': 'Email envoyé – Comutitres',
+        reset: 'Nouveau mot de passe – Comutitres',
+        'reset-done': 'Mot de passe modifié – Comutitres',
+      };
+      document.title = titles[mode];
+    }
+  }, [mode]);
+
   // Shared fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -228,7 +243,7 @@ export function AuthScreen() {
 
   const renderHeader = (title: string, subtitle: string) => (
     <>
-      <Text style={styles.title} accessibilityRole="header">
+      <Text style={styles.title} role="heading" aria-level={1}>
         {title}
       </Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
@@ -239,6 +254,7 @@ export function AuthScreen() {
     <Pressable
       onPress={() => go("login")}
       accessibilityRole="button"
+      accessibilityLabel={label}
       style={styles.switchRow}
     >
       <Text style={styles.switchText}>
@@ -261,8 +277,15 @@ export function AuthScreen() {
             )}
 
             <Card style={styles.card}>
+              {error && <ErrorBanner message={error} />}
+
               <View style={styles.otpWrapper}>
-                <Text style={styles.label}>Code de vérification</Text>
+                <Text
+                  style={styles.label}
+                  nativeID="otp-label"
+                >
+                  Code de vérification
+                </Text>
                 <TextInput
                   ref={otpInputRef}
                   style={styles.otpInput}
@@ -276,8 +299,10 @@ export function AuthScreen() {
                   autoComplete="one-time-code"
                   returnKeyType="done"
                   onSubmitEditing={handleVerifyOtp}
+                  accessibilityLabel="Code de vérification à 6 chiffres"
+                  accessibilityHint="Saisissez le code reçu par email"
+                  {...(Platform.OS === 'web' ? { 'aria-labelledby': 'otp-label' } as any : {})}
                 />
-                {error && <Text style={styles.errorText}>{error}</Text>}
               </View>
 
               <Button
@@ -286,11 +311,18 @@ export function AuthScreen() {
                 leadingIcon="shield"
                 onPress={handleVerifyOtp}
                 disabled={busy || otpCode.length !== 6}
+                accessibilityHint={otpCode.length < 6 ? `${6 - otpCode.length} chiffre(s) manquant(s)` : undefined}
               >
                 Valider le code
               </Button>
 
-              <Pressable onPress={handleResendOtp} disabled={busy} style={styles.resendRow}>
+              <Pressable
+                onPress={handleResendOtp}
+                disabled={busy}
+                accessibilityRole="button"
+                accessibilityLabel="Renvoyer le code de vérification"
+                style={styles.resendRow}
+              >
                 <Text style={styles.resendText}>
                   Vous n&apos;avez pas reçu le code ?{" "}
                   <Text style={styles.switchLink}>Renvoyer</Text>
@@ -320,6 +352,7 @@ export function AuthScreen() {
             )}
 
             <Card style={styles.card}>
+              {error && <ErrorBanner message={error} />}
               <Input
                 label="Email"
                 leadingIcon="mail"
@@ -330,7 +363,8 @@ export function AuthScreen() {
                 textContentType="emailAddress"
                 value={email}
                 onChangeText={setEmail}
-                error={error ?? undefined}
+                returnKeyType="done"
+                onSubmitEditing={handleForgotPassword}
               />
 
               <Button
@@ -339,6 +373,7 @@ export function AuthScreen() {
                 leadingIcon="send"
                 onPress={handleForgotPassword}
                 disabled={busy}
+                accessibilityHint="Un lien de réinitialisation sera envoyé à votre adresse email"
               >
                 Envoyer le lien
               </Button>
@@ -361,15 +396,21 @@ export function AuthScreen() {
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
 
-            <Card style={[styles.card, styles.successCard]}>
-              <Icon name="mail" size={36} color={DS.actionPrimary} />
-              <Text style={styles.successTitle}>Email envoyé !</Text>
-              <Text style={styles.successBody}>
-                Si un compte existe avec cette adresse, vous recevrez un lien de
-                réinitialisation dans quelques instants. Pensez à vérifier vos
-                spams.
-              </Text>
-            </Card>
+            <View
+              accessibilityRole="alert"
+              accessibilityLiveRegion="assertive"
+              accessibilityLabel="Email envoyé. Si un compte existe avec cette adresse, vous recevrez un lien de réinitialisation. Pensez à vérifier vos spams."
+            >
+              <Card style={[styles.card, styles.successCard]}>
+                <Icon name="mail" size={36} color={DS.actionPrimary} />
+                <Text style={styles.successTitle}>Email envoyé !</Text>
+                <Text style={styles.successBody}>
+                  Si un compte existe avec cette adresse, vous recevrez un lien de
+                  réinitialisation dans quelques instants. Pensez à vérifier vos
+                  spams.
+                </Text>
+              </Card>
+            </View>
 
             {renderBackToLogin()}
           </View>
@@ -388,6 +429,7 @@ export function AuthScreen() {
             <Logo />
             {renderHeader("Nouveau mot de passe", "Choisissez un nouveau mot de passe pour votre compte.")}
             <Card style={styles.card}>
+              {error && <ErrorBanner message={error} />}
               <Input
                 label="Nouveau mot de passe"
                 leadingIcon="lock"
@@ -395,8 +437,10 @@ export function AuthScreen() {
                 secureTextEntry
                 autoCapitalize="none"
                 textContentType="newPassword"
+                autoComplete="new-password"
                 value={newPassword}
                 onChangeText={setNewPassword}
+                returnKeyType="next"
               />
               <Input
                 label="Confirmer le mot de passe"
@@ -405,9 +449,11 @@ export function AuthScreen() {
                 secureTextEntry
                 autoCapitalize="none"
                 textContentType="newPassword"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChangeText={setConfirmPassword}
-                error={error ?? undefined}
+                returnKeyType="done"
+                onSubmitEditing={handleResetPassword}
               />
               <Button size="lg" fullWidth leadingIcon="check" onPress={handleResetPassword} disabled={busy}>
                 Réinitialiser le mot de passe
@@ -427,16 +473,22 @@ export function AuthScreen() {
         <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]} style={styles.safe}>
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
-            <Card style={[styles.card, styles.successCard]}>
-              <Icon name="check-circle" size={36} color={DS.actionPrimary} />
-              <Text style={styles.successTitle}>Mot de passe modifié !</Text>
-              <Text style={styles.successBody}>
-                Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.
-              </Text>
-              <Button size="lg" fullWidth leadingIcon="log-in" onPress={() => go("login")}>
-                Se connecter
-              </Button>
-            </Card>
+            <View
+              accessibilityRole="alert"
+              accessibilityLiveRegion="assertive"
+              accessibilityLabel="Mot de passe modifié. Vous pouvez maintenant vous connecter."
+            >
+              <Card style={[styles.card, styles.successCard]}>
+                <Icon name="check-circle" size={36} color={DS.actionPrimary} />
+                <Text style={styles.successTitle}>Mot de passe modifié !</Text>
+                <Text style={styles.successBody}>
+                  Votre mot de passe a été réinitialisé. Vous pouvez maintenant vous connecter.
+                </Text>
+                <Button size="lg" fullWidth leadingIcon="log-in" onPress={() => go("login")}>
+                  Se connecter
+                </Button>
+              </Card>
+            </View>
           </View>
         </SafeAreaView>
       </ScrollView>
@@ -460,7 +512,7 @@ export function AuthScreen() {
         <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
           <Logo />
 
-          <Text style={styles.title} accessibilityRole="header">
+          <Text style={styles.title} role="heading" aria-level={1}>
             {isLogin ? "Connexion à votre compte" : "Créer votre compte"}
           </Text>
           <Text style={styles.subtitle}>
@@ -470,6 +522,8 @@ export function AuthScreen() {
           </Text>
 
           <Card style={styles.card}>
+            {error && <ErrorBanner message={error} />}
+
             {!isLogin && (
               <View style={styles.nameRow}>
                 <View style={styles.nameField}>
@@ -478,9 +532,11 @@ export function AuthScreen() {
                     leadingIcon="person"
                     placeholder="Jean"
                     autoCapitalize="words"
+                    autoComplete="given-name"
                     textContentType="givenName"
                     value={firstName}
                     onChangeText={setFirstName}
+                    returnKeyType="next"
                   />
                 </View>
                 <View style={styles.nameField}>
@@ -489,9 +545,11 @@ export function AuthScreen() {
                     leadingIcon="person"
                     placeholder="Dupont"
                     autoCapitalize="words"
+                    autoComplete="family-name"
                     textContentType="familyName"
                     value={lastName}
                     onChangeText={setLastName}
+                    returnKeyType="next"
                   />
                 </View>
               </View>
@@ -507,6 +565,7 @@ export function AuthScreen() {
               textContentType="emailAddress"
               value={email}
               onChangeText={setEmail}
+              returnKeyType="next"
             />
 
             <View>
@@ -516,10 +575,12 @@ export function AuthScreen() {
                 placeholder="••••••••"
                 secureTextEntry
                 autoCapitalize="none"
+                autoComplete={isLogin ? "current-password" : "new-password"}
                 textContentType={isLogin ? "password" : "newPassword"}
                 value={password}
                 onChangeText={setPassword}
-                error={error ?? undefined}
+                returnKeyType="done"
+                onSubmitEditing={isLogin ? handleLogin : handleRegister}
               />
               {isLogin && (
                 <Pressable
@@ -528,6 +589,7 @@ export function AuthScreen() {
                     go("forgot");
                   }}
                   accessibilityRole="button"
+                  accessibilityLabel="Mot de passe oublié ? Réinitialiser mon mot de passe"
                   style={styles.forgotLink}
                 >
                   <Text style={styles.forgotText}>Mot de passe oublié ?</Text>
@@ -545,9 +607,9 @@ export function AuthScreen() {
               {isLogin ? "Se connecter" : "Créer mon compte"}
             </Button>
 
-            <View style={styles.divider}>
+            <View style={styles.divider} importantForAccessibility="no-hide-descendants">
               <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>ou</Text>
+              <Text style={styles.dividerText} importantForAccessibility="no-hide-descendants">ou</Text>
               <View style={styles.dividerLine} />
             </View>
 
@@ -555,7 +617,8 @@ export function AuthScreen() {
               onPress={handleFranceConnect}
               disabled={busy}
               accessibilityRole="button"
-              accessibilityLabel="S'identifier avec France Connect"
+              accessibilityLabel="S'identifier avec FranceConnect"
+              accessibilityHint="Ouvre la connexion via le service gouvernemental FranceConnect"
               style={({ pressed }) => [
                 styles.fcButton,
                 pressed && styles.fcButtonPressed,
@@ -563,7 +626,7 @@ export function AuthScreen() {
               ]}
             >
               <Icon name="shield" size={22} color={DS.white} />
-              <View>
+              <View importantForAccessibility="no-hide-descendants">
                 <Text style={styles.fcButtonKicker}>
                   S&apos;identifier avec
                 </Text>
@@ -583,6 +646,7 @@ export function AuthScreen() {
             }}
             disabled={busy}
             accessibilityRole="button"
+            accessibilityLabel={isLogin ? "Créer un compte" : "Se connecter à mon compte existant"}
             style={styles.switchRow}
           >
             <Text style={styles.switchText}>
@@ -615,10 +679,27 @@ function Logo() {
   );
 }
 
+function ErrorBanner({ message }: { message: string }) {
+  return (
+    <View
+      style={styles.errorBanner}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
+    >
+      <Icon name="alert-triangle" size={16} color={DS.dangerText} />
+      <Text style={styles.errorBannerText}>{message}</Text>
+    </View>
+  );
+}
+
 function BusyRow() {
   return (
-    <View style={styles.busyRow}>
-      <ActivityIndicator color={DS.actionPrimary} />
+    <View
+      style={styles.busyRow}
+      accessibilityLiveRegion="polite"
+      accessibilityLabel="Chargement en cours"
+    >
+      <ActivityIndicator color={DS.actionPrimary} accessibilityLabel="Chargement en cours" />
     </View>
   );
 }
@@ -688,6 +769,25 @@ const styles = StyleSheet.create({
   switchText: { fontSize: 15, color: DS.textBody },
   switchLink: { color: DS.actionPrimary, fontWeight: "700" },
   busyRow: { alignItems: "center", paddingVertical: DS.space2 },
+  // Error banner
+  errorBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: DS.space2,
+    backgroundColor: DS.dangerTint,
+    borderRadius: DS.radiusSm,
+    borderWidth: 1,
+    borderColor: DS.danger,
+    paddingHorizontal: DS.space4,
+    paddingVertical: DS.space3,
+  },
+  errorBannerText: {
+    fontSize: 14,
+    color: DS.dangerText,
+    fontWeight: "500",
+    flex: 1,
+    lineHeight: 20,
+  },
   // OTP
   otpWrapper: { gap: DS.space2 },
   label: { fontSize: 14, fontWeight: "600", color: DS.textStrong },

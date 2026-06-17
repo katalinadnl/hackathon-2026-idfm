@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { Stack } from 'expo-router';
 import { Image } from 'expo-image';
 
 import { Button } from '@/components/ui/Button';
@@ -60,7 +60,7 @@ const JOURNEY_RESULTS = [
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <Text style={styles.sectionTitle} accessibilityRole="header">
+    <Text style={styles.sectionTitle} role="heading" aria-level={2}>
       {children}
     </Text>
   );
@@ -75,6 +75,12 @@ export default function HomeScreen() {
   const [pmr, setPmr] = useState(false);
   const [searched, setSearched] = useState(false);
 
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.title = 'Accueil – Comutitres';
+    }
+  }, []);
+
   const handleSearch = () => setSearched(true);
   const handleSwap = () => { const tmp = from; setFrom(to); setTo(tmp); };
 
@@ -87,7 +93,6 @@ export default function HomeScreen() {
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + DS.space8 }]}
-      accessible={false}
       keyboardShouldPersistTaps="handled"
     >
       <SafeAreaView edges={Platform.OS === 'web' ? [] : ['top']}>
@@ -110,7 +115,8 @@ export default function HomeScreen() {
             <View style={isDesktop ? styles.heroTextDesktop : undefined}>
               <Text
                 style={[styles.heroTitle, isDesktop && styles.heroTitleDesktop]}
-                accessibilityRole="header"
+                role="heading"
+                aria-level={1}
               >
                 {t('hero_title')}
               </Text>
@@ -183,15 +189,13 @@ export default function HomeScreen() {
 
               {/* PMR switch + search */}
               <View style={[styles.plannerFooter, isDesktop && styles.plannerFooterDesktop]}>
-                <View style={styles.pmrRow} accessible accessibilityLabel={t('accessible_label')}>
+                <View style={styles.pmrRow}>
                   <Switch
                     value={pmr}
                     onValueChange={setPmr}
                     trackColor={{ false: DS.borderDefault, true: DS.actionPrimary }}
                     thumbColor={DS.white}
                     accessibilityLabel={t('accessible_label')}
-                    accessibilityRole="switch"
-                    accessibilityState={{ checked: pmr }}
                   />
                   <Text style={styles.pmrLabel}>{t('accessible_label')}</Text>
                 </View>
@@ -229,7 +233,7 @@ export default function HomeScreen() {
               <SectionTitle>{t('traffic_title')}</SectionTitle>
               <Pressable
                 accessible
-                accessibilityRole="link"
+                accessibilityRole="button"
                 accessibilityLabel={t('see_all_lines')}
               >
                 <Text style={styles.linkText}>{t('see_all_lines')} →</Text>
@@ -274,7 +278,7 @@ export default function HomeScreen() {
         </View>
 
         {/* ─── Footer ─────────────────────────────────────────── */}
-        <View style={styles.footer} accessible accessibilityRole="none">
+        <View style={styles.footer} role="contentinfo">
           <View style={[styles.footerInner, isDesktop && styles.footerInnerDesktop]}>
             <View>
               <Text style={styles.footerBrand}>Comutitres</Text>
@@ -288,15 +292,12 @@ export default function HomeScreen() {
               ].map((col, ci) => (
                 <View key={ci} style={styles.footerCol}>
                   {col.map((item, ii) => (
-                    <Pressable
+                    <View
                       key={ii}
-                      accessible
-                      accessibilityRole="link"
-                      accessibilityLabel={item}
                       style={styles.footerLink}
                     >
                       <Text style={styles.footerLinkText}>{item}</Text>
-                    </Pressable>
+                    </View>
                   ))}
                 </View>
               ))}
