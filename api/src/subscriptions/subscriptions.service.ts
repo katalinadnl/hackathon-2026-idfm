@@ -80,7 +80,6 @@ export class SubscriptionsService {
     }
   }
 
-  // Include partagé entre findAll et findOne pour rester cohérent
   private includeClause() {
     return subscriptionInclude;
   }
