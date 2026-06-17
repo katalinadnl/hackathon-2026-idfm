@@ -5,6 +5,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { FranceConnectService } from './france-connect.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
       secret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
       signOptions: { expiresIn: '30d' },
     }),
+    MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, FranceConnectService, JwtAuthGuard],

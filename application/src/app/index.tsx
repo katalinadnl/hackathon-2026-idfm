@@ -88,6 +88,7 @@ export default function HomeScreen() {
       style={styles.scroll}
       contentContainerStyle={[styles.content, { paddingBottom: BottomTabInset + DS.space8 }]}
       accessible={false}
+      keyboardShouldPersistTaps="handled"
     >
       <SafeAreaView edges={Platform.OS === 'web' ? [] : ['top']}>
         {/* ─── Mobile header (hidden on web — web nav handles it) ── */}
