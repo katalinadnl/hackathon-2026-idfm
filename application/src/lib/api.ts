@@ -1,12 +1,12 @@
-import { Platform } from 'react-native';
+import { Platform } from "react-native";
 
 const BASE_URL =
   process.env.EXPO_PUBLIC_API_URL ??
-  (Platform.OS === 'web' ? '/api' : 'http://localhost:3000/api');
+  (Platform.OS === "web" ? "/api" : "http://localhost:3000/api");
 
 export const CURRENT_ACCOUNT_ID = 2;
 
-export type BillingRole = 'holder' | 'referrer' | 'payer';
+export type BillingRole = "holder" | "referrer" | "payer";
 
 export interface PassSummary {
   subscriptionId: number;
@@ -19,7 +19,7 @@ export interface PassSummary {
   endDate: string;
 }
 
-export type TransactionStatus = 'succeeded' | 'failed' | 'refunded';
+export type TransactionStatus = "succeeded" | "failed" | "refunded";
 
 export interface Transaction {
   id: string;
@@ -35,16 +35,16 @@ export interface TransactionsResponse {
   total: number;
 
   outstanding: number;
-  currency: 'EUR';
+  currency: "EUR";
   transactions: Transaction[];
 }
 
-export type MandateStatus = 'active' | 'pending' | 'revoked';
+export type MandateStatus = "active" | "pending" | "revoked";
 
 export interface SepaMandate {
   reference: string;
   status: MandateStatus;
-  scheme: 'CORE';
+  scheme: "CORE";
   creditorName: string;
   creditorIcs: string;
   debtorName: string;
@@ -52,7 +52,7 @@ export interface SepaMandate {
   signedAt: string;
   revokedAt: string | null;
   navigoNumber: string;
-  source: 'local' | 'stripe';
+  source: "local" | "stripe";
 }
 
 export interface MandateResponse {
@@ -62,12 +62,12 @@ export interface MandateResponse {
 }
 
 export interface PaymentMethodInfo {
-  type: 'sepa_debit';
+  type: "sepa_debit";
   ibanMasked: string;
   bankName: string;
   holderName: string;
   isDefault: boolean;
-  source: 'local' | 'stripe';
+  source: "local" | "stripe";
 }
 
 export interface PaymentMethodResponse {
@@ -84,7 +84,7 @@ export interface RibChangeResponse {
 }
 
 export const STRIPE_PUBLISHABLE_KEY =
-  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
+  process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? "";
 
 function buildUrl(path: string, params: Record<string, unknown>): string {
   const qs = new URLSearchParams();
@@ -94,7 +94,10 @@ function buildUrl(path: string, params: Record<string, unknown>): string {
   return `${BASE_URL}${path}?${qs.toString()}`;
 }
 
-async function get<T>(path: string, params: Record<string, unknown>): Promise<T> {
+async function get<T>(
+  path: string,
+  params: Record<string, unknown>,
+): Promise<T> {
   const res = await fetch(buildUrl(path, params));
   if (!res.ok) {
     throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
@@ -102,8 +105,11 @@ async function get<T>(path: string, params: Record<string, unknown>): Promise<T>
   return res.json() as Promise<T>;
 }
 
-async function post<T>(path: string, params: Record<string, unknown>): Promise<T> {
-  const res = await fetch(buildUrl(path, params), { method: 'POST' });
+async function post<T>(
+  path: string,
+  params: Record<string, unknown>,
+): Promise<T> {
+  const res = await fetch(buildUrl(path, params), { method: "POST" });
   if (!res.ok) {
     throw new Error(`API ${path} → ${res.status} ${res.statusText}`);
   }
@@ -112,28 +118,28 @@ async function post<T>(path: string, params: Record<string, unknown>): Promise<T
 
 export const billingApi = {
   getPasses(accountId: number) {
-    return get<PassSummary[]>('/billing/passes', { accountId });
+    return get<PassSummary[]>("/billing/passes", { accountId });
   },
   getTransactions(accountId: number, subscriptionId?: number) {
-    return get<TransactionsResponse>('/billing/transactions', {
+    return get<TransactionsResponse>("/billing/transactions", {
       accountId,
       subscriptionId,
     });
   },
   getMandate(accountId: number, subscriptionId: number) {
-    return get<MandateResponse>('/billing/mandate', {
+    return get<MandateResponse>("/billing/mandate", {
       accountId,
       subscriptionId,
     });
   },
   getPaymentMethod(accountId: number, subscriptionId: number) {
-    return get<PaymentMethodResponse>('/billing/payment-method', {
+    return get<PaymentMethodResponse>("/billing/payment-method", {
       accountId,
       subscriptionId,
     });
   },
   startRibChange(accountId: number, subscriptionId: number) {
-    return post<RibChangeResponse>('/billing/payment-method/change', {
+    return post<RibChangeResponse>("/billing/payment-method/change", {
       accountId,
       subscriptionId,
     });
@@ -144,7 +150,7 @@ export const billingApi = {
     setupIntentId: string,
   ) {
     return post<{ ok: boolean; connected: boolean }>(
-      '/billing/payment-method/finalize',
+      "/billing/payment-method/finalize",
       { accountId, subscriptionId, setupIntentId },
     );
   },
@@ -155,7 +161,7 @@ export function mandateDocumentUrl(
   subscriptionId: number,
 ): string {
   const path = `/billing/mandate/document?accountId=${accountId}&subscriptionId=${subscriptionId}`;
-  if (Platform.OS === 'web' && BASE_URL.startsWith('/')) {
+  if (Platform.OS === "web" && BASE_URL.startsWith("/")) {
     return `${window.location.origin}${BASE_URL}${path}`;
   }
   return `${BASE_URL}${path}`;

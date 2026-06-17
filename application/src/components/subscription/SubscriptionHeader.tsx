@@ -1,0 +1,115 @@
+import { StyleSheet, Text, View } from "react-native";
+
+import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { DS } from "@/constants/theme";
+import { Subscription } from "@/types/subscription";
+
+const STATUS_TONE = {
+  active: "success",
+  expired: "neutral",
+  blocked: "danger",
+} as const;
+
+const STATUS_LABEL = {
+  active: "Actif",
+  expired: "Expiré",
+  blocked: "Bloqué",
+} as const;
+
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+type SubscriptionHeaderProps = {
+  subscription: Subscription;
+  onBack: () => void;
+};
+
+export function SubscriptionHeader({
+  subscription,
+  onBack,
+}: SubscriptionHeaderProps) {
+  return (
+    <View style={s.header}>
+      <Button
+        variant="tertiary"
+        size="sm"
+        leadingIcon="arrow-left"
+        onPress={onBack}
+        accessibilityLabel="Retour"
+      >
+        Retour
+      </Button>
+
+      <View style={s.headerMain}>
+        <View style={s.headerText}>
+          <Text style={s.headerTitle}>{subscription.subscriptionType}</Text>
+          <Text style={s.headerSub}>
+            {subscription.beneficiary.firstName}{" "}
+            {subscription.beneficiary.lastName}
+          </Text>
+        </View>
+        <Badge tone={STATUS_TONE[subscription.status]} dot>
+          {STATUS_LABEL[subscription.status]}
+        </Badge>
+      </View>
+
+      <View style={s.headerDates}>
+        <View>
+          <Text style={s.dateLabel}>Début</Text>
+          <Text style={s.dateValue}>{formatDate(subscription.startDate)}</Text>
+        </View>
+        <View style={s.dateDivider} />
+        <View>
+          <Text style={s.dateLabel}>Fin</Text>
+          <Text style={s.dateValue}>{formatDate(subscription.endDate)}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const s = StyleSheet.create({
+  header: {
+    backgroundColor: DS.surfaceCard,
+    paddingHorizontal: DS.space5,
+    paddingTop: DS.space3,
+    paddingBottom: DS.space4,
+    borderBottomWidth: 1,
+    borderBottomColor: DS.borderSubtle,
+    gap: DS.space3,
+  },
+  headerMain: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: DS.space3,
+  },
+  headerText: { flex: 1 },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: DS.textStrong,
+    lineHeight: 26,
+  },
+  headerSub: { fontSize: 14, color: DS.textMuted, marginTop: DS.space1 },
+  headerDates: { flexDirection: "row", alignItems: "center", gap: DS.space4 },
+  dateLabel: {
+    fontSize: 11,
+    color: DS.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+  },
+  dateValue: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: DS.textBody,
+    marginTop: 2,
+  },
+  dateDivider: { width: 1, height: 28, backgroundColor: DS.borderSubtle },
+});

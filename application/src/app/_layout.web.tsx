@@ -1,17 +1,31 @@
-import '@/setup/fonts';
-import { DarkTheme, DefaultTheme, Link, Slot, ThemeProvider, usePathname } from 'expo-router';
-import { Image } from 'expo-image';
-import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, useColorScheme, View } from 'react-native';
+import "@/setup/fonts";
+import {
+  DarkTheme,
+  DefaultTheme,
+  Link,
+  Slot,
+  ThemeProvider,
+  usePathname,
+} from "expo-router";
+import { Image } from "expo-image";
+import * as Font from "expo-font";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+} from "react-native";
 
-import { AuthScreen } from '@/components/auth/AuthScreen';
-import { Icon } from '@/components/ui/Icon';
-import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
-import { DS, MaxContentWidth } from '@/constants/theme';
-import { AuthProvider, useAuth } from '@/contexts/auth';
-import { I18nProvider, useI18n } from '@/contexts/i18n';
+import { AuthScreen } from "@/components/auth/AuthScreen";
+import { Icon } from "@/components/ui/Icon";
+import { LanguageSwitcher } from "@/components/ui/LanguageSwitcher";
+import { DS, MaxContentWidth } from "@/constants/theme";
+import { AuthProvider, useAuth } from "@/contexts/auth";
+import { I18nProvider, useI18n } from "@/contexts/i18n";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,7 +47,9 @@ export default function WebLayout() {
   return (
     <I18nProvider>
       <AuthProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+        >
           <AuthGate />
         </ThemeProvider>
       </AuthProvider>
@@ -93,7 +109,7 @@ function NavLink({ href, children }: { href: string; children: string }) {
 function AccountMenu() {
   const { user, logout } = useAuth();
   const name =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ') || user?.email;
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email;
 
   return (
     <View style={styles.account}>
@@ -107,7 +123,10 @@ function AccountMenu() {
         onPress={logout}
         accessibilityRole="button"
         accessibilityLabel="Se déconnecter"
-        style={({ pressed }) => [styles.logoutBtn, pressed && styles.logoutBtnPressed]}
+        style={({ pressed }) => [
+          styles.logoutBtn,
+          pressed && styles.logoutBtnPressed,
+        ]}
       >
         <Icon name="log-out" size={18} color={DS.danger} />
         <Text style={styles.logoutText}>Déconnexion</Text>
@@ -157,8 +176,8 @@ function SiteHeader() {
 const styles = StyleSheet.create({
   loader: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: DS.surfacePage,
   },
   root: {
@@ -231,29 +250,29 @@ const styles = StyleSheet.create({
   },
   right: {
     gap: DS.space1,
-    marginLeft: 'auto' as any,
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginLeft: "auto" as any,
+    flexDirection: "row",
+    alignItems: "center",
   },
   account: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space3,
   },
   accountInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space2,
     maxWidth: 180,
   },
   accountName: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.textStrong,
   },
   logoutBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: DS.space2,
     paddingHorizontal: DS.space3,
     paddingVertical: DS.space2,
@@ -267,7 +286,7 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.danger,
   },
 });
