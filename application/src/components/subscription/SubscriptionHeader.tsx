@@ -39,11 +39,10 @@ export function SubscriptionHeader({
       <Button
         variant="tertiary"
         size="sm"
-        leadingIcon="arrow-left"
         onPress={onBack}
         accessibilityLabel="Retour"
       >
-        Retour
+        ← Retour
       </Button>
 
       <View style={s.headerMain}>
@@ -76,12 +75,9 @@ export function SubscriptionHeader({
 
 const s = StyleSheet.create({
   header: {
-    backgroundColor: DS.surfaceCard,
     paddingHorizontal: DS.space5,
     paddingTop: DS.space3,
     paddingBottom: DS.space4,
-    borderBottomWidth: 1,
-    borderBottomColor: DS.borderSubtle,
     gap: DS.space3,
   },
   headerMain: {

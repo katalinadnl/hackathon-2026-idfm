@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000';
+import { API_BASE_URL } from '@/services/api';
+
+const API_URL = API_BASE_URL;
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 

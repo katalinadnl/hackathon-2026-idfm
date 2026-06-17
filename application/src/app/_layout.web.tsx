@@ -159,7 +159,6 @@ function SiteHeader() {
           <NavLink href="/">Accueil</NavLink>
           <NavLink href="/visitors">Visiteurs</NavLink>
           <NavLink href="/uikit">UI Kit</NavLink>
-          <NavLink href="/subscriptions/1">Abonnement 1</NavLink>
           <NavLink href="/billing">Facturation</NavLink>
         </View>
 
@@ -218,15 +217,16 @@ const styles = StyleSheet.create({
   nav: {
     flexDirection: "row",
     alignItems: "center",
-    gap: DS.space1,
+    gap: DS.space4,
     flex: 1,
   },
   navLink: {
-    position: "relative",
+    flexDirection: "column",
     paddingHorizontal: DS.space4,
     height: 72,
     alignItems: "center",
     justifyContent: "center",
+    gap: DS.space2,
   },
   navLinkPressed: {
     opacity: 0.75,
@@ -240,10 +240,7 @@ const styles = StyleSheet.create({
     color: DS.actionPrimary,
   },
   navLinkIndicator: {
-    position: "absolute",
-    bottom: 0,
-    left: DS.space4,
-    right: DS.space4,
+    alignSelf: "stretch",
     height: 3,
     borderRadius: 2,
     backgroundColor: DS.actionPrimary,
