@@ -94,9 +94,7 @@ function NavLink({ href, children }: { href: string; children: string }) {
         accessibilityState={{ selected: isActive }}
         accessibilityLabel={children}
       >
-        <Text
-          style={[styles.navLinkText, isActive && styles.navLinkTextActive]}
-        >
+        <Text style={[styles.navLinkText, isActive && styles.navLinkTextActive]}>
           {children}
         </Text>
         {isActive && <View style={styles.navLinkIndicator} />}
@@ -105,30 +103,27 @@ function NavLink({ href, children }: { href: string; children: string }) {
   );
 }
 
-function AccountMenu() {
+function UserChip() {
   const { user, logout } = useAuth();
-  const name =
-    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email;
+  const firstName = user?.firstName || user?.email?.split("@")[0] || "?";
+  const initial = firstName[0].toUpperCase();
 
   return (
-    <View style={styles.account}>
-      <View style={styles.accountInfo}>
-        <Icon name="person" size={22} color={DS.actionPrimary} />
-        <Text style={styles.accountName} numberOfLines={1}>
-          {name}
-        </Text>
+    <View style={styles.userChip}>
+      <View style={styles.userAvatar}>
+        <Text style={styles.userAvatarText}>{initial}</Text>
       </View>
+      <Text style={styles.userName} numberOfLines={1}>
+        {firstName}
+      </Text>
+      <View style={styles.chipSep} />
       <Pressable
         onPress={logout}
         accessibilityRole="button"
         accessibilityLabel="Se déconnecter"
-        style={({ pressed }) => [
-          styles.logoutBtn,
-          pressed && styles.logoutBtnPressed,
-        ]}
+        style={({ pressed }) => [styles.logoutIconBtn, pressed && styles.logoutIconBtnPressed]}
       >
-        <Icon name="log-out" size={18} color={DS.danger} />
-        <Text style={styles.logoutText}>Déconnexion</Text>
+        <Icon name="log-out" size={16} color={DS.textMuted} />
       </Pressable>
     </View>
   );
@@ -253,22 +248,13 @@ function SiteHeader() {
               <View style={styles.nav}>
                 <NavLink href="/">Accueil</NavLink>
                 <NavLink href="/visitors">Visiteurs</NavLink>
+                {token && <NavLink href="/dashboard">Mon espace</NavLink>}
                 {token && <NavLink href="/billing">Facturation</NavLink>}
               </View>
 
               <View style={styles.right}>
-                {token ? (
-                  <>
-                    <NavLink href="/dashboard">Mon espace</NavLink>
-                    <LanguageSwitcher value={lang} onChange={setLang as any} />
-                    <AccountMenu />
-                  </>
-                ) : (
-                  <>
-                    <LanguageSwitcher value={lang} onChange={setLang as any} />
-                    <AuthButtons />
-                  </>
-                )}
+                <LanguageSwitcher value={lang} onChange={setLang as any} />
+                {token ? <UserChip /> : <AuthButtons />}
               </View>
             </>
           ) : (
@@ -343,12 +329,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navLink: {
-    flexDirection: "column",
-    paddingHorizontal: DS.space4,
+    position: "relative" as any,
+    paddingHorizontal: DS.space3,
     height: 72,
     alignItems: "center",
     justifyContent: "center",
-    gap: DS.space2,
   },
   navLinkPressed: {
     opacity: 0.75,
@@ -362,51 +347,65 @@ const styles = StyleSheet.create({
     color: DS.actionPrimary,
   },
   navLinkIndicator: {
-    width: 20,
+    position: "absolute" as any,
+    bottom: 0,
+    left: DS.space3,
+    right: DS.space3,
     height: 2,
     borderRadius: 1,
     backgroundColor: DS.actionPrimary,
   },
   right: {
-    gap: DS.space1,
+    gap: DS.space3,
     marginLeft: "auto" as any,
     flexDirection: "row",
     alignItems: "center",
   },
-  account: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space3,
-  },
-  accountInfo: {
+  userChip: {
     flexDirection: "row",
     alignItems: "center",
     gap: DS.space2,
-    maxWidth: 180,
+    backgroundColor: DS.surfacePage,
+    borderWidth: 1,
+    borderColor: DS.borderSubtle,
+    borderRadius: DS.radiusPill,
+    paddingLeft: DS.space1,
+    paddingRight: DS.space1,
+    height: 36,
   },
-  accountName: {
+  userAvatar: {
+    width: 26,
+    height: 26,
+    borderRadius: DS.radiusPill,
+    backgroundColor: DS.actionPrimary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  userAvatarText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: DS.white,
+  },
+  userName: {
     fontSize: 14,
     fontWeight: "600",
     color: DS.textStrong,
+    maxWidth: 120,
   },
-  logoutBtn: {
-    flexDirection: "row",
+  chipSep: {
+    width: 1,
+    height: 18,
+    backgroundColor: DS.borderSubtle,
+  },
+  logoutIconBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: DS.radiusPill,
     alignItems: "center",
-    gap: DS.space2,
-    paddingHorizontal: DS.space3,
-    paddingVertical: DS.space2,
-    borderRadius: DS.radiusSm,
-    borderWidth: 1.5,
-    borderColor: DS.borderDefault,
+    justifyContent: "center",
   },
-  logoutBtnPressed: {
+  logoutIconBtnPressed: {
     backgroundColor: DS.dangerTint,
-    borderColor: DS.danger,
-  },
-  logoutText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: DS.danger,
   },
   mobileRight: {
     marginLeft: "auto" as any,
