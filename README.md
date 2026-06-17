@@ -3,29 +3,40 @@
 ## Architecture
 
 | Service | Description                                                  | Techno                  |
-|---------|--------------------------------------------------------------|-------------------------|
+| ------- | ------------------------------------------------------------ | ----------------------- |
 | `nginx` | Gateway / reverse-proxy, seul port exposé (`80`)             | nginx alpine            |
 | `app`   | Application front, build web statique d'Expo servi par nginx | Expo / React Native Web |
 | `api`   | API back-end                                                 | Nest Js                 |
 
-Copy .env.example to .env in backend
+## Initialisation
+
+Copy `api/.env.exemple` to `api/.env` in backend
+Copy `application/.env` to `application/.env` in frontend
+
+```bash
+cd application
+npm i
+cd ..
+cd api
+npm i
+npx prisma generate
+npx prisma migrate dev
+npm run seed
+cd ..
+```
+
 ## Démarrage
 
 ```bash
 docker compose up --build
-
-docker compose exec php composer install
-docker compose exec php bin/console doctrine:migrations:migrate
-
-docker compose exec app npm install
 ```
 
 Une fois les conteneurs démarrés :
 
-| URL | Cible |
-|-----|-------|
-| <http://localhost/> | Application Expo (web) |
-| <http://localhost/api/> | API Symfony |
+| URL                     | Cible                  |
+| ----------------------- | ---------------------- |
+| <http://localhost/>     | Application Expo (web) |
+| <http://localhost/api/> | API Nest               |
 
 Pour arrêter :
 
@@ -35,8 +46,8 @@ docker compose down
 
 ## Routing de l'API
 
-La gateway transmet les requêtes commençant par `/api` à Symfony **en conservant
-le préfixe** (nécessaire pour API Platform, qui génère ses routes et sa doc à
+La gateway transmet les requêtes commençant par `/api` à l'api **en conservant
+le préfixe** (nécessaire pour Swagger, qui génère ses routes et sa doc à
 partir de ce chemin). Les assets statiques des UIs de doc sont servis depuis
 `/bundles/`.
 
@@ -44,17 +55,11 @@ partir de ce chemin). Les assets statiques des UIs de doc sont servis depuis
 
 Disponible une fois les conteneurs lancés :
 
-| Type | URL |
-|------|-----|
+| Type                  | URL                         |
+| --------------------- | --------------------------- |
 | Doc HTML (Swagger UI) | <http://localhost/api/docs> |
-
-
-  ```bash
-  cd application
-  npm install
-  npm run web
-  ```
 
 ## Variables d'environnement
 
-L'API charge ses variables depuis `api/.env` (voir `api/.env.dev` pour un exemple).
+L'API charge ses variables depuis `api/.env` (voir `api/.env.example` pour un exemple).
+L'app charge ses variables depuis `applicatiion/.env` (voir `application/.env.example` pour un exemple).
