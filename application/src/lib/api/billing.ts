@@ -1,6 +1,6 @@
 import { Platform } from "react-native";
-import { http } from ".";
-import { API_BASE_URL } from "@/services/api";
+import { API_BASE_URL, http } from "@/services/api";
+import { loadToken } from "@/services/storage";
 export const CURRENT_ACCOUNT_ID = 2;
 
 export const STRIPE_PUBLISHABLE_KEY =
@@ -81,27 +81,19 @@ export interface PaymentMethodResponse {
   connected: boolean;
   paymentMethod: PaymentMethodInfo | null;
 }
+
 export const billingApi = {
   getPasses(accountId: number) {
-    return http.get<PassSummary[]>("/billing/passes", { accountId });
+    return http.get<PassSummary[]>("/billing/passes");
   },
   getTransactions(accountId: number, subscriptionId?: number) {
-    return http.get<TransactionsResponse>("/billing/transactions", {
-      accountId,
-      subscriptionId,
-    });
+    return http.get<TransactionsResponse>("/billing/transactions");
   },
   getMandate(accountId: number, subscriptionId: number) {
-    return http.get<MandateResponse>("/billing/mandate", {
-      accountId,
-      subscriptionId,
-    });
+    return http.get<MandateResponse>("/billing/mandate");
   },
   getPaymentMethod(accountId: number, subscriptionId: number) {
-    return http.get<PaymentMethodResponse>("/billing/payment-method", {
-      accountId,
-      subscriptionId,
-    });
+    return http.get<PaymentMethodResponse>("/billing/payment-method");
   },
   startRibChange(accountId: number, subscriptionId: number) {
     return http.post<RibChangeResponse>("/billing/payment-method/change", {
@@ -120,11 +112,15 @@ export const billingApi = {
     );
   },
 };
-export function mandateDocumentUrl(
-  accountId: number,
+
+export async function mandateDocumentUrl(
   subscriptionId: number,
-): string {
-  const path = `/billing/mandate/document?accountId=${accountId}&subscriptionId=${subscriptionId}`;
+): Promise<string> {
+  const token = await loadToken();
+
+  const qs = new URLSearchParams({ subscriptionId: String(subscriptionId) });
+  if (token) qs.append("token", token);
+  const path = `/billing/mandate/document?${qs.toString()}`;
   if (Platform.OS === "web" && API_BASE_URL.startsWith("/")) {
     return `${window.location.origin}${API_BASE_URL}${path}`;
   }

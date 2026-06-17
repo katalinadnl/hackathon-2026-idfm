@@ -1,4 +1,4 @@
-import { BillingRole } from "@/lib/api";
+import { BillingRole } from "@/lib/api/billing";
 
 export function formatEuro(amount: number): string {
   const sign = amount < 0 ? "−" : "+";

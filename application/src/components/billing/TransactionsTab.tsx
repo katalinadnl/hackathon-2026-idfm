@@ -3,7 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { DS } from "@/constants/theme";
-import { Transaction, TransactionStatus } from "@/lib/api";
+import { Transaction, TransactionStatus } from "@/lib/api/billing";
 import {
   formatDate,
   formatEuro,

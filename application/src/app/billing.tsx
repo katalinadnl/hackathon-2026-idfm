@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -17,8 +17,8 @@ import { SegmentedTabs } from "@/components/billing/SegmentedTabs";
 import { TransactionsTab } from "@/components/billing/TransactionsTab";
 import { Card } from "@/components/ui/Card";
 import { BottomTabInset, DS, MaxContentWidth } from "@/constants/theme";
+import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
-import { CURRENT_ACCOUNT_ID } from "@/lib/api/billing";
 
 const DESKTOP_BP = 768;
 
@@ -34,7 +34,8 @@ export default function BillingScreen() {
   const { width } = useWindowDimensions();
   const isDesktop = width >= DESKTOP_BP;
 
-  const accountId = CURRENT_ACCOUNT_ID;
+  const { user } = useAuth();
+  const accountId = user?.id ?? null;
   const { data: passes, loading, error } = usePasses(accountId);
 
   const [selectedPassId, setSelectedPassId] = useState<number | null>(
@@ -45,6 +46,14 @@ export default function BillingScreen() {
   const sectionPad = isDesktop
     ? { paddingHorizontal: DS.space8 }
     : { paddingHorizontal: DS.space5 };
+
+  if (accountId === null) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={DS.actionPrimary} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView

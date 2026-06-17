@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Subscription } from "@/types/subscription";
-import { ApiError, AsyncState, http } from "@/lib/api";
+import { ApiError, AsyncState, http } from "@/services/api";
 
 export function useSubscription(
   id: string | number | undefined,

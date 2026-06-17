@@ -6,7 +6,7 @@ import { loadStripe, Stripe, StripeIbanElement } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DS } from "@/constants/theme";
-import { STRIPE_PUBLISHABLE_KEY } from "@/lib/api";
+import { STRIPE_PUBLISHABLE_KEY } from "@/lib/api/billing";
 
 type Props = {
   clientSecret: string;

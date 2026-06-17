@@ -8,7 +8,7 @@ import { Icon } from "@/components/ui/Icon";
 import { StripeIbanForm } from "@/components/billing/StripeIbanForm";
 import { DS } from "@/constants/theme";
 import { usePaymentMethod } from "@/hooks/useBilling";
-import { billingApi, RibChangeResponse } from "@/lib/api";
+import { billingApi, RibChangeResponse } from "@/lib/api/billing";
 
 type Props = { accountId: number; subscriptionId: number | null };
 

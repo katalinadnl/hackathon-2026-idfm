@@ -11,8 +11,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { DS } from "@/constants/theme";
 import { useMandate } from "@/hooks/useBilling";
-import { mandateDocumentUrl, MandateStatus, SepaMandate } from "@/lib/api";
 import { formatDate } from "@/lib/format";
+import {
+  mandateDocumentUrl,
+  MandateStatus,
+  SepaMandate,
+} from "@/lib/api/billing";
 
 type Props = {
   accountId: number;
@@ -64,8 +68,8 @@ export function MandateTab({ accountId, subscriptionId, onGoToRib }: Props) {
   const m = data.active;
   const meta = STATUS_META[m.status];
 
-  const handleDownload = () => {
-    Linking.openURL(mandateDocumentUrl(accountId, subscriptionId));
+  const handleDownload = async () => {
+    Linking.openURL(await mandateDocumentUrl(subscriptionId));
   };
 
   return (

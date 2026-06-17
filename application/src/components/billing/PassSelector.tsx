@@ -2,8 +2,8 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { Badge } from "@/components/ui/Badge";
 import { DS } from "@/constants/theme";
-import { PassSummary } from "@/lib/api";
 import { ROLE_LABELS } from "@/lib/format";
+import { PassSummary } from "@/lib/api/billing";
 
 type Props = {
   passes: PassSummary[];

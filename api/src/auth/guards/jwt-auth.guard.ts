@@ -14,12 +14,17 @@ export class JwtAuthGuard implements CanActivate {
 
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest<Request>();
+
     const header = req.headers.authorization;
-    if (!header?.startsWith('Bearer ')) {
+    const queryToken =
+      typeof req.query?.token === 'string' ? req.query.token : null;
+    const token = header?.startsWith('Bearer ') ? header.slice(7) : queryToken;
+
+    if (!token) {
       throw new UnauthorizedException('Token manquant.');
     }
     try {
-      const payload: JwtPayload = this.jwt.verify(header.slice(7));
+      const payload: JwtPayload = this.jwt.verify(token);
       req['user'] = payload;
       return true;
     } catch {
