@@ -11,6 +11,10 @@ async function bootstrap() {
   // All routes are served under /api (matches the nginx reverse-proxy rule).
   app.setGlobalPrefix('api');
 
+  app.setGlobalPrefix('api');
+
+  app.enableCors();
+
   const config = new DocumentBuilder()
     .setTitle('IDF')
     .setDescription('IDF API description')

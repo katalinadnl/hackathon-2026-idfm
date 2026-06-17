@@ -943,7 +943,11 @@ export const AccountScalarFieldEnum = {
   passwordHash: 'passwordHash',
   accountNumber: 'accountNumber',
   createdAt: 'createdAt',
-  beneficiaryId: 'beneficiaryId'
+  beneficiaryId: 'beneficiaryId',
+  stripeCustomerId: 'stripeCustomerId',
+  stripePaymentMethodId: 'stripePaymentMethodId',
+  stripeMandateId: 'stripeMandateId',
+  stripePreviousMandateId: 'stripePreviousMandateId'
 } as const
 
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
