@@ -64,6 +64,31 @@ services:
       # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
       # - ./docker/db/data:/var/lib/postgresql/data:rw
 
+  directus:
+    image: directus/directus:11
+    ports:
+      - "8055:8055"
+    environment:
+      SECRET: ${DIRECTUS_SECRET:-a-long-random-secret-for-directus}
+      ADMIN_EMAIL: ${DIRECTUS_ADMIN_EMAIL:-admin@idfm.fr}
+      ADMIN_PASSWORD: ${DIRECTUS_ADMIN_PASSWORD:-Admin123!}
+      DB_CLIENT: pg
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB:-app}
+      DB_USER: ${POSTGRES_USER:-app}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
+      WEBSOCKETS_ENABLED: "true"
+      CORS_ENABLED: "true"
+      CORS_ORIGIN: "true"
+    volumes:
+      - directus_uploads:/directus/uploads
+      - directus_extensions:/directus/extensions
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
   adminer:
     image: adminer:latest
     ports:
@@ -87,3 +112,5 @@ services:
 
 volumes:
   database_data:
+  directus_uploads:
+  directus_extensions:
