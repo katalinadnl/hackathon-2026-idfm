@@ -102,6 +102,14 @@ model Account {
   stripeMandateId         String? // mandate generated for that payment method
   stripePreviousMandateId String? // last revoked mandate (after a RIB change)
 
+  // 2FA via email OTP
+  twoFactorCode      String?
+  twoFactorExpiresAt DateTime?
+
+  // Reset mot de passe
+  resetPasswordToken     String?   @unique
+  resetPasswordExpiresAt DateTime?
+
   referredSubscriptions Subscription[] @relation("SubscriptionReferrer")
   paidSubscriptions     Subscription[] @relation("SubscriptionPayer")
 }
