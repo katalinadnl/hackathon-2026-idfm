@@ -23,8 +23,8 @@
 cp api/.env.example api/.env
 cp application/.env.example application/.env
 
-# 2. Générer le client Prisma et migrer
-cd api && npm i && npx prisma generate && npx prisma migrate dev && npm run seed && cd ..
+# 2. Générer le client Prisma et appliquer le schéma
+cd api && npm i && npx prisma generate && npx prisma db push && npm run prisma:fixture && cd ..
 
 # 3. Lancer
 docker compose up --build

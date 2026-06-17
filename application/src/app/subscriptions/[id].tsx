@@ -16,7 +16,7 @@ import { DeliveryBanner } from "@/components/subscription/DeliveryBanner";
 import { DocumentCard } from "@/components/subscription/DocumentCard";
 import { RenewalBanner } from "@/components/subscription/RenewalBanner";
 import { SubscriptionHeader } from "@/components/subscription/SubscriptionHeader";
-import { DS } from "@/constants/theme";
+import { DS, MaxContentWidth } from "@/constants/theme";
 import { AccountsSection } from "@/components/subscription/AccountSection";
 import { SectionTitle } from "@/components/ui/SectionTitle";
 import { PaymentHistoryCta } from "@/components/subscription/PaiementHistory";
@@ -57,11 +57,16 @@ export default function SubscriptionDetailPage() {
 
   return (
     <SafeAreaView style={s.root} edges={["top"]}>
-      <SubscriptionHeader
+      <View style={s.headerBg}>
+        <View style={s.wrapper}>
+          <SubscriptionHeader
         subscription={subscription}
         onBack={() => router.back()}
       />
+        </View>
+      </View>
 
+      <View style={s.wrapper}>
       <ScrollView
         style={s.scroll}
         contentContainerStyle={s.scrollContent}
@@ -195,6 +200,7 @@ export default function SubscriptionDetailPage() {
           </Button>
         </Card>
       </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -215,19 +221,29 @@ const s = StyleSheet.create({
     color: DS.textMuted,
     textAlign: "center",
   },
+  headerBg: {
+    backgroundColor: DS.surfaceCard,
+    borderBottomWidth: 1,
+    borderBottomColor: DS.borderSubtle,
+  },
+  wrapper: {
+    flex: 1,
+    maxWidth: MaxContentWidth,
+    width: "100%",
+    alignSelf: "center",
+  },
   scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: DS.space4,
+    paddingHorizontal: DS.space5,
     paddingBottom: DS.space8,
-    gap: DS.space2,
+    gap: DS.space6,
   },
   topGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: DS.space3,
-    marginTop: DS.space4,
+    gap: DS.space5,
   },
-  topGridCol: { flex: 1, minWidth: 240, gap: DS.space1 },
+  topGridCol: { flex: 1, minWidth: 240, gap: DS.space4 },
   topGridCard: { flex: 1 },
   docGrid: { flexDirection: "row", flexWrap: "wrap", gap: DS.space3 },
   actionsCard: { gap: DS.space3 },

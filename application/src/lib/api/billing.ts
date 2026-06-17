@@ -1,6 +1,7 @@
 import { Platform } from "react-native";
 import { API_BASE_URL, http } from "@/services/api";
 import { loadToken } from "@/services/storage";
+
 export const CURRENT_ACCOUNT_ID = 2;
 
 export const STRIPE_PUBLISHABLE_KEY =
@@ -70,16 +71,17 @@ export interface PaymentMethodInfo {
   source: "local" | "stripe";
 }
 
+export interface PaymentMethodResponse {
+  connected: boolean;
+  paymentMethod: PaymentMethodInfo | null;
+}
+
 export interface RibChangeResponse {
   connected: boolean;
   clientSecret: string | null;
   billingName: string | null;
   billingEmail: string | null;
   message: string;
-}
-export interface PaymentMethodResponse {
-  connected: boolean;
-  paymentMethod: PaymentMethodInfo | null;
 }
 
 export const billingApi = {

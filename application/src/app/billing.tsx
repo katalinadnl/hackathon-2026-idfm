@@ -5,7 +5,6 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,11 +15,10 @@ import { RibTab } from "@/components/billing/RibTab";
 import { SegmentedTabs } from "@/components/billing/SegmentedTabs";
 import { TransactionsTab } from "@/components/billing/TransactionsTab";
 import { Card } from "@/components/ui/Card";
+import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { BottomTabInset, DS, MaxContentWidth } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
-
-const DESKTOP_BP = 768;
 
 type TabKey = "transactions" | "mandate" | "rib";
 
@@ -31,9 +29,7 @@ const TABS = [
 ];
 
 export default function BillingScreen() {
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= DESKTOP_BP;
-
+  const { isDesktop, hPad } = usePageLayout();
   const { user } = useAuth();
   const accountId = user?.id ?? null;
   const { data: passes, loading, error } = usePasses(accountId);
@@ -43,9 +39,7 @@ export default function BillingScreen() {
   );
   const [activeTab, setActiveTab] = useState<TabKey>("transactions");
 
-  const sectionPad = isDesktop
-    ? { paddingHorizontal: DS.space8 }
-    : { paddingHorizontal: DS.space5 };
+  const sectionPad = { paddingHorizontal: hPad };
 
   if (accountId === null) {
     return (
@@ -64,7 +58,7 @@ export default function BillingScreen() {
       ]}
     >
       <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]}>
-        <View style={[isDesktop && styles.pageInner]}>
+        <View style={isDesktop && pageInner}>
           <View style={[styles.header, sectionPad]}>
             <Text style={styles.title} accessibilityRole="header">
               Facturation

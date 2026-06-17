@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -6,22 +7,20 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from "react-native";
 
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { DS, MaxContentWidth } from "@/constants/theme";
+import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
+import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import {
   ApiSubscription,
   SubscriptionRole,
   useSubscriptions,
 } from "@/hooks/use-subscriptions";
-
-const DESKTOP_BP = 768;
 
 type Section = "dashboard" | "subscriptions" | "billing" | "history";
 
@@ -145,6 +144,7 @@ function SidebarItem({
 }
 
 function ActivePassCard({ sub }: { sub: ApiSubscription }) {
+  const router = useRouter();
   const gradientStyle =
     Platform.OS === "web"
       ? ({
@@ -169,6 +169,7 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
           size="sm"
           trailingIcon="arrow-right"
           style={styles.passCardBtn}
+          onPress={() => router.push(`/subscriptions/${sub.id}`)}
         >
           Gérer
         </Button>
@@ -201,9 +202,15 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
 }
 
 function PassRow({ sub }: { sub: ApiSubscription }) {
+  const router = useRouter();
   const expiring = isExpiringSoon(sub.endDate);
   return (
-    <View style={styles.passRow}>
+    <Pressable
+      style={({ pressed }) => [styles.passRow, pressed && { opacity: 0.6 }]}
+      onPress={() => router.push(`/subscriptions/${sub.id}`)}
+      accessibilityRole="button"
+      accessibilityLabel={`Voir le détail de ${sub.subscriptionType}`}
+    >
       <View style={styles.passRowLeft}>
         <View style={styles.passRowHeader}>
           <Text style={styles.passRowType}>{sub.subscriptionType}</Text>
@@ -232,8 +239,9 @@ function PassRow({ sub }: { sub: ApiSubscription }) {
             {formatAmount(sub.latestPayment.amount)}
           </Text>
         )}
+        <Icon name="arrow-right" size={18} color={DS.textMuted} />
       </View>
-    </View>
+    </Pressable>
   );
 }
 
@@ -484,26 +492,17 @@ function HistoryView() {
 // ─── Main page ─────────────────────────────────────────────────────────────────
 
 export default function DashboardPage() {
-  const { width } = useWindowDimensions();
-  const isDesktop = width >= DESKTOP_BP;
+  const { isDesktop } = usePageLayout();
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
 
   const { user } = useAuth();
+  const { subscriptions, loading, error } = useSubscriptions(user?.id ?? 0);
   const accountName = user?.firstName ?? user?.email ?? "";
-  const { subscriptions, loading, error } = useSubscriptions(user?.id ?? null);
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
       <View
-        style={[
-          styles.layout,
-          isDesktop && styles.layoutDesktop,
-          {
-            maxWidth: MaxContentWidth,
-            width: "100%",
-            alignSelf: "center" as any,
-          },
-        ]}
+        style={[styles.layout, isDesktop && styles.layoutDesktop, pageInner]}
       >
         {/* ── Sidebar ──────────────────────────────────────────────── */}
         {isDesktop ? (
