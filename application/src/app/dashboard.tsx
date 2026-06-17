@@ -330,6 +330,31 @@ function LoadingPlaceholder() {
 
 // ─── Section content renderers ─────────────────────────────────────────────────
 
+function AdvisorWidget() {
+  const router = useRouter();
+  return (
+    <Pressable
+      onPress={() => router.push("/advisor")}
+      accessibilityRole="button"
+      accessibilityLabel="Ouvrir le Conseiller IA Mobilité"
+      style={({ pressed }) => [styles.advisorWidget, pressed && styles.advisorWidgetPressed]}
+    >
+      <View style={styles.advisorWidgetLeft}>
+        <View style={styles.advisorWidgetIcon}>
+          <Icon name="star" size={20} color={DS.white} />
+        </View>
+        <View style={styles.advisorWidgetText}>
+          <Text style={styles.advisorWidgetTitle}>Conseiller IA Mobilité</Text>
+          <Text style={styles.advisorWidgetSub}>
+            Renouvellement, pass perdu, justificatifs… posez vos questions.
+          </Text>
+        </View>
+      </View>
+      <Icon name="arrow-right" size={18} color={DS.actionPrimary} />
+    </Pressable>
+  );
+}
+
 function DashboardHome({
   subscriptions,
   loading,
@@ -345,6 +370,8 @@ function DashboardHome({
 
   return (
     <View style={styles.sectionContent}>
+      <AdvisorWidget />
+
       {loading ? (
         <LoadingPlaceholder />
       ) : active ? (
@@ -1006,5 +1033,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: DS.textMuted,
     fontStyle: "italic",
+  },
+  advisorWidget: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: DS.space3,
+    backgroundColor: DS.surfaceTint,
+    borderWidth: 1,
+    borderColor: DS.borderBrand,
+    borderRadius: DS.radiusLg,
+    padding: DS.space4,
+    ...(Platform.OS === "web"
+      ? ({ cursor: "pointer", transition: "background-color 150ms ease" } as any)
+      : {}),
+  },
+  advisorWidgetPressed: {
+    backgroundColor: DS.blueSoft,
+  },
+  advisorWidgetLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: DS.space3,
+  },
+  advisorWidgetIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: DS.radiusMd,
+    backgroundColor: DS.actionPrimary,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  advisorWidgetText: {
+    flex: 1,
+    gap: DS.space1,
+  },
+  advisorWidgetTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  advisorWidgetSub: {
+    fontSize: 13,
+    color: DS.textMuted,
+    lineHeight: 18,
   },
 });
