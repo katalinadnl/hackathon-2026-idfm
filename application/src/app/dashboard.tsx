@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Icon } from '@/components/ui/Icon';
 import { DS, MaxContentWidth } from '@/constants/theme';
+import { useAuth } from '@/contexts/auth';
 import {
   ApiSubscription,
   SubscriptionRole,
@@ -21,10 +22,6 @@ import {
 } from '@/hooks/use-subscriptions';
 
 const DESKTOP_BP = 768;
-
-// Hardcoded until auth context is wired up (account id=1 = Alice Martin in seed)
-const CURRENT_ACCOUNT_ID = 1;
-const CURRENT_ACCOUNT_NAME = 'Alice';
 
 type Section = 'dashboard' | 'subscriptions' | 'billing' | 'history';
 
@@ -425,7 +422,9 @@ export default function DashboardPage() {
   const isDesktop = width >= DESKTOP_BP;
   const [activeSection, setActiveSection] = useState<Section>('dashboard');
 
-  const { subscriptions, loading, error } = useSubscriptions(CURRENT_ACCOUNT_ID);
+  const { user } = useAuth();
+  const accountName = user?.firstName ?? user?.email ?? '';
+  const { subscriptions, loading, error } = useSubscriptions(user?.id ?? null);
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
@@ -476,11 +475,11 @@ export default function DashboardPage() {
           <View style={styles.greeting}>
             <View style={styles.avatarBubble}>
               <Text style={styles.avatarText}>
-                {CURRENT_ACCOUNT_NAME.slice(0, 2).toUpperCase()}
+                {accountName.slice(0, 2).toUpperCase()}
               </Text>
             </View>
             <View>
-              <Text style={styles.greetingText}>Bonjour, {CURRENT_ACCOUNT_NAME}</Text>
+              <Text style={styles.greetingText}>Bonjour, {accountName}</Text>
               <Text style={styles.greetingSubtitle}>Voici votre tableau de bord.</Text>
             </View>
           </View>
