@@ -10,7 +10,6 @@ import { Card } from "@/components/ui/Card";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
-import { Badge } from "@/components/ui/Badge";
 import { useLocalSearchParams } from "expo-router";
 type TabKey = "transactions" | "mandate" | "rib";
 
@@ -51,14 +50,6 @@ export default function BillingScreen() {
       : []),
   ];
 
-  const paymentModeLabel = selectedPass
-    ? selectedPass.paymentMode === "card_once"
-      ? "Paiement CB en une fois"
-      : selectedPass.paymentMode === "sepa_once"
-        ? "Prélèvement SEPA annuel"
-        : "Prélèvement SEPA mensuel"
-    : null;
-
   if (accountId === null) {
     return (
       <View style={styles.center}>
@@ -68,8 +59,8 @@ export default function BillingScreen() {
   }
 
   return (
-    <View>
-      <View style={[styles.header]}>
+    <View style={styles.page}>
+      <View style={styles.header}>
         <Text style={styles.title} accessibilityRole="header">
           Facturation
         </Text>
@@ -79,70 +70,59 @@ export default function BillingScreen() {
         </Text>
       </View>
 
-      <View style={[]}>
-        {loading && (
-          <View style={styles.center}>
-            <ActivityIndicator color={DS.actionPrimary} />
-          </View>
-        )}
-        {error && (
-          <Card>
-            <Text style={styles.errorTitle}>
-              Impossible de charger vos passes
-            </Text>
-            <Text style={styles.errorBody}>{error}</Text>
-          </Card>
-        )}
-        {passes && hasMultiplePasses && (
-          <PassSelector
-            passes={passes}
-            selectedId={effectivePassId}
-            onSelect={setSelectedPassId}
-          />
-        )}
-      </View>
-
-      {paymentModeLabel && (
-        <View style={[]}>
-          <Badge tone="info">
-            <Text>{paymentModeLabel}</Text>
-          </Badge>
+      {loading && (
+        <View style={styles.center}>
+          <ActivityIndicator color={DS.actionPrimary} />
         </View>
+      )}
+      {error && (
+        <Card>
+          <Text style={styles.errorTitle}>
+            Impossible de charger vos passes
+          </Text>
+          <Text style={styles.errorBody}>{error}</Text>
+        </Card>
+      )}
+      {passes && hasMultiplePasses && (
+        <PassSelector
+          passes={passes}
+          selectedId={effectivePassId}
+          onSelect={setSelectedPassId}
+        />
       )}
 
       {tabs.length > 1 && (
-        <View style={[]}>
-          <SegmentedTabs
-            segments={tabs}
-            active={activeTab}
-            onChange={(k) => setActiveTab(k as TabKey)}
-          />
-        </View>
+        <SegmentedTabs
+          segments={tabs}
+          active={activeTab}
+          onChange={(k) => setActiveTab(k as TabKey)}
+        />
       )}
 
-      <View style={[]}>
-        {activeTab === "transactions" && (
-          <TransactionsTab
-            accountId={accountId}
-            subscriptionId={effectivePassId}
-          />
-        )}
-        {activeTab === "mandate" && hasSepa && (
-          <MandateTab
-            accountId={accountId}
-            subscriptionId={effectivePassId}
-            onGoToRib={() => setActiveTab("rib")}
-          />
-        )}
-        {activeTab === "rib" && hasSepa && (
-          <RibTab accountId={accountId} subscriptionId={effectivePassId} />
-        )}
-      </View>
+      {activeTab === "transactions" && (
+        <TransactionsTab
+          accountId={accountId}
+          subscriptionId={effectivePassId}
+        />
+      )}
+      {activeTab === "mandate" && hasSepa && (
+        <MandateTab
+          accountId={accountId}
+          subscriptionId={effectivePassId}
+          onGoToRib={() => setActiveTab("rib")}
+        />
+      )}
+      {activeTab === "rib" && hasSepa && (
+        <RibTab accountId={accountId} subscriptionId={effectivePassId} />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  page: {
+    gap: DS.space5,
+  },
   header: {
     gap: DS.space1,
   },

@@ -214,4 +214,18 @@ export class BillingController {
       setupIntentId,
     );
   }
+
+  @Post('subscription-checkout')
+  @ApiQuery({ name: 'subscriptionId', type: Number })
+  subscriptionCheckout(
+    @GetMe() user: JwtPayload,
+    @Query('subscriptionId', ParseIntPipe) subscriptionId: number,
+  ) {
+    const baseUrl = process.env.FRONTEND_URL ?? 'http://localhost';
+    return this.billing.createSubscriptionCheckout(
+      accountIdOf(user),
+      subscriptionId,
+      baseUrl,
+    );
+  }
 }

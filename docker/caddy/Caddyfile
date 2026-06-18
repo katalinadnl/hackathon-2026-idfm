@@ -1,0 +1,11 @@
+app.{$DOMAIN} {
+	reverse_proxy app:80
+}
+
+api.{$DOMAIN} {
+	reverse_proxy api:3000
+}
+
+mail.{$DOMAIN} {
+	reverse_proxy mailhog:8025
+}

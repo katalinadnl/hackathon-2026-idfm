@@ -121,11 +121,13 @@ function NavLink({ href, children }: { href: string; children: string }) {
         aria-current={isActive ? "page" : undefined}
         accessibilityLabel={children}
       >
-        <Text
-          style={[styles.navLinkText, isActive && styles.navLinkTextActive]}
-        >
-          {children}
-        </Text>
+        <View style={styles.navLinkInner}>
+          <Text
+            style={[styles.navLinkText, isActive && styles.navLinkTextActive]}
+          >
+            {children}
+          </Text>
+        </View>
         {isActive && <View style={styles.navLinkIndicator} />}
       </Pressable>
     </Link>
@@ -233,6 +235,9 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
         <MobileNavItem href="/" onPress={onClose}>
           Accueil
         </MobileNavItem>
+        <MobileNavItem href="/abonnements" onPress={onClose}>
+          Nos abonnements
+        </MobileNavItem>
         <MobileNavItem href="/visitors" onPress={onClose}>
           Visiteurs
         </MobileNavItem>
@@ -318,6 +323,7 @@ function SiteHeader() {
             <>
               <View style={styles.nav}>
                 <NavLink href="/">Accueil</NavLink>
+                <NavLink href="/abonnements">Nos abonnements</NavLink>
                 <NavLink href="/visitors">Visiteurs</NavLink>
                 {token && <NavLink href="/dashboard">Mon espace</NavLink>}
               </View>
@@ -427,11 +433,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   navLink: {
-    position: "relative" as any,
     paddingHorizontal: DS.space3,
     height: 72,
+    alignItems: "stretch",
+    flexDirection: "column",
+  },
+  navLinkInner: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    paddingBottom: DS.space1,
   },
   navLinkPressed: {
     opacity: 0.75,
@@ -445,10 +456,6 @@ const styles = StyleSheet.create({
     color: DS.actionPrimary,
   },
   navLinkIndicator: {
-    position: "absolute" as any,
-    bottom: 0,
-    left: DS.space3,
-    right: DS.space3,
     height: 2,
     borderRadius: 1,
     backgroundColor: DS.actionPrimary,

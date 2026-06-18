@@ -163,6 +163,14 @@ export const billingApi = {
   },
 };
 
+export function createSubscriptionCheckout(
+  subscriptionId: number,
+): Promise<{ url: string | null; sessionId: string | null; message: string }> {
+  return http.post(
+    `/billing/subscription-checkout?subscriptionId=${subscriptionId}`,
+  );
+}
+
 export async function mandateDocumentUrl(
   subscriptionId: number,
 ): Promise<string> {

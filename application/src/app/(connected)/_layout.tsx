@@ -8,8 +8,6 @@ type Section =
   | "dashboard"
   | "subscriptions"
   | "billing"
-  | "history"
-  | "bank-info"
   | "profile";
 
 const NAV_ITEMS: { id: Section; icon: string; label: string; href: Href }[] = [
@@ -32,20 +30,8 @@ const NAV_ITEMS: { id: Section; icon: string; label: string; href: Href }[] = [
     href: "/(connected)/billing",
   },
   {
-    id: "bank-info",
-    icon: "receipt",
-    label: "Banque",
-    href: "/(connected)/bank-infos",
-  },
-  {
-    id: "history",
-    icon: "clock",
-    label: "Historique",
-    href: "/(connected)/history",
-  },
-  {
     id: "profile",
-    icon: "profil",
+    icon: "person",
     label: "Mon profil",
     href: "/(connected)/profile",
   },

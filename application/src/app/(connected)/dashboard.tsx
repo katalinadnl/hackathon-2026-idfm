@@ -487,7 +487,7 @@ export default function DashboardHome() {
         <SectionHeader
           title="Vos abonnements"
           action="Tout voir"
-          onAction={() => router.push("/(connected)/subscriptions")}
+          onAction={() => router.push("/subscriptions")}
         />
         <View>
           {loading ? (
@@ -509,7 +509,7 @@ export default function DashboardHome() {
         <SectionHeader
           title="Dernières facturations"
           action="Tout voir"
-          onAction={() => router.push("/(connected)/billing")}
+          onAction={() => router.push("/billing")}
         />
         <View style={styles.card}>
           {loading ? (
@@ -628,6 +628,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: DS.borderSubtle,
     marginHorizontal: DS.space5,
+    marginVertical: DS.space3,
   },
 
   // Active pass card (dark blue)

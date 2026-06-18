@@ -58,9 +58,6 @@ function SiteHeader() {
           <TabTrigger name="visitors" href="/visitors" asChild>
             <TabButton>Visiteurs</TabButton>
           </TabTrigger>
-          <TabTrigger name="billing" href="/billing" asChild>
-            <TabButton>Facturation</TabButton>
-          </TabTrigger>
         </TabList>
 
         <View style={styles.right}>
