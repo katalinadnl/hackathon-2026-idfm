@@ -18,6 +18,11 @@ export { Prisma }
 export * as $Enums from './enums.js'
 export * from './enums.js';
 /**
+ * Model Address
+ * 
+ */
+export type Address = Prisma.AddressModel
+/**
  * Model Department
  * 
  */
@@ -28,15 +33,30 @@ export type Department = Prisma.DepartmentModel
  */
 export type Beneficiary = Prisma.BeneficiaryModel
 /**
- * Model StatusVerification
+ * Model Pass
  * 
  */
-export type StatusVerification = Prisma.StatusVerificationModel
+export type Pass = Prisma.PassModel
+/**
+ * Model PassUsage
+ * 
+ */
+export type PassUsage = Prisma.PassUsageModel
+/**
+ * Model Delivery
+ * 
+ */
+export type Delivery = Prisma.DeliveryModel
 /**
  * Model Account
  * 
  */
 export type Account = Prisma.AccountModel
+/**
+ * Model BankInfo
+ * 
+ */
+export type BankInfo = Prisma.BankInfoModel
 /**
  * Model Subscription
  * 
@@ -47,6 +67,11 @@ export type Subscription = Prisma.SubscriptionModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model StatusVerification
+ * 
+ */
+export type StatusVerification = Prisma.StatusVerificationModel
 /**
  * Model TransportProduct
  * 

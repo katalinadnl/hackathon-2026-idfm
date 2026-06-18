@@ -296,8 +296,8 @@ export type StatusVerificationWhereInput = {
   validUntil?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StatusVerification"> | Date | string
   tariffReductionId?: Prisma.IntNullableFilter<"StatusVerification"> | number | null
-  beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
   tariffReduction?: Prisma.XOR<Prisma.TariffReductionNullableScalarRelationFilter, Prisma.TariffReductionWhereInput> | null
+  beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
 }
 
 export type StatusVerificationOrderByWithRelationInput = {
@@ -315,8 +315,8 @@ export type StatusVerificationOrderByWithRelationInput = {
   validUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   tariffReductionId?: Prisma.SortOrderInput | Prisma.SortOrder
-  beneficiary?: Prisma.BeneficiaryOrderByWithRelationInput
   tariffReduction?: Prisma.TariffReductionOrderByWithRelationInput
+  beneficiary?: Prisma.BeneficiaryOrderByWithRelationInput
 }
 
 export type StatusVerificationWhereUniqueInput = Prisma.AtLeast<{
@@ -337,8 +337,8 @@ export type StatusVerificationWhereUniqueInput = Prisma.AtLeast<{
   validUntil?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StatusVerification"> | Date | string
   tariffReductionId?: Prisma.IntNullableFilter<"StatusVerification"> | number | null
-  beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
   tariffReduction?: Prisma.XOR<Prisma.TariffReductionNullableScalarRelationFilter, Prisma.TariffReductionWhereInput> | null
+  beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
 }, "id">
 
 export type StatusVerificationOrderByWithAggregationInput = {
@@ -395,8 +395,8 @@ export type StatusVerificationCreateInput = {
   validFrom?: Date | string | null
   validUntil?: Date | string | null
   createdAt?: Date | string
-  beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutStatusVerificationsInput
   tariffReduction?: Prisma.TariffReductionCreateNestedOneWithoutStatusVerificationsInput
+  beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutStatusVerificationsInput
 }
 
 export type StatusVerificationUncheckedCreateInput = {
@@ -428,8 +428,8 @@ export type StatusVerificationUpdateInput = {
   validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput
   tariffReduction?: Prisma.TariffReductionUpdateOneWithoutStatusVerificationsNestedInput
+  beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput
 }
 
 export type StatusVerificationUncheckedUpdateInput = {
@@ -614,14 +614,6 @@ export type StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput =
 
 export type EnumVerificationSourceFieldUpdateOperationsInput = {
   set?: $Enums.VerificationSource
-}
-
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
 }
 
 export type StatusVerificationCreateNestedManyWithoutTariffReductionInput = {
@@ -943,8 +935,8 @@ export type StatusVerificationSelect<ExtArgs extends runtime.Types.Extensions.In
   validUntil?: boolean
   createdAt?: boolean
   tariffReductionId?: boolean
-  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
+  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusVerification"]>
 
 export type StatusVerificationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -962,8 +954,8 @@ export type StatusVerificationSelectCreateManyAndReturn<ExtArgs extends runtime.
   validUntil?: boolean
   createdAt?: boolean
   tariffReductionId?: boolean
-  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
+  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusVerification"]>
 
 export type StatusVerificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -981,8 +973,8 @@ export type StatusVerificationSelectUpdateManyAndReturn<ExtArgs extends runtime.
   validUntil?: boolean
   createdAt?: boolean
   tariffReductionId?: boolean
-  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
+  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["statusVerification"]>
 
 export type StatusVerificationSelectScalar = {
@@ -1004,23 +996,23 @@ export type StatusVerificationSelectScalar = {
 
 export type StatusVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "beneficiaryId" | "status" | "source" | "verified" | "documentUrl" | "expirationDate" | "apiName" | "apiReference" | "apiQueriedAt" | "validFrom" | "validUntil" | "createdAt" | "tariffReductionId", ExtArgs["result"]["statusVerification"]>
 export type StatusVerificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
+  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
 }
 export type StatusVerificationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
+  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
 }
 export type StatusVerificationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
+  beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
 }
 
 export type $StatusVerificationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StatusVerification"
   objects: {
-    beneficiary: Prisma.$BeneficiaryPayload<ExtArgs>
     tariffReduction: Prisma.$TariffReductionPayload<ExtArgs> | null
+    beneficiary: Prisma.$BeneficiaryPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1431,8 +1423,8 @@ readonly fields: StatusVerificationFieldRefs;
  */
 export interface Prisma__StatusVerificationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  beneficiary<T extends Prisma.BeneficiaryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BeneficiaryDefaultArgs<ExtArgs>>): Prisma.Prisma__BeneficiaryClient<runtime.Types.Result.GetResult<Prisma.$BeneficiaryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   tariffReduction<T extends Prisma.StatusVerification$tariffReductionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StatusVerification$tariffReductionArgs<ExtArgs>>): Prisma.Prisma__TariffReductionClient<runtime.Types.Result.GetResult<Prisma.$TariffReductionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  beneficiary<T extends Prisma.BeneficiaryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BeneficiaryDefaultArgs<ExtArgs>>): Prisma.Prisma__BeneficiaryClient<runtime.Types.Result.GetResult<Prisma.$BeneficiaryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.

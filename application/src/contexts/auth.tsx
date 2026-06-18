@@ -18,7 +18,10 @@ type AuthContextValue = {
   user: AuthUser | null;
   token: string | null;
   loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ requires2FA: boolean }>;
+  verifyOtp: (email: string, code: string) => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (token: string, newPassword: string) => Promise<void>;
   register: (input: {
     email: string;
     password: string;
@@ -42,30 +45,62 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
   }, []);
 
-  // Bootstrap: restore a stored session on launch.
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const stored = await loadToken();
-        if (stored) {
-          const me = await authApi.me(stored);
-          setToken(stored);
-          setUser(me);
+        if (!stored) return;
+
+        // Optimistic: set token immediately so AuthGate doesn't flash login
+        if (!cancelled) setToken(stored);
+
+        const me = await authApi.me(stored);
+        if (!cancelled) setUser(me);
+      } catch (err: any) {
+        if (err?.status === 401) {
+          await clearToken();
+          if (!cancelled) {
+            setToken(null);
+            setUser(null);
+          }
         }
-      } catch {
-        await clearToken();
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => { cancelled = true; };
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string) => {
+    async (email: string, password: string): Promise<{ requires2FA: boolean }> => {
       const res = await authApi.login({ email, password });
+      if ("requires2FA" in res) {
+        return { requires2FA: true };
+      }
+      await persist(res.token, res.user);
+      return { requires2FA: false };
+    },
+    [persist],
+  );
+
+  const verifyOtp = useCallback(
+    async (email: string, code: string) => {
+      const res = await authApi.verifyOtp({ email, code });
       await persist(res.token, res.user);
     },
     [persist],
+  );
+
+  const forgotPassword = useCallback(async (email: string) => {
+    await authApi.forgotPassword({ email });
+  }, []);
+
+  const resetPassword = useCallback(
+    async (resetToken: string, newPassword: string) => {
+      await authApi.resetPassword({ token: resetToken, newPassword });
+    },
+    [],
   );
 
   const register = useCallback(
@@ -122,7 +157,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }, [token]);
 
-  // Handle deep links that arrive while the app is already foregrounded (native).
   useEffect(() => {
     if (Platform.OS === "web") return;
     const sub = Linking.addEventListener("url", ({ url }) => {
@@ -141,6 +175,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         loading,
         login,
+        verifyOtp,
+        forgotPassword,
+        resetPassword,
         register,
         loginWithFranceConnect,
         logout,

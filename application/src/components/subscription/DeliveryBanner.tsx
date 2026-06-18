@@ -65,10 +65,11 @@ export function DeliveryBanner({ delivery }: DeliveryBannerProps) {
           );
         })}
       </View>
-
-      <Text style={s.eta}>
-        Livraison estimée le {formatDate(delivery.estimatedAt)}
-      </Text>
+      {delivery.estimatedAt && (
+        <Text style={s.eta}>
+          Livraison estimée le {formatDate(delivery.estimatedAt)}
+        </Text>
+      )}
     </View>
   );
 }

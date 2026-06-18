@@ -90,9 +90,9 @@ export function LanguageSwitcher({
                   pressed && styles.langItemPressed,
                 ]}
                 accessible
-                accessibilityRole="menuitem"
+                role={"menuitemradio" as any}
                 accessibilityLabel={lang.label}
-                accessibilityState={{ selected }}
+                accessibilityState={{ checked: selected }}
               >
                 <Text
                   style={[

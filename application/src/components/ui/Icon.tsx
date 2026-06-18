@@ -109,6 +109,9 @@ const SYMBOL_MAP: Record<
   },
   home: { ios: "house", android: "home", web: "home" },
   post: { ios: "envelope", android: "mail", web: "mail" },
+  mic: { ios: "mic", android: "mic", web: "mic" },
+  "mic-off": { ios: "mic.slash", android: "mic_off", web: "mic_off" },
+  volume: { ios: "speaker.wave.2", android: "volume_up", web: "volume_up" },
 };
 
 type IconProps = {

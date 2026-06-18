@@ -1,17 +1,17 @@
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
 
-import { DS } from '@/constants/theme';
+import { DS } from "@/constants/theme";
 
 const TONES = {
-  neutral: { bg: DS.grey200,     fg: DS.textStrong },
-  info:    { bg: DS.infoTint,    fg: DS.infoText },
+  neutral: { bg: DS.grey200, fg: DS.textStrong },
+  info: { bg: DS.infoTint, fg: DS.infoText },
   success: { bg: DS.successTint, fg: DS.successText },
   warning: { bg: DS.warningTint, fg: DS.warningText },
-  danger:  { bg: DS.dangerTint,  fg: DS.dangerText },
-  brand:   { bg: DS.actionPrimary, fg: DS.white },
+  danger: { bg: DS.dangerTint, fg: DS.dangerText },
+  brand: { bg: DS.actionPrimary, fg: DS.white },
 } as const;
 
-type BadgeTone = keyof typeof TONES;
+export type BadgeTone = keyof typeof TONES;
 
 type BadgeProps = {
   children: React.ReactNode;
@@ -20,7 +20,12 @@ type BadgeProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-export function Badge({ children, tone = 'neutral', dot = false, style }: BadgeProps) {
+export function Badge({
+  children,
+  tone = "neutral",
+  dot = false,
+  style,
+}: BadgeProps) {
   const t = TONES[tone];
   return (
     <View
@@ -36,13 +41,13 @@ export function Badge({ children, tone = 'neutral', dot = false, style }: BadgeP
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: DS.radiusPill,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   dot: {
     width: 7,
@@ -51,7 +56,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
     lineHeight: 18,
   },
 });

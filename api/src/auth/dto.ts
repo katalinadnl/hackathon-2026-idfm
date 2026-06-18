@@ -21,3 +21,24 @@ export class LoginDto {
   @ApiProperty({ example: 'motdepasse123' })
   password: string;
 }
+
+export class VerifyOtpDto {
+  @ApiProperty({ example: 'jean.dupont@example.com' })
+  email: string;
+
+  @ApiProperty({ example: '123456' })
+  code: string;
+}
+
+export class ForgotPasswordDto {
+  @ApiProperty({ example: 'jean.dupont@example.com' })
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @ApiProperty({ example: 'abc123token' })
+  token: string;
+
+  @ApiProperty({ example: 'nouveauMotDePasse123' })
+  newPassword: string;
+}

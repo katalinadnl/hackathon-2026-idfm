@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { DS } from "@/constants/theme";
-import { AccountInfo } from "@/types/subscription";
 import { SectionTitle } from "../ui/SectionTitle";
+import { AccountInfo, SubscriptionResponse } from "@/types/subscription";
+import { useState } from "react";
+import { ConfirmModal } from "../ui/ConfirmModal";
+import { unlinkReferrer } from "@/lib/api/subscriptions";
+import { AssignReferrerModal } from "./AssignReferrerModal";
 function accountName(info: AccountInfo) {
   return info.beneficiary
     ? `${info.beneficiary.firstName} ${info.beneficiary.lastName}`
@@ -18,7 +22,8 @@ type AccountsSectionProps = {
   account: { email: string } | null;
   referrer: AccountInfo | null;
   payer: AccountInfo | null;
-  onLinkAccount: () => void;
+  subscriptionId: SubscriptionResponse["id"];
+  onReferrerChanged: () => void;
 };
 
 export function AccountsSection({
@@ -26,8 +31,26 @@ export function AccountsSection({
   account,
   referrer,
   payer,
-  onLinkAccount,
+  subscriptionId,
+  onReferrerChanged,
 }: AccountsSectionProps) {
+  const [unlinking, setUnlinking] = useState(false);
+  const [assignModalVisible, setAssignModalVisible] = useState(false);
+  const [unlinkVisible, setUnlinkVisible] = useState(false);
+
+  const handleConfirmUnlink = async () => {
+    setUnlinking(true);
+    try {
+      await unlinkReferrer(subscriptionId);
+      setUnlinkVisible(false);
+    } catch {
+      // On laisse la modale ouverte pour que l'utilisateur puisse réessayer ;
+      // un message d'erreur inline serait préférable à terme.
+    } finally {
+      setUnlinking(false);
+    }
+  };
+
   return (
     <>
       <SectionTitle>Comptes associés</SectionTitle>
@@ -47,7 +70,6 @@ export function AccountsSection({
                   variant="secondary"
                   size="sm"
                   fullWidth
-                  onPress={onLinkAccount}
                   accessibilityLabel="Associer à un compte"
                 >
                   Associer un compte
@@ -68,9 +90,27 @@ export function AccountsSection({
             <>
               <Text style={s.accountCardValue}>{accountName(referrer)}</Text>
               <Text style={s.accountCardSub}>{referrer.email}</Text>
+              <Button
+                size="sm"
+                variant="tertiary"
+                fullWidth
+                onPress={() => setUnlinkVisible(true)}
+                disabled={unlinking}
+                accessibilityLabel="Dissocier le référant"
+              >
+                {unlinking ? "Dissociation…" : "Dissocier"}
+              </Button>
             </>
           ) : (
-            <Badge tone="neutral">Titulaire</Badge>
+            <Button
+              size="sm"
+              variant="tertiary"
+              fullWidth
+              onPress={() => setAssignModalVisible(true)}
+              accessibilityLabel="Associer un référant"
+            >
+              Ajouter un référant
+            </Button>
           )}
         </Card>
 
@@ -89,6 +129,23 @@ export function AccountsSection({
           )}
         </Card>
       </View>
+      <ConfirmModal
+        visible={unlinkVisible}
+        title="Dissocier le référant"
+        message="Le référant ne pourra plus gérer cet abonnement. Voulez-vous continuer ?"
+        confirmLabel="Dissocier"
+        confirmVariant="danger"
+        loading={unlinking}
+        onConfirm={handleConfirmUnlink}
+        onCancel={() => setUnlinkVisible(false)}
+      />
+
+      <AssignReferrerModal
+        visible={assignModalVisible}
+        subscriptionId={subscriptionId}
+        onClose={() => setAssignModalVisible(false)}
+        onSuccess={onReferrerChanged}
+      />
     </>
   );
 }

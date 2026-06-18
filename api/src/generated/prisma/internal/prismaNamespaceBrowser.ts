@@ -51,12 +51,17 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  Address: 'Address',
   Department: 'Department',
   Beneficiary: 'Beneficiary',
-  StatusVerification: 'StatusVerification',
+  Pass: 'Pass',
+  PassUsage: 'PassUsage',
+  Delivery: 'Delivery',
   Account: 'Account',
+  BankInfo: 'BankInfo',
   Subscription: 'Subscription',
   Payment: 'Payment',
+  StatusVerification: 'StatusVerification',
   TransportProduct: 'TransportProduct',
   TariffReduction: 'TariffReduction'
 } as const
@@ -75,6 +80,22 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const AddressScalarFieldEnum = {
+  id: 'id',
+  beneficiaryId: 'beneficiaryId',
+  type: 'type',
+  isDefault: 'isDefault',
+  line1: 'line1',
+  line2: 'line2',
+  city: 'city',
+  postalCode: 'postalCode',
+  country: 'country',
+  createdAt: 'createdAt'
+} as const
+
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
 
 
 export const DepartmentScalarFieldEnum = {
@@ -103,6 +124,110 @@ export const BeneficiaryScalarFieldEnum = {
 export type BeneficiaryScalarFieldEnum = (typeof BeneficiaryScalarFieldEnum)[keyof typeof BeneficiaryScalarFieldEnum]
 
 
+export const PassScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  navigoNumber: 'navigoNumber',
+  status: 'status',
+  issuedAt: 'issuedAt'
+} as const
+
+export type PassScalarFieldEnum = (typeof PassScalarFieldEnum)[keyof typeof PassScalarFieldEnum]
+
+
+export const PassUsageScalarFieldEnum = {
+  id: 'id',
+  passId: 'passId',
+  usedAt: 'usedAt',
+  station: 'station'
+} as const
+
+export type PassUsageScalarFieldEnum = (typeof PassUsageScalarFieldEnum)[keyof typeof PassUsageScalarFieldEnum]
+
+
+export const DeliveryScalarFieldEnum = {
+  id: 'id',
+  passId: 'passId',
+  addressId: 'addressId',
+  reason: 'reason',
+  status: 'status',
+  orderedAt: 'orderedAt',
+  estimatedAt: 'estimatedAt',
+  trackingNumber: 'trackingNumber'
+} as const
+
+export type DeliveryScalarFieldEnum = (typeof DeliveryScalarFieldEnum)[keyof typeof DeliveryScalarFieldEnum]
+
+
+export const AccountScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  passwordHash: 'passwordHash',
+  accountNumber: 'accountNumber',
+  createdAt: 'createdAt',
+  role: 'role',
+  beneficiaryId: 'beneficiaryId',
+  stripeCustomerId: 'stripeCustomerId',
+  stripePaymentMethodId: 'stripePaymentMethodId',
+  stripeMandateId: 'stripeMandateId',
+  stripePreviousMandateId: 'stripePreviousMandateId',
+  twoFactorCode: 'twoFactorCode',
+  twoFactorExpiresAt: 'twoFactorExpiresAt',
+  resetPasswordToken: 'resetPasswordToken',
+  resetPasswordExpiresAt: 'resetPasswordExpiresAt'
+} as const
+
+export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
+
+
+export const BankInfoScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  iban: 'iban',
+  bic: 'bic',
+  holderName: 'holderName',
+  label: 'label',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type BankInfoScalarFieldEnum = (typeof BankInfoScalarFieldEnum)[keyof typeof BankInfoScalarFieldEnum]
+
+
+export const SubscriptionScalarFieldEnum = {
+  id: 'id',
+  reference: 'reference',
+  beneficiaryId: 'beneficiaryId',
+  referrerId: 'referrerId',
+  subscriptionType: 'subscriptionType',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  status: 'status',
+  cancelledAt: 'cancelledAt',
+  cancellationEffectiveAt: 'cancellationEffectiveAt',
+  cancelledById: 'cancelledById',
+  bankInfoId: 'bankInfoId',
+  transportProductId: 'transportProductId',
+  paymentMode: 'paymentMode',
+  annualAmount: 'annualAmount',
+  monthlyAmount: 'monthlyAmount'
+} as const
+
+export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
+
+
+export const PaymentScalarFieldEnum = {
+  id: 'id',
+  subscriptionId: 'subscriptionId',
+  amount: 'amount',
+  paidAt: 'paidAt',
+  method: 'method',
+  status: 'status'
+} as const
+
+export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
 export const StatusVerificationScalarFieldEnum = {
   id: 'id',
   beneficiaryId: 'beneficiaryId',
@@ -121,51 +246,6 @@ export const StatusVerificationScalarFieldEnum = {
 } as const
 
 export type StatusVerificationScalarFieldEnum = (typeof StatusVerificationScalarFieldEnum)[keyof typeof StatusVerificationScalarFieldEnum]
-
-
-export const AccountScalarFieldEnum = {
-  id: 'id',
-  email: 'email',
-  passwordHash: 'passwordHash',
-  accountNumber: 'accountNumber',
-  createdAt: 'createdAt',
-  role: 'role',
-  beneficiaryId: 'beneficiaryId',
-  stripeCustomerId: 'stripeCustomerId',
-  stripePaymentMethodId: 'stripePaymentMethodId',
-  stripeMandateId: 'stripeMandateId',
-  stripePreviousMandateId: 'stripePreviousMandateId'
-} as const
-
-export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
-
-
-export const SubscriptionScalarFieldEnum = {
-  id: 'id',
-  beneficiaryId: 'beneficiaryId',
-  referrerId: 'referrerId',
-  payerId: 'payerId',
-  navigoNumber: 'navigoNumber',
-  subscriptionType: 'subscriptionType',
-  transportProductId: 'transportProductId',
-  startDate: 'startDate',
-  endDate: 'endDate',
-  status: 'status'
-} as const
-
-export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
-
-
-export const PaymentScalarFieldEnum = {
-  id: 'id',
-  subscriptionId: 'subscriptionId',
-  amount: 'amount',
-  paidAt: 'paidAt',
-  method: 'method',
-  status: 'status'
-} as const
-
-export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
 
 
 export const TransportProductScalarFieldEnum = {

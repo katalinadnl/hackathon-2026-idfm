@@ -12,7 +12,13 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from './dto';
+import {
+  ForgotPasswordDto,
+  LoginDto,
+  RegisterDto,
+  ResetPasswordDto,
+  VerifyOtpDto,
+} from './dto';
 import { FranceConnectService } from './france-connect.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GetMe } from './decorators/get-me.decorator';
@@ -38,11 +44,25 @@ export class AuthController {
     return this.auth.login(dto);
   }
 
+  @Post('2fa/verify')
+  verifyOtp(@Body() dto: VerifyOtpDto) {
+    return this.auth.verifyOtp(dto.email, dto.code);
+  }
+
+  @Post('forgot-password')
+  forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.auth.forgotPassword(dto.email);
+  }
+
+  @Post('reset-password')
+  resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.auth.resetPassword(dto.token, dto.newPassword);
+  }
+
   @Post('logout')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   logout() {
-    // Stateless JWT: the client discards the token. Endpoint kept for symmetry.
     return { success: true };
   }
 
@@ -50,8 +70,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   me(@GetMe() user: JwtPayload) {
-    const userId = user.id;
-    return this.auth.me(userId);
+    return this.auth.me(user.id);
   }
 
   // ─── France Connect (OIDC) ──────────────────────────────────────────────

@@ -32,7 +32,7 @@ function AuthGate() {
     );
   }
 
-  return token ? <AppTabs /> : <AuthScreen />;
+  return <AppTabs />;
 }
 
 export default function TabLayout() {

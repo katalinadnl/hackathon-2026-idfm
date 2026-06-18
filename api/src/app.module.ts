@@ -9,6 +9,8 @@ import { AuthModule } from './auth/auth.module';
 import { DepartmentsModule } from './departments/departments.module';
 import { TariffsModule } from './tariffs/tariffs.module';
 import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
+import { AccountsModule } from './accounts/accounts.module';
+import { BankInfoModule } from './bank-info/bank-info.module';
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import { BeneficiariesModule } from './beneficiaries/beneficiaries.module';
     TransportModule,
     BillingModule,
     DepartmentsModule,
-    TariffsModule
+    TariffsModule,
+    AccountsModule,
+    BankInfoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

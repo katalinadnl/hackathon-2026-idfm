@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import Stripe from 'stripe';
 
 import { PrismaService } from '../../prisma/prisma.service';
@@ -7,6 +11,7 @@ import {
   PaymentMethodInfo,
   SepaMandate,
 } from '../dto/billing.types';
+import { SubscriptionsService } from 'src/subscriptions/subscriptions.service';
 
 type StripeClient = InstanceType<typeof Stripe>;
 
@@ -17,7 +22,10 @@ const CREDITOR_ICS = 'FR93ZZZ123456';
 export class StripeProvider {
   private client: StripeClient | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly subscriptionService: SubscriptionsService,
+  ) {}
 
   get isConnected(): boolean {
     return Boolean(process.env.STRIPE_SECRET_KEY);
@@ -33,11 +41,10 @@ export class StripeProvider {
   private async payerOf(subscriptionId: number) {
     const sub = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { payer: { include: { beneficiary: true } } },
+      include: { bankInfo: { include: { account: true } }, beneficiary: true },
     });
-    return sub
-      ? { payer: sub.payer, navigoNumber: sub.navigoNumber }
-      : { payer: null, navigoNumber: '' };
+    if (!sub) throw new NotFoundException('Subscription not found');
+    return { payer: sub.bankInfo.account, beneficiary: sub.beneficiary };
   }
 
   private maskIban(last4: string | null): string {
@@ -51,19 +58,19 @@ export class StripeProvider {
   }
 
   async getMandate(subscriptionId: number): Promise<SepaMandate | null> {
-    const { payer, navigoNumber } = await this.payerOf(subscriptionId);
+    const { payer } = await this.payerOf(subscriptionId);
     if (!payer?.stripeMandateId) return null;
-    return this.buildMandate(payer.stripeMandateId, navigoNumber);
+    return this.buildMandate(payer.stripeMandateId, subscriptionId);
   }
 
   async getMandateHistory(subscriptionId: number): Promise<SepaMandate[]> {
-    const { payer, navigoNumber } = await this.payerOf(subscriptionId);
+    const { payer } = await this.payerOf(subscriptionId);
     if (!payer?.stripePreviousMandateId) return [];
     try {
       return [
         await this.buildMandate(
           payer.stripePreviousMandateId,
-          navigoNumber,
+          subscriptionId,
           'revoked',
         ),
       ];
@@ -74,7 +81,7 @@ export class StripeProvider {
 
   private async buildMandate(
     mandateId: string,
-    navigoNumber: string,
+    subscriptionId: number,
     statusOverride?: MandateStatus,
   ): Promise<SepaMandate> {
     const stripe = this.getClient();
@@ -85,7 +92,12 @@ export class StripeProvider {
         : mandate.payment_method?.id;
     const pm = pmId ? await stripe.paymentMethods.retrieve(pmId) : null;
     const sepa = pm?.sepa_debit;
+    const subscription = await this.subscriptionService.findOne(subscriptionId);
+    const navigo = this.subscriptionService.getActivePass(subscription.passes);
 
+    if (!navigo) {
+      throw new BadRequestException('Aucun pass actif pour cet abonnement.');
+    }
     return {
       reference:
         mandate.payment_method_details?.sepa_debit?.reference ?? mandateId,
@@ -95,11 +107,12 @@ export class StripeProvider {
       creditorIcs: CREDITOR_ICS,
       debtorName: pm?.billing_details?.name ?? '—',
       ibanMasked: this.maskIban(sepa?.last4 ?? null),
+      navigoNumber: navigo?.navigoNumber,
       signedAt: pm
         ? new Date(pm.created * 1000).toISOString()
         : new Date().toISOString(),
       revokedAt: null,
-      navigoNumber,
+      subscriptionId,
       source: 'stripe',
     };
   }
@@ -130,24 +143,130 @@ export class StripeProvider {
     billingName: string;
     billingEmail: string;
   } | null> {
-    const { payer } = await this.payerOf(subscriptionId);
+    const { payer, beneficiary } = await this.payerOf(subscriptionId);
     if (!payer?.stripeCustomerId) return null;
 
-    const intent = await this.getClient().setupIntents.create({
-      customer: payer.stripeCustomerId,
+    const stripe = this.getClient();
+    let customerId = payer.stripeCustomerId;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: payer.email,
+        name: payer.email,
+        metadata: { accountId: String(payer.id) },
+      });
+      customerId = customer.id;
+      await this.prisma.account.update({
+        where: { id: payer.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const intent = await stripe.setupIntents.create({
+      customer: customerId,
       payment_method_types: ['sepa_debit'],
       usage: 'off_session',
     });
     if (!intent.client_secret) return null;
 
-    const billingName = payer.beneficiary
-      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+    const billingName = beneficiary
+      ? `${beneficiary.firstName} ${beneficiary.lastName}`
       : payer.email.split('@')[0];
     return {
       clientSecret: intent.client_secret,
       billingName,
       billingEmail: payer.email,
     };
+  }
+
+  async retryPayment(
+    subscriptionId: number,
+    amount: number,
+  ): Promise<{ ok: boolean; error?: string }> {
+    const { payer } = await this.payerOf(subscriptionId);
+    if (!payer?.stripeCustomerId || !payer?.stripePaymentMethodId) {
+      return { ok: false, error: 'Aucun moyen de paiement configuré.' };
+    }
+
+    try {
+      const stripe = this.getClient();
+      const intent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency: 'eur',
+        customer: payer.stripeCustomerId,
+        payment_method: payer.stripePaymentMethodId,
+        payment_method_types: ['sepa_debit'],
+        confirm: true,
+        off_session: true,
+      });
+      return {
+        ok: intent.status === 'succeeded' || intent.status === 'processing',
+      };
+    } catch (err: any) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  async createCardCheckoutSession(
+    payerId: number,
+    amount: number,
+    description: string,
+    successUrl: string,
+    cancelUrl: string,
+  ): Promise<{ url: string; sessionId: string } | null> {
+    const payer = await this.prisma.account.findUnique({
+      where: { id: payerId },
+      include: { beneficiary: true },
+    });
+    if (!payer) return null;
+
+    const stripe = this.getClient();
+    let customerId = payer.stripeCustomerId;
+
+    if (!customerId) {
+      const name = payer.beneficiary
+        ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+        : payer.email.split('@')[0];
+      const customer = await stripe.customers.create({
+        email: payer.email,
+        name,
+        metadata: { accountId: String(payer.id) },
+      });
+      customerId = customer.id;
+      await this.prisma.account.update({
+        where: { id: payer.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      customer: customerId,
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            unit_amount: Math.round(amount * 100),
+            product_data: { name: description },
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
+    return session.url ? { url: session.url, sessionId: session.id } : null;
+  }
+
+  async checkCheckoutSession(sessionId: string): Promise<{ paid: boolean }> {
+    try {
+      const session =
+        await this.getClient().checkout.sessions.retrieve(sessionId);
+      return { paid: session.payment_status === 'paid' };
+    } catch {
+      return { paid: false };
+    }
   }
 
   async finalizeRibChange(

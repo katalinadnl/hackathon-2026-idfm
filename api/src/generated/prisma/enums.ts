@@ -9,6 +9,15 @@
 * 🟢 You can import this file directly.
 */
 
+export const AddressType = {
+  home: 'home',
+  delivery: 'delivery',
+  billing: 'billing'
+} as const
+
+export type AddressType = (typeof AddressType)[keyof typeof AddressType]
+
+
 export const BeneficiaryStatus = {
   ACTIVE: 'ACTIVE',
   STUDENT: 'STUDENT',
@@ -21,13 +30,33 @@ export const BeneficiaryStatus = {
 export type BeneficiaryStatus = (typeof BeneficiaryStatus)[keyof typeof BeneficiaryStatus]
 
 
-export const VerificationSource = {
-  MANUAL_DOCUMENT: 'MANUAL_DOCUMENT',
-  STATE_API: 'STATE_API',
-  DECLARATIVE: 'DECLARATIVE'
+export const PassStatus = {
+  active: 'active',
+  blocked: 'blocked',
+  replaced: 'replaced'
 } as const
 
-export type VerificationSource = (typeof VerificationSource)[keyof typeof VerificationSource]
+export type PassStatus = (typeof PassStatus)[keyof typeof PassStatus]
+
+
+export const DeliveryStatus = {
+  ordered: 'ordered',
+  preparing: 'preparing',
+  shipped: 'shipped',
+  delivered: 'delivered'
+} as const
+
+export type DeliveryStatus = (typeof DeliveryStatus)[keyof typeof DeliveryStatus]
+
+
+export const DeliveryReason = {
+  initial_order: 'initial_order',
+  lost: 'lost',
+  stolen: 'stolen',
+  damaged: 'damaged'
+} as const
+
+export type DeliveryReason = (typeof DeliveryReason)[keyof typeof DeliveryReason]
 
 
 export const AccountRole = {
@@ -36,3 +65,40 @@ export const AccountRole = {
 } as const
 
 export type AccountRole = (typeof AccountRole)[keyof typeof AccountRole]
+
+
+export const SubscriptionStatus = {
+  active: 'active',
+  expired: 'expired',
+  cancelled: 'cancelled',
+  pending_cancellation: 'pending_cancellation'
+} as const
+
+export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
+
+
+export const PaymentMode = {
+  CARD_ONCE: 'CARD_ONCE',
+  SEPA_ONCE: 'SEPA_ONCE',
+  SEPA_MONTHLY: 'SEPA_MONTHLY'
+} as const
+
+export type PaymentMode = (typeof PaymentMode)[keyof typeof PaymentMode]
+
+
+export const PaymentStatus = {
+  succeeded: 'succeeded',
+  failed: 'failed',
+  pending: 'pending'
+} as const
+
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus]
+
+
+export const VerificationSource = {
+  MANUAL_DOCUMENT: 'MANUAL_DOCUMENT',
+  STATE_API: 'STATE_API',
+  DECLARATIVE: 'DECLARATIVE'
+} as const
+
+export type VerificationSource = (typeof VerificationSource)[keyof typeof VerificationSource]

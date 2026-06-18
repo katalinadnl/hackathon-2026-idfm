@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { DS } from "@/constants/theme";
-import type { Document } from "@/types/subscription";
+import type { SubscriptionDocument } from "@/types/subscription";
 import { formatDate } from "@/lib/subscription-helpers";
 
 type DocumentCardProps = {
-  doc: Document;
+  doc: SubscriptionDocument;
 };
 
 export function DocumentCard({ doc }: DocumentCardProps) {

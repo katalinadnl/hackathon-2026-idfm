@@ -42,13 +42,11 @@ export function useMandate(
   accountId: number,
   subscriptionId: number | null,
 ): AsyncState<MandateResponse> {
-  const enabled = subscriptionId !== null;
   const [data, setData] = useState<MandateResponse | null>(null);
-  const [loading, setLoading] = useState(enabled);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    if (subscriptionId === null) return undefined;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -62,30 +60,20 @@ export function useMandate(
     };
   }, [accountId, subscriptionId]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (enabled) return load();
-  }, [enabled, load]);
-
-  return {
-    data: enabled ? data : null,
-    loading: enabled ? loading : false,
-    error,
-    reload: load,
-  };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => load(), [load]);
+  return { data, loading, error, reload: load };
 }
 
 export function usePaymentMethod(
   accountId: number,
   subscriptionId: number | null,
 ): AsyncState<PaymentMethodResponse> {
-  const enabled = subscriptionId !== null;
   const [data, setData] = useState<PaymentMethodResponse | null>(null);
-  const [loading, setLoading] = useState(enabled);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    if (subscriptionId === null) return undefined;
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -99,17 +87,9 @@ export function usePaymentMethod(
     };
   }, [accountId, subscriptionId]);
 
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (enabled) return load();
-  }, [enabled, load]);
-
-  return {
-    data: enabled ? data : null,
-    loading: enabled ? loading : false,
-    error,
-    reload: load,
-  };
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => load(), [load]);
+  return { data, loading, error, reload: load };
 }
 
 export function useTransactions(

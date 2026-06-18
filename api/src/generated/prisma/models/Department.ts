@@ -348,18 +348,6 @@ export type DepartmentNullableScalarRelationFilter = {
   isNot?: Prisma.DepartmentWhereInput | null
 }
 
-export type StringFieldUpdateOperationsInput = {
-  set?: string
-}
-
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type DepartmentCreateNestedOneWithoutResidentsInput = {
   create?: Prisma.XOR<Prisma.DepartmentCreateWithoutResidentsInput, Prisma.DepartmentUncheckedCreateWithoutResidentsInput>
   connectOrCreate?: Prisma.DepartmentCreateOrConnectWithoutResidentsInput

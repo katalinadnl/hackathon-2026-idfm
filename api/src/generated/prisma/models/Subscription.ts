@@ -30,55 +30,79 @@ export type SubscriptionAvgAggregateOutputType = {
   id: number | null
   beneficiaryId: number | null
   referrerId: number | null
-  payerId: number | null
+  cancelledById: number | null
+  bankInfoId: number | null
   transportProductId: number | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionSumAggregateOutputType = {
   id: number | null
   beneficiaryId: number | null
   referrerId: number | null
-  payerId: number | null
+  cancelledById: number | null
+  bankInfoId: number | null
   transportProductId: number | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionMinAggregateOutputType = {
   id: number | null
+  reference: string | null
   beneficiaryId: number | null
   referrerId: number | null
-  payerId: number | null
-  navigoNumber: string | null
   subscriptionType: string | null
-  transportProductId: number | null
   startDate: Date | null
   endDate: Date | null
-  status: string | null
+  status: $Enums.SubscriptionStatus | null
+  cancelledAt: Date | null
+  cancellationEffectiveAt: Date | null
+  cancelledById: number | null
+  bankInfoId: number | null
+  transportProductId: number | null
+  paymentMode: $Enums.PaymentMode | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionMaxAggregateOutputType = {
   id: number | null
+  reference: string | null
   beneficiaryId: number | null
   referrerId: number | null
-  payerId: number | null
-  navigoNumber: string | null
   subscriptionType: string | null
-  transportProductId: number | null
   startDate: Date | null
   endDate: Date | null
-  status: string | null
+  status: $Enums.SubscriptionStatus | null
+  cancelledAt: Date | null
+  cancellationEffectiveAt: Date | null
+  cancelledById: number | null
+  bankInfoId: number | null
+  transportProductId: number | null
+  paymentMode: $Enums.PaymentMode | null
+  annualAmount: number | null
+  monthlyAmount: number | null
 }
 
 export type SubscriptionCountAggregateOutputType = {
   id: number
+  reference: number
   beneficiaryId: number
   referrerId: number
-  payerId: number
-  navigoNumber: number
   subscriptionType: number
-  transportProductId: number
   startDate: number
   endDate: number
   status: number
+  cancelledAt: number
+  cancellationEffectiveAt: number
+  cancelledById: number
+  bankInfoId: number
+  transportProductId: number
+  paymentMode: number
+  annualAmount: number
+  monthlyAmount: number
   _all: number
 }
 
@@ -87,55 +111,79 @@ export type SubscriptionAvgAggregateInputType = {
   id?: true
   beneficiaryId?: true
   referrerId?: true
-  payerId?: true
+  cancelledById?: true
+  bankInfoId?: true
   transportProductId?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionSumAggregateInputType = {
   id?: true
   beneficiaryId?: true
   referrerId?: true
-  payerId?: true
+  cancelledById?: true
+  bankInfoId?: true
   transportProductId?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionMinAggregateInputType = {
   id?: true
+  reference?: true
   beneficiaryId?: true
   referrerId?: true
-  payerId?: true
-  navigoNumber?: true
   subscriptionType?: true
-  transportProductId?: true
   startDate?: true
   endDate?: true
   status?: true
+  cancelledAt?: true
+  cancellationEffectiveAt?: true
+  cancelledById?: true
+  bankInfoId?: true
+  transportProductId?: true
+  paymentMode?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionMaxAggregateInputType = {
   id?: true
+  reference?: true
   beneficiaryId?: true
   referrerId?: true
-  payerId?: true
-  navigoNumber?: true
   subscriptionType?: true
-  transportProductId?: true
   startDate?: true
   endDate?: true
   status?: true
+  cancelledAt?: true
+  cancellationEffectiveAt?: true
+  cancelledById?: true
+  bankInfoId?: true
+  transportProductId?: true
+  paymentMode?: true
+  annualAmount?: true
+  monthlyAmount?: true
 }
 
 export type SubscriptionCountAggregateInputType = {
   id?: true
+  reference?: true
   beneficiaryId?: true
   referrerId?: true
-  payerId?: true
-  navigoNumber?: true
   subscriptionType?: true
-  transportProductId?: true
   startDate?: true
   endDate?: true
   status?: true
+  cancelledAt?: true
+  cancellationEffectiveAt?: true
+  cancelledById?: true
+  bankInfoId?: true
+  transportProductId?: true
+  paymentMode?: true
+  annualAmount?: true
+  monthlyAmount?: true
   _all?: true
 }
 
@@ -227,15 +275,21 @@ export type SubscriptionGroupByArgs<ExtArgs extends runtime.Types.Extensions.Int
 
 export type SubscriptionGroupByOutputType = {
   id: number
+  reference: string
   beneficiaryId: number
   referrerId: number | null
-  payerId: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId: number | null
   startDate: Date
   endDate: Date
-  status: string
+  status: $Enums.SubscriptionStatus
+  cancelledAt: Date | null
+  cancellationEffectiveAt: Date | null
+  cancelledById: number | null
+  bankInfoId: number
+  transportProductId: number | null
+  paymentMode: $Enums.PaymentMode
+  annualAmount: number
+  monthlyAmount: number | null
   _count: SubscriptionCountAggregateOutputType | null
   _avg: SubscriptionAvgAggregateOutputType | null
   _sum: SubscriptionSumAggregateOutputType | null
@@ -263,72 +317,102 @@ export type SubscriptionWhereInput = {
   OR?: Prisma.SubscriptionWhereInput[]
   NOT?: Prisma.SubscriptionWhereInput | Prisma.SubscriptionWhereInput[]
   id?: Prisma.IntFilter<"Subscription"> | number
+  reference?: Prisma.StringFilter<"Subscription"> | string
   beneficiaryId?: Prisma.IntFilter<"Subscription"> | number
   referrerId?: Prisma.IntNullableFilter<"Subscription"> | number | null
-  payerId?: Prisma.IntNullableFilter<"Subscription"> | number | null
-  navigoNumber?: Prisma.StringFilter<"Subscription"> | string
   subscriptionType?: Prisma.StringFilter<"Subscription"> | string
-  transportProductId?: Prisma.IntNullableFilter<"Subscription"> | number | null
   startDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
-  status?: Prisma.StringFilter<"Subscription"> | string
+  status?: Prisma.EnumSubscriptionStatusFilter<"Subscription"> | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
+  cancellationEffectiveAt?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
+  cancelledById?: Prisma.IntNullableFilter<"Subscription"> | number | null
+  bankInfoId?: Prisma.IntFilter<"Subscription"> | number
+  transportProductId?: Prisma.IntNullableFilter<"Subscription"> | number | null
+  paymentMode?: Prisma.EnumPaymentModeFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableFilter<"Subscription"> | number | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
   referrer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
-  payer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
+  cancelledBy?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
+  bankInfo?: Prisma.XOR<Prisma.BankInfoScalarRelationFilter, Prisma.BankInfoWhereInput>
   transportProduct?: Prisma.XOR<Prisma.TransportProductNullableScalarRelationFilter, Prisma.TransportProductWhereInput> | null
   payments?: Prisma.PaymentListRelationFilter
+  passes?: Prisma.PassListRelationFilter
 }
 
 export type SubscriptionOrderByWithRelationInput = {
   id?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrderInput | Prisma.SortOrder
-  payerId?: Prisma.SortOrderInput | Prisma.SortOrder
-  navigoNumber?: Prisma.SortOrder
   subscriptionType?: Prisma.SortOrder
-  transportProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationEffectiveAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledById?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
+  transportProductId?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiary?: Prisma.BeneficiaryOrderByWithRelationInput
   referrer?: Prisma.AccountOrderByWithRelationInput
-  payer?: Prisma.AccountOrderByWithRelationInput
+  cancelledBy?: Prisma.AccountOrderByWithRelationInput
+  bankInfo?: Prisma.BankInfoOrderByWithRelationInput
   transportProduct?: Prisma.TransportProductOrderByWithRelationInput
   payments?: Prisma.PaymentOrderByRelationAggregateInput
+  passes?: Prisma.PassOrderByRelationAggregateInput
 }
 
 export type SubscriptionWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  navigoNumber?: string
+  reference?: string
   AND?: Prisma.SubscriptionWhereInput | Prisma.SubscriptionWhereInput[]
   OR?: Prisma.SubscriptionWhereInput[]
   NOT?: Prisma.SubscriptionWhereInput | Prisma.SubscriptionWhereInput[]
   beneficiaryId?: Prisma.IntFilter<"Subscription"> | number
   referrerId?: Prisma.IntNullableFilter<"Subscription"> | number | null
-  payerId?: Prisma.IntNullableFilter<"Subscription"> | number | null
   subscriptionType?: Prisma.StringFilter<"Subscription"> | string
-  transportProductId?: Prisma.IntNullableFilter<"Subscription"> | number | null
   startDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
-  status?: Prisma.StringFilter<"Subscription"> | string
+  status?: Prisma.EnumSubscriptionStatusFilter<"Subscription"> | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
+  cancellationEffectiveAt?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
+  cancelledById?: Prisma.IntNullableFilter<"Subscription"> | number | null
+  bankInfoId?: Prisma.IntFilter<"Subscription"> | number
+  transportProductId?: Prisma.IntNullableFilter<"Subscription"> | number | null
+  paymentMode?: Prisma.EnumPaymentModeFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableFilter<"Subscription"> | number | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
   referrer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
-  payer?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
+  cancelledBy?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
+  bankInfo?: Prisma.XOR<Prisma.BankInfoScalarRelationFilter, Prisma.BankInfoWhereInput>
   transportProduct?: Prisma.XOR<Prisma.TransportProductNullableScalarRelationFilter, Prisma.TransportProductWhereInput> | null
   payments?: Prisma.PaymentListRelationFilter
-}, "id" | "navigoNumber">
+  passes?: Prisma.PassListRelationFilter
+}, "id" | "reference">
 
 export type SubscriptionOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrderInput | Prisma.SortOrder
-  payerId?: Prisma.SortOrderInput | Prisma.SortOrder
-  navigoNumber?: Prisma.SortOrder
   subscriptionType?: Prisma.SortOrder
-  transportProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancellationEffectiveAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  cancelledById?: Prisma.SortOrderInput | Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
+  transportProductId?: Prisma.SortOrderInput | Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.SubscriptionCountOrderByAggregateInput
   _avg?: Prisma.SubscriptionAvgOrderByAggregateInput
   _max?: Prisma.SubscriptionMaxOrderByAggregateInput
@@ -341,103 +425,154 @@ export type SubscriptionScalarWhereWithAggregatesInput = {
   OR?: Prisma.SubscriptionScalarWhereWithAggregatesInput[]
   NOT?: Prisma.SubscriptionScalarWhereWithAggregatesInput | Prisma.SubscriptionScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"Subscription"> | number
+  reference?: Prisma.StringWithAggregatesFilter<"Subscription"> | string
   beneficiaryId?: Prisma.IntWithAggregatesFilter<"Subscription"> | number
   referrerId?: Prisma.IntNullableWithAggregatesFilter<"Subscription"> | number | null
-  payerId?: Prisma.IntNullableWithAggregatesFilter<"Subscription"> | number | null
-  navigoNumber?: Prisma.StringWithAggregatesFilter<"Subscription"> | string
   subscriptionType?: Prisma.StringWithAggregatesFilter<"Subscription"> | string
-  transportProductId?: Prisma.IntNullableWithAggregatesFilter<"Subscription"> | number | null
   startDate?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeWithAggregatesFilter<"Subscription"> | Date | string
-  status?: Prisma.StringWithAggregatesFilter<"Subscription"> | string
+  status?: Prisma.EnumSubscriptionStatusWithAggregatesFilter<"Subscription"> | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Subscription"> | Date | string | null
+  cancellationEffectiveAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Subscription"> | Date | string | null
+  cancelledById?: Prisma.IntNullableWithAggregatesFilter<"Subscription"> | number | null
+  bankInfoId?: Prisma.IntWithAggregatesFilter<"Subscription"> | number
+  transportProductId?: Prisma.IntNullableWithAggregatesFilter<"Subscription"> | number | null
+  paymentMode?: Prisma.EnumPaymentModeWithAggregatesFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatWithAggregatesFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableWithAggregatesFilter<"Subscription"> | number | null
 }
 
 export type SubscriptionCreateInput = {
-  navigoNumber: string
+  reference?: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
-  payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
   transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUncheckedCreateInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUpdateInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
-  payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
   transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionCreateManyInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateManyMutationInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionListRelationFilter = {
@@ -450,64 +585,88 @@ export type SubscriptionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
 }
 
+export type SubscriptionScalarRelationFilter = {
+  is?: Prisma.SubscriptionWhereInput
+  isNot?: Prisma.SubscriptionWhereInput
+}
+
 export type SubscriptionCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
-  payerId?: Prisma.SortOrder
-  navigoNumber?: Prisma.SortOrder
   subscriptionType?: Prisma.SortOrder
-  transportProductId?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancellationEffectiveAt?: Prisma.SortOrder
+  cancelledById?: Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
+  transportProductId?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
-  payerId?: Prisma.SortOrder
+  cancelledById?: Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
   transportProductId?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
-  payerId?: Prisma.SortOrder
-  navigoNumber?: Prisma.SortOrder
   subscriptionType?: Prisma.SortOrder
-  transportProductId?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancellationEffectiveAt?: Prisma.SortOrder
+  cancelledById?: Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
+  transportProductId?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  reference?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
-  payerId?: Prisma.SortOrder
-  navigoNumber?: Prisma.SortOrder
   subscriptionType?: Prisma.SortOrder
-  transportProductId?: Prisma.SortOrder
   startDate?: Prisma.SortOrder
   endDate?: Prisma.SortOrder
   status?: Prisma.SortOrder
+  cancelledAt?: Prisma.SortOrder
+  cancellationEffectiveAt?: Prisma.SortOrder
+  cancelledById?: Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
+  transportProductId?: Prisma.SortOrder
+  paymentMode?: Prisma.SortOrder
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   referrerId?: Prisma.SortOrder
-  payerId?: Prisma.SortOrder
+  cancelledById?: Prisma.SortOrder
+  bankInfoId?: Prisma.SortOrder
   transportProductId?: Prisma.SortOrder
-}
-
-export type SubscriptionScalarRelationFilter = {
-  is?: Prisma.SubscriptionWhereInput
-  isNot?: Prisma.SubscriptionWhereInput
+  annualAmount?: Prisma.SortOrder
+  monthlyAmount?: Prisma.SortOrder
 }
 
 export type SubscriptionCreateNestedManyWithoutBeneficiaryInput = {
@@ -552,6 +711,20 @@ export type SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput = {
   deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
 }
 
+export type SubscriptionCreateNestedOneWithoutPassesInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPassesInput, Prisma.SubscriptionUncheckedCreateWithoutPassesInput>
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPassesInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+}
+
+export type SubscriptionUpdateOneRequiredWithoutPassesNestedInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPassesInput, Prisma.SubscriptionUncheckedCreateWithoutPassesInput>
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPassesInput
+  upsert?: Prisma.SubscriptionUpsertWithoutPassesInput
+  connect?: Prisma.SubscriptionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SubscriptionUpdateToOneWithWhereWithoutPassesInput, Prisma.SubscriptionUpdateWithoutPassesInput>, Prisma.SubscriptionUncheckedUpdateWithoutPassesInput>
+}
+
 export type SubscriptionCreateNestedManyWithoutReferrerInput = {
   create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutReferrerInput, Prisma.SubscriptionUncheckedCreateWithoutReferrerInput> | Prisma.SubscriptionCreateWithoutReferrerInput[] | Prisma.SubscriptionUncheckedCreateWithoutReferrerInput[]
   connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutReferrerInput | Prisma.SubscriptionCreateOrConnectWithoutReferrerInput[]
@@ -559,10 +732,10 @@ export type SubscriptionCreateNestedManyWithoutReferrerInput = {
   connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
 }
 
-export type SubscriptionCreateNestedManyWithoutPayerInput = {
-  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPayerInput, Prisma.SubscriptionUncheckedCreateWithoutPayerInput> | Prisma.SubscriptionCreateWithoutPayerInput[] | Prisma.SubscriptionUncheckedCreateWithoutPayerInput[]
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPayerInput | Prisma.SubscriptionCreateOrConnectWithoutPayerInput[]
-  createMany?: Prisma.SubscriptionCreateManyPayerInputEnvelope
+export type SubscriptionCreateNestedManyWithoutCancelledByInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutCancelledByInput, Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput> | Prisma.SubscriptionCreateWithoutCancelledByInput[] | Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput | Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput[]
+  createMany?: Prisma.SubscriptionCreateManyCancelledByInputEnvelope
   connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
 }
 
@@ -573,10 +746,10 @@ export type SubscriptionUncheckedCreateNestedManyWithoutReferrerInput = {
   connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
 }
 
-export type SubscriptionUncheckedCreateNestedManyWithoutPayerInput = {
-  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPayerInput, Prisma.SubscriptionUncheckedCreateWithoutPayerInput> | Prisma.SubscriptionCreateWithoutPayerInput[] | Prisma.SubscriptionUncheckedCreateWithoutPayerInput[]
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPayerInput | Prisma.SubscriptionCreateOrConnectWithoutPayerInput[]
-  createMany?: Prisma.SubscriptionCreateManyPayerInputEnvelope
+export type SubscriptionUncheckedCreateNestedManyWithoutCancelledByInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutCancelledByInput, Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput> | Prisma.SubscriptionCreateWithoutCancelledByInput[] | Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput | Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput[]
+  createMany?: Prisma.SubscriptionCreateManyCancelledByInputEnvelope
   connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
 }
 
@@ -594,17 +767,17 @@ export type SubscriptionUpdateManyWithoutReferrerNestedInput = {
   deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
 }
 
-export type SubscriptionUpdateManyWithoutPayerNestedInput = {
-  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPayerInput, Prisma.SubscriptionUncheckedCreateWithoutPayerInput> | Prisma.SubscriptionCreateWithoutPayerInput[] | Prisma.SubscriptionUncheckedCreateWithoutPayerInput[]
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPayerInput | Prisma.SubscriptionCreateOrConnectWithoutPayerInput[]
-  upsert?: Prisma.SubscriptionUpsertWithWhereUniqueWithoutPayerInput | Prisma.SubscriptionUpsertWithWhereUniqueWithoutPayerInput[]
-  createMany?: Prisma.SubscriptionCreateManyPayerInputEnvelope
+export type SubscriptionUpdateManyWithoutCancelledByNestedInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutCancelledByInput, Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput> | Prisma.SubscriptionCreateWithoutCancelledByInput[] | Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput | Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput[]
+  upsert?: Prisma.SubscriptionUpsertWithWhereUniqueWithoutCancelledByInput | Prisma.SubscriptionUpsertWithWhereUniqueWithoutCancelledByInput[]
+  createMany?: Prisma.SubscriptionCreateManyCancelledByInputEnvelope
   set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
   disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
   delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
   connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
-  update?: Prisma.SubscriptionUpdateWithWhereUniqueWithoutPayerInput | Prisma.SubscriptionUpdateWithWhereUniqueWithoutPayerInput[]
-  updateMany?: Prisma.SubscriptionUpdateManyWithWhereWithoutPayerInput | Prisma.SubscriptionUpdateManyWithWhereWithoutPayerInput[]
+  update?: Prisma.SubscriptionUpdateWithWhereUniqueWithoutCancelledByInput | Prisma.SubscriptionUpdateWithWhereUniqueWithoutCancelledByInput[]
+  updateMany?: Prisma.SubscriptionUpdateManyWithWhereWithoutCancelledByInput | Prisma.SubscriptionUpdateManyWithWhereWithoutCancelledByInput[]
   deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
 }
 
@@ -622,18 +795,84 @@ export type SubscriptionUncheckedUpdateManyWithoutReferrerNestedInput = {
   deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
 }
 
-export type SubscriptionUncheckedUpdateManyWithoutPayerNestedInput = {
-  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutPayerInput, Prisma.SubscriptionUncheckedCreateWithoutPayerInput> | Prisma.SubscriptionCreateWithoutPayerInput[] | Prisma.SubscriptionUncheckedCreateWithoutPayerInput[]
-  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutPayerInput | Prisma.SubscriptionCreateOrConnectWithoutPayerInput[]
-  upsert?: Prisma.SubscriptionUpsertWithWhereUniqueWithoutPayerInput | Prisma.SubscriptionUpsertWithWhereUniqueWithoutPayerInput[]
-  createMany?: Prisma.SubscriptionCreateManyPayerInputEnvelope
+export type SubscriptionUncheckedUpdateManyWithoutCancelledByNestedInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutCancelledByInput, Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput> | Prisma.SubscriptionCreateWithoutCancelledByInput[] | Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput | Prisma.SubscriptionCreateOrConnectWithoutCancelledByInput[]
+  upsert?: Prisma.SubscriptionUpsertWithWhereUniqueWithoutCancelledByInput | Prisma.SubscriptionUpsertWithWhereUniqueWithoutCancelledByInput[]
+  createMany?: Prisma.SubscriptionCreateManyCancelledByInputEnvelope
   set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
   disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
   delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
   connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
-  update?: Prisma.SubscriptionUpdateWithWhereUniqueWithoutPayerInput | Prisma.SubscriptionUpdateWithWhereUniqueWithoutPayerInput[]
-  updateMany?: Prisma.SubscriptionUpdateManyWithWhereWithoutPayerInput | Prisma.SubscriptionUpdateManyWithWhereWithoutPayerInput[]
+  update?: Prisma.SubscriptionUpdateWithWhereUniqueWithoutCancelledByInput | Prisma.SubscriptionUpdateWithWhereUniqueWithoutCancelledByInput[]
+  updateMany?: Prisma.SubscriptionUpdateManyWithWhereWithoutCancelledByInput | Prisma.SubscriptionUpdateManyWithWhereWithoutCancelledByInput[]
   deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
+}
+
+export type SubscriptionCreateNestedManyWithoutBankInfoInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutBankInfoInput, Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput> | Prisma.SubscriptionCreateWithoutBankInfoInput[] | Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput | Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput[]
+  createMany?: Prisma.SubscriptionCreateManyBankInfoInputEnvelope
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+}
+
+export type SubscriptionUncheckedCreateNestedManyWithoutBankInfoInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutBankInfoInput, Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput> | Prisma.SubscriptionCreateWithoutBankInfoInput[] | Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput | Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput[]
+  createMany?: Prisma.SubscriptionCreateManyBankInfoInputEnvelope
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+}
+
+export type SubscriptionUpdateManyWithoutBankInfoNestedInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutBankInfoInput, Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput> | Prisma.SubscriptionCreateWithoutBankInfoInput[] | Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput | Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput[]
+  upsert?: Prisma.SubscriptionUpsertWithWhereUniqueWithoutBankInfoInput | Prisma.SubscriptionUpsertWithWhereUniqueWithoutBankInfoInput[]
+  createMany?: Prisma.SubscriptionCreateManyBankInfoInputEnvelope
+  set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  update?: Prisma.SubscriptionUpdateWithWhereUniqueWithoutBankInfoInput | Prisma.SubscriptionUpdateWithWhereUniqueWithoutBankInfoInput[]
+  updateMany?: Prisma.SubscriptionUpdateManyWithWhereWithoutBankInfoInput | Prisma.SubscriptionUpdateManyWithWhereWithoutBankInfoInput[]
+  deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
+}
+
+export type SubscriptionUncheckedUpdateManyWithoutBankInfoNestedInput = {
+  create?: Prisma.XOR<Prisma.SubscriptionCreateWithoutBankInfoInput, Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput> | Prisma.SubscriptionCreateWithoutBankInfoInput[] | Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput[]
+  connectOrCreate?: Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput | Prisma.SubscriptionCreateOrConnectWithoutBankInfoInput[]
+  upsert?: Prisma.SubscriptionUpsertWithWhereUniqueWithoutBankInfoInput | Prisma.SubscriptionUpsertWithWhereUniqueWithoutBankInfoInput[]
+  createMany?: Prisma.SubscriptionCreateManyBankInfoInputEnvelope
+  set?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  disconnect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  delete?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  connect?: Prisma.SubscriptionWhereUniqueInput | Prisma.SubscriptionWhereUniqueInput[]
+  update?: Prisma.SubscriptionUpdateWithWhereUniqueWithoutBankInfoInput | Prisma.SubscriptionUpdateWithWhereUniqueWithoutBankInfoInput[]
+  updateMany?: Prisma.SubscriptionUpdateManyWithWhereWithoutBankInfoInput | Prisma.SubscriptionUpdateManyWithWhereWithoutBankInfoInput[]
+  deleteMany?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
+}
+
+export type EnumSubscriptionStatusFieldUpdateOperationsInput = {
+  set?: $Enums.SubscriptionStatus
+}
+
+export type EnumPaymentModeFieldUpdateOperationsInput = {
+  set?: $Enums.PaymentMode
+}
+
+export type FloatFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableFloatFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
 }
 
 export type SubscriptionCreateNestedOneWithoutPaymentsInput = {
@@ -693,28 +932,42 @@ export type SubscriptionUncheckedUpdateManyWithoutTransportProductNestedInput = 
 }
 
 export type SubscriptionCreateWithoutBeneficiaryInput = {
-  navigoNumber: string
+  reference?: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
-  payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
   transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUncheckedCreateWithoutBeneficiaryInput = {
   id?: number
+  reference?: string
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionCreateOrConnectWithoutBeneficiaryInput = {
@@ -748,40 +1001,154 @@ export type SubscriptionScalarWhereInput = {
   OR?: Prisma.SubscriptionScalarWhereInput[]
   NOT?: Prisma.SubscriptionScalarWhereInput | Prisma.SubscriptionScalarWhereInput[]
   id?: Prisma.IntFilter<"Subscription"> | number
+  reference?: Prisma.StringFilter<"Subscription"> | string
   beneficiaryId?: Prisma.IntFilter<"Subscription"> | number
   referrerId?: Prisma.IntNullableFilter<"Subscription"> | number | null
-  payerId?: Prisma.IntNullableFilter<"Subscription"> | number | null
-  navigoNumber?: Prisma.StringFilter<"Subscription"> | string
   subscriptionType?: Prisma.StringFilter<"Subscription"> | string
-  transportProductId?: Prisma.IntNullableFilter<"Subscription"> | number | null
   startDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
   endDate?: Prisma.DateTimeFilter<"Subscription"> | Date | string
-  status?: Prisma.StringFilter<"Subscription"> | string
+  status?: Prisma.EnumSubscriptionStatusFilter<"Subscription"> | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
+  cancellationEffectiveAt?: Prisma.DateTimeNullableFilter<"Subscription"> | Date | string | null
+  cancelledById?: Prisma.IntNullableFilter<"Subscription"> | number | null
+  bankInfoId?: Prisma.IntFilter<"Subscription"> | number
+  transportProductId?: Prisma.IntNullableFilter<"Subscription"> | number | null
+  paymentMode?: Prisma.EnumPaymentModeFilter<"Subscription"> | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFilter<"Subscription"> | number
+  monthlyAmount?: Prisma.FloatNullableFilter<"Subscription"> | number | null
 }
 
-export type SubscriptionCreateWithoutReferrerInput = {
-  navigoNumber: string
+export type SubscriptionCreateWithoutPassesInput = {
+  reference?: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
-  payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
+  referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
   transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionUncheckedCreateWithoutReferrerInput = {
+export type SubscriptionUncheckedCreateWithoutPassesInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
-  payerId?: number | null
-  navigoNumber: string
+  referrerId?: number | null
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutPassesInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutPassesInput, Prisma.SubscriptionUncheckedCreateWithoutPassesInput>
+}
+
+export type SubscriptionUpsertWithoutPassesInput = {
+  update: Prisma.XOR<Prisma.SubscriptionUpdateWithoutPassesInput, Prisma.SubscriptionUncheckedUpdateWithoutPassesInput>
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutPassesInput, Prisma.SubscriptionUncheckedCreateWithoutPassesInput>
+  where?: Prisma.SubscriptionWhereInput
+}
+
+export type SubscriptionUpdateToOneWithWhereWithoutPassesInput = {
+  where?: Prisma.SubscriptionWhereInput
+  data: Prisma.XOR<Prisma.SubscriptionUpdateWithoutPassesInput, Prisma.SubscriptionUncheckedUpdateWithoutPassesInput>
+}
+
+export type SubscriptionUpdateWithoutPassesInput = {
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
+  referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
+  transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutPassesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
+  referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionCreateWithoutReferrerInput = {
+  reference?: string
+  subscriptionType: string
+  startDate: Date | string
+  endDate: Date | string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
+  beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
+  transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutReferrerInput = {
+  id?: number
+  reference?: string
+  beneficiaryId: number
+  subscriptionType: string
+  startDate: Date | string
+  endDate: Date | string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionCreateOrConnectWithoutReferrerInput = {
@@ -794,38 +1161,52 @@ export type SubscriptionCreateManyReferrerInputEnvelope = {
   skipDuplicates?: boolean
 }
 
-export type SubscriptionCreateWithoutPayerInput = {
-  navigoNumber: string
+export type SubscriptionCreateWithoutCancelledByInput = {
+  reference?: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
   transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionUncheckedCreateWithoutPayerInput = {
+export type SubscriptionUncheckedCreateWithoutCancelledByInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
-export type SubscriptionCreateOrConnectWithoutPayerInput = {
+export type SubscriptionCreateOrConnectWithoutCancelledByInput = {
   where: Prisma.SubscriptionWhereUniqueInput
-  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutPayerInput, Prisma.SubscriptionUncheckedCreateWithoutPayerInput>
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutCancelledByInput, Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput>
 }
 
-export type SubscriptionCreateManyPayerInputEnvelope = {
-  data: Prisma.SubscriptionCreateManyPayerInput | Prisma.SubscriptionCreateManyPayerInput[]
+export type SubscriptionCreateManyCancelledByInputEnvelope = {
+  data: Prisma.SubscriptionCreateManyCancelledByInput | Prisma.SubscriptionCreateManyCancelledByInput[]
   skipDuplicates?: boolean
 }
 
@@ -845,45 +1226,124 @@ export type SubscriptionUpdateManyWithWhereWithoutReferrerInput = {
   data: Prisma.XOR<Prisma.SubscriptionUpdateManyMutationInput, Prisma.SubscriptionUncheckedUpdateManyWithoutReferrerInput>
 }
 
-export type SubscriptionUpsertWithWhereUniqueWithoutPayerInput = {
+export type SubscriptionUpsertWithWhereUniqueWithoutCancelledByInput = {
   where: Prisma.SubscriptionWhereUniqueInput
-  update: Prisma.XOR<Prisma.SubscriptionUpdateWithoutPayerInput, Prisma.SubscriptionUncheckedUpdateWithoutPayerInput>
-  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutPayerInput, Prisma.SubscriptionUncheckedCreateWithoutPayerInput>
+  update: Prisma.XOR<Prisma.SubscriptionUpdateWithoutCancelledByInput, Prisma.SubscriptionUncheckedUpdateWithoutCancelledByInput>
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutCancelledByInput, Prisma.SubscriptionUncheckedCreateWithoutCancelledByInput>
 }
 
-export type SubscriptionUpdateWithWhereUniqueWithoutPayerInput = {
+export type SubscriptionUpdateWithWhereUniqueWithoutCancelledByInput = {
   where: Prisma.SubscriptionWhereUniqueInput
-  data: Prisma.XOR<Prisma.SubscriptionUpdateWithoutPayerInput, Prisma.SubscriptionUncheckedUpdateWithoutPayerInput>
+  data: Prisma.XOR<Prisma.SubscriptionUpdateWithoutCancelledByInput, Prisma.SubscriptionUncheckedUpdateWithoutCancelledByInput>
 }
 
-export type SubscriptionUpdateManyWithWhereWithoutPayerInput = {
+export type SubscriptionUpdateManyWithWhereWithoutCancelledByInput = {
   where: Prisma.SubscriptionScalarWhereInput
-  data: Prisma.XOR<Prisma.SubscriptionUpdateManyMutationInput, Prisma.SubscriptionUncheckedUpdateManyWithoutPayerInput>
+  data: Prisma.XOR<Prisma.SubscriptionUpdateManyMutationInput, Prisma.SubscriptionUncheckedUpdateManyWithoutCancelledByInput>
 }
 
-export type SubscriptionCreateWithoutPaymentsInput = {
-  navigoNumber: string
+export type SubscriptionCreateWithoutBankInfoInput = {
+  reference?: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
-  payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
   transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
+  payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionUncheckedCreateWithoutBankInfoInput = {
+  id?: number
+  reference?: string
+  beneficiaryId: number
+  referrerId?: number | null
+  subscriptionType: string
+  startDate: Date | string
+  endDate: Date | string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
+  payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
+}
+
+export type SubscriptionCreateOrConnectWithoutBankInfoInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutBankInfoInput, Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput>
+}
+
+export type SubscriptionCreateManyBankInfoInputEnvelope = {
+  data: Prisma.SubscriptionCreateManyBankInfoInput | Prisma.SubscriptionCreateManyBankInfoInput[]
+  skipDuplicates?: boolean
+}
+
+export type SubscriptionUpsertWithWhereUniqueWithoutBankInfoInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  update: Prisma.XOR<Prisma.SubscriptionUpdateWithoutBankInfoInput, Prisma.SubscriptionUncheckedUpdateWithoutBankInfoInput>
+  create: Prisma.XOR<Prisma.SubscriptionCreateWithoutBankInfoInput, Prisma.SubscriptionUncheckedCreateWithoutBankInfoInput>
+}
+
+export type SubscriptionUpdateWithWhereUniqueWithoutBankInfoInput = {
+  where: Prisma.SubscriptionWhereUniqueInput
+  data: Prisma.XOR<Prisma.SubscriptionUpdateWithoutBankInfoInput, Prisma.SubscriptionUncheckedUpdateWithoutBankInfoInput>
+}
+
+export type SubscriptionUpdateManyWithWhereWithoutBankInfoInput = {
+  where: Prisma.SubscriptionScalarWhereInput
+  data: Prisma.XOR<Prisma.SubscriptionUpdateManyMutationInput, Prisma.SubscriptionUncheckedUpdateManyWithoutBankInfoInput>
+}
+
+export type SubscriptionCreateWithoutPaymentsInput = {
+  reference?: string
+  subscriptionType: string
+  startDate: Date | string
+  endDate: Date | string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
+  beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
+  referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
+  transportProduct?: Prisma.TransportProductCreateNestedOneWithoutSubscriptionsInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUncheckedCreateWithoutPaymentsInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionCreateOrConnectWithoutPaymentsInput = {
@@ -903,53 +1363,81 @@ export type SubscriptionUpdateToOneWithWhereWithoutPaymentsInput = {
 }
 
 export type SubscriptionUpdateWithoutPaymentsInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
-  payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
   transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateWithoutPaymentsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionCreateWithoutTransportProductInput = {
-  navigoNumber: string
+  reference?: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutSubscriptionsInput
   referrer?: Prisma.AccountCreateNestedOneWithoutReferredSubscriptionsInput
-  payer?: Prisma.AccountCreateNestedOneWithoutPaidSubscriptionsInput
+  cancelledBy?: Prisma.AccountCreateNestedOneWithoutSubscriptionsInput
+  bankInfo: Prisma.BankInfoCreateNestedOneWithoutSubscriptionsInput
   payments?: Prisma.PaymentCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionUncheckedCreateWithoutTransportProductInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
   payments?: Prisma.PaymentUncheckedCreateNestedManyWithoutSubscriptionInput
+  passes?: Prisma.PassUncheckedCreateNestedManyWithoutSubscriptionInput
 }
 
 export type SubscriptionCreateOrConnectWithoutTransportProductInput = {
@@ -980,198 +1468,377 @@ export type SubscriptionUpdateManyWithWhereWithoutTransportProductInput = {
 
 export type SubscriptionCreateManyBeneficiaryInput = {
   id?: number
+  reference?: string
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateWithoutBeneficiaryInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
-  payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
   transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateWithoutBeneficiaryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateManyWithoutBeneficiaryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionCreateManyReferrerInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
-export type SubscriptionCreateManyPayerInput = {
+export type SubscriptionCreateManyCancelledByInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  navigoNumber: string
   subscriptionType: string
-  transportProductId?: number | null
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  bankInfoId: number
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateWithoutReferrerInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
-  payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
   transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateWithoutReferrerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateManyWithoutReferrerInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
-export type SubscriptionUpdateWithoutPayerInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+export type SubscriptionUpdateWithoutCancelledByInput = {
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
   transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
 }
 
-export type SubscriptionUncheckedUpdateWithoutPayerInput = {
+export type SubscriptionUncheckedUpdateWithoutCancelledByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
-export type SubscriptionUncheckedUpdateManyWithoutPayerInput = {
+export type SubscriptionUncheckedUpdateManyWithoutCancelledByInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
-  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+}
+
+export type SubscriptionCreateManyBankInfoInput = {
+  id?: number
+  reference?: string
+  beneficiaryId: number
+  referrerId?: number | null
+  subscriptionType: string
+  startDate: Date | string
+  endDate: Date | string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  transportProductId?: number | null
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
+}
+
+export type SubscriptionUpdateWithoutBankInfoInput = {
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
+  referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  transportProduct?: Prisma.TransportProductUpdateOneWithoutSubscriptionsNestedInput
+  payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateWithoutBankInfoInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
+  referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
+  payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
+}
+
+export type SubscriptionUncheckedUpdateManyWithoutBankInfoInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
+  beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
+  referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
+  startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  transportProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 export type SubscriptionCreateManyTransportProductInput = {
   id?: number
+  reference?: string
   beneficiaryId: number
   referrerId?: number | null
-  payerId?: number | null
-  navigoNumber: string
   subscriptionType: string
   startDate: Date | string
   endDate: Date | string
-  status?: string
+  status?: $Enums.SubscriptionStatus
+  cancelledAt?: Date | string | null
+  cancellationEffectiveAt?: Date | string | null
+  cancelledById?: number | null
+  bankInfoId: number
+  paymentMode?: $Enums.PaymentMode
+  annualAmount?: number
+  monthlyAmount?: number | null
 }
 
 export type SubscriptionUpdateWithoutTransportProductInput = {
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput
   referrer?: Prisma.AccountUpdateOneWithoutReferredSubscriptionsNestedInput
-  payer?: Prisma.AccountUpdateOneWithoutPaidSubscriptionsNestedInput
+  cancelledBy?: Prisma.AccountUpdateOneWithoutSubscriptionsNestedInput
+  bankInfo?: Prisma.BankInfoUpdateOneRequiredWithoutSubscriptionsNestedInput
   payments?: Prisma.PaymentUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateWithoutTransportProductInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
   payments?: Prisma.PaymentUncheckedUpdateManyWithoutSubscriptionNestedInput
+  passes?: Prisma.PassUncheckedUpdateManyWithoutSubscriptionNestedInput
 }
 
 export type SubscriptionUncheckedUpdateManyWithoutTransportProductInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  reference?: Prisma.StringFieldUpdateOperationsInput | string
   beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   referrerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  payerId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  navigoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   subscriptionType?: Prisma.StringFieldUpdateOperationsInput | string
   startDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   endDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  status?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumSubscriptionStatusFieldUpdateOperationsInput | $Enums.SubscriptionStatus
+  cancelledAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancellationEffectiveAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  cancelledById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  bankInfoId?: Prisma.IntFieldUpdateOperationsInput | number
+  paymentMode?: Prisma.EnumPaymentModeFieldUpdateOperationsInput | $Enums.PaymentMode
+  annualAmount?: Prisma.FloatFieldUpdateOperationsInput | number
+  monthlyAmount?: Prisma.NullableFloatFieldUpdateOperationsInput | number | null
 }
 
 
@@ -1181,10 +1848,12 @@ export type SubscriptionUncheckedUpdateManyWithoutTransportProductInput = {
 
 export type SubscriptionCountOutputType = {
   payments: number
+  passes: number
 }
 
 export type SubscriptionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   payments?: boolean | SubscriptionCountOutputTypeCountPaymentsArgs
+  passes?: boolean | SubscriptionCountOutputTypeCountPassesArgs
 }
 
 /**
@@ -1204,92 +1873,131 @@ export type SubscriptionCountOutputTypeCountPaymentsArgs<ExtArgs extends runtime
   where?: Prisma.PaymentWhereInput
 }
 
+/**
+ * SubscriptionCountOutputType without action
+ */
+export type SubscriptionCountOutputTypeCountPassesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PassWhereInput
+}
+
 
 export type SubscriptionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  reference?: boolean
   beneficiaryId?: boolean
   referrerId?: boolean
-  payerId?: boolean
-  navigoNumber?: boolean
   subscriptionType?: boolean
-  transportProductId?: boolean
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  cancelledAt?: boolean
+  cancellationEffectiveAt?: boolean
+  cancelledById?: boolean
+  bankInfoId?: boolean
+  transportProductId?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
-  payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
+  cancelledBy?: boolean | Prisma.Subscription$cancelledByArgs<ExtArgs>
+  bankInfo?: boolean | Prisma.BankInfoDefaultArgs<ExtArgs>
   transportProduct?: boolean | Prisma.Subscription$transportProductArgs<ExtArgs>
   payments?: boolean | Prisma.Subscription$paymentsArgs<ExtArgs>
+  passes?: boolean | Prisma.Subscription$passesArgs<ExtArgs>
   _count?: boolean | Prisma.SubscriptionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["subscription"]>
 
 export type SubscriptionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  reference?: boolean
   beneficiaryId?: boolean
   referrerId?: boolean
-  payerId?: boolean
-  navigoNumber?: boolean
   subscriptionType?: boolean
-  transportProductId?: boolean
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  cancelledAt?: boolean
+  cancellationEffectiveAt?: boolean
+  cancelledById?: boolean
+  bankInfoId?: boolean
+  transportProductId?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
-  payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
+  cancelledBy?: boolean | Prisma.Subscription$cancelledByArgs<ExtArgs>
+  bankInfo?: boolean | Prisma.BankInfoDefaultArgs<ExtArgs>
   transportProduct?: boolean | Prisma.Subscription$transportProductArgs<ExtArgs>
 }, ExtArgs["result"]["subscription"]>
 
 export type SubscriptionSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
+  reference?: boolean
   beneficiaryId?: boolean
   referrerId?: boolean
-  payerId?: boolean
-  navigoNumber?: boolean
   subscriptionType?: boolean
-  transportProductId?: boolean
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  cancelledAt?: boolean
+  cancellationEffectiveAt?: boolean
+  cancelledById?: boolean
+  bankInfoId?: boolean
+  transportProductId?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
-  payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
+  cancelledBy?: boolean | Prisma.Subscription$cancelledByArgs<ExtArgs>
+  bankInfo?: boolean | Prisma.BankInfoDefaultArgs<ExtArgs>
   transportProduct?: boolean | Prisma.Subscription$transportProductArgs<ExtArgs>
 }, ExtArgs["result"]["subscription"]>
 
 export type SubscriptionSelectScalar = {
   id?: boolean
+  reference?: boolean
   beneficiaryId?: boolean
   referrerId?: boolean
-  payerId?: boolean
-  navigoNumber?: boolean
   subscriptionType?: boolean
-  transportProductId?: boolean
   startDate?: boolean
   endDate?: boolean
   status?: boolean
+  cancelledAt?: boolean
+  cancellationEffectiveAt?: boolean
+  cancelledById?: boolean
+  bankInfoId?: boolean
+  transportProductId?: boolean
+  paymentMode?: boolean
+  annualAmount?: boolean
+  monthlyAmount?: boolean
 }
 
-export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "beneficiaryId" | "referrerId" | "payerId" | "navigoNumber" | "subscriptionType" | "transportProductId" | "startDate" | "endDate" | "status", ExtArgs["result"]["subscription"]>
+export type SubscriptionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "reference" | "beneficiaryId" | "referrerId" | "subscriptionType" | "startDate" | "endDate" | "status" | "cancelledAt" | "cancellationEffectiveAt" | "cancelledById" | "bankInfoId" | "transportProductId" | "paymentMode" | "annualAmount" | "monthlyAmount", ExtArgs["result"]["subscription"]>
 export type SubscriptionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
-  payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
+  cancelledBy?: boolean | Prisma.Subscription$cancelledByArgs<ExtArgs>
+  bankInfo?: boolean | Prisma.BankInfoDefaultArgs<ExtArgs>
   transportProduct?: boolean | Prisma.Subscription$transportProductArgs<ExtArgs>
   payments?: boolean | Prisma.Subscription$paymentsArgs<ExtArgs>
+  passes?: boolean | Prisma.Subscription$passesArgs<ExtArgs>
   _count?: boolean | Prisma.SubscriptionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type SubscriptionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
-  payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
+  cancelledBy?: boolean | Prisma.Subscription$cancelledByArgs<ExtArgs>
+  bankInfo?: boolean | Prisma.BankInfoDefaultArgs<ExtArgs>
   transportProduct?: boolean | Prisma.Subscription$transportProductArgs<ExtArgs>
 }
 export type SubscriptionIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
   referrer?: boolean | Prisma.Subscription$referrerArgs<ExtArgs>
-  payer?: boolean | Prisma.Subscription$payerArgs<ExtArgs>
+  cancelledBy?: boolean | Prisma.Subscription$cancelledByArgs<ExtArgs>
+  bankInfo?: boolean | Prisma.BankInfoDefaultArgs<ExtArgs>
   transportProduct?: boolean | Prisma.Subscription$transportProductArgs<ExtArgs>
 }
 
@@ -1298,21 +2006,29 @@ export type $SubscriptionPayload<ExtArgs extends runtime.Types.Extensions.Intern
   objects: {
     beneficiary: Prisma.$BeneficiaryPayload<ExtArgs>
     referrer: Prisma.$AccountPayload<ExtArgs> | null
-    payer: Prisma.$AccountPayload<ExtArgs> | null
+    cancelledBy: Prisma.$AccountPayload<ExtArgs> | null
+    bankInfo: Prisma.$BankInfoPayload<ExtArgs>
     transportProduct: Prisma.$TransportProductPayload<ExtArgs> | null
     payments: Prisma.$PaymentPayload<ExtArgs>[]
+    passes: Prisma.$PassPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
+    reference: string
     beneficiaryId: number
     referrerId: number | null
-    payerId: number | null
-    navigoNumber: string
     subscriptionType: string
-    transportProductId: number | null
     startDate: Date
     endDate: Date
-    status: string
+    status: $Enums.SubscriptionStatus
+    cancelledAt: Date | null
+    cancellationEffectiveAt: Date | null
+    cancelledById: number | null
+    bankInfoId: number
+    transportProductId: number | null
+    paymentMode: $Enums.PaymentMode
+    annualAmount: number
+    monthlyAmount: number | null
   }, ExtArgs["result"]["subscription"]>
   composites: {}
 }
@@ -1709,9 +2425,11 @@ export interface Prisma__SubscriptionClient<T, Null = never, ExtArgs extends run
   readonly [Symbol.toStringTag]: "PrismaPromise"
   beneficiary<T extends Prisma.BeneficiaryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BeneficiaryDefaultArgs<ExtArgs>>): Prisma.Prisma__BeneficiaryClient<runtime.Types.Result.GetResult<Prisma.$BeneficiaryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   referrer<T extends Prisma.Subscription$referrerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$referrerArgs<ExtArgs>>): Prisma.Prisma__AccountClient<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  payer<T extends Prisma.Subscription$payerArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$payerArgs<ExtArgs>>): Prisma.Prisma__AccountClient<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  cancelledBy<T extends Prisma.Subscription$cancelledByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$cancelledByArgs<ExtArgs>>): Prisma.Prisma__AccountClient<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  bankInfo<T extends Prisma.BankInfoDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BankInfoDefaultArgs<ExtArgs>>): Prisma.Prisma__BankInfoClient<runtime.Types.Result.GetResult<Prisma.$BankInfoPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   transportProduct<T extends Prisma.Subscription$transportProductArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$transportProductArgs<ExtArgs>>): Prisma.Prisma__TransportProductClient<runtime.Types.Result.GetResult<Prisma.$TransportProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   payments<T extends Prisma.Subscription$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  passes<T extends Prisma.Subscription$passesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Subscription$passesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PassPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1742,15 +2460,21 @@ export interface Prisma__SubscriptionClient<T, Null = never, ExtArgs extends run
  */
 export interface SubscriptionFieldRefs {
   readonly id: Prisma.FieldRef<"Subscription", 'Int'>
+  readonly reference: Prisma.FieldRef<"Subscription", 'String'>
   readonly beneficiaryId: Prisma.FieldRef<"Subscription", 'Int'>
   readonly referrerId: Prisma.FieldRef<"Subscription", 'Int'>
-  readonly payerId: Prisma.FieldRef<"Subscription", 'Int'>
-  readonly navigoNumber: Prisma.FieldRef<"Subscription", 'String'>
   readonly subscriptionType: Prisma.FieldRef<"Subscription", 'String'>
-  readonly transportProductId: Prisma.FieldRef<"Subscription", 'Int'>
   readonly startDate: Prisma.FieldRef<"Subscription", 'DateTime'>
   readonly endDate: Prisma.FieldRef<"Subscription", 'DateTime'>
-  readonly status: Prisma.FieldRef<"Subscription", 'String'>
+  readonly status: Prisma.FieldRef<"Subscription", 'SubscriptionStatus'>
+  readonly cancelledAt: Prisma.FieldRef<"Subscription", 'DateTime'>
+  readonly cancellationEffectiveAt: Prisma.FieldRef<"Subscription", 'DateTime'>
+  readonly cancelledById: Prisma.FieldRef<"Subscription", 'Int'>
+  readonly bankInfoId: Prisma.FieldRef<"Subscription", 'Int'>
+  readonly transportProductId: Prisma.FieldRef<"Subscription", 'Int'>
+  readonly paymentMode: Prisma.FieldRef<"Subscription", 'PaymentMode'>
+  readonly annualAmount: Prisma.FieldRef<"Subscription", 'Float'>
+  readonly monthlyAmount: Prisma.FieldRef<"Subscription", 'Float'>
 }
     
 
@@ -2171,9 +2895,9 @@ export type Subscription$referrerArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
- * Subscription.payer
+ * Subscription.cancelledBy
  */
-export type Subscription$payerArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type Subscription$cancelledByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
    * Select specific fields to fetch from the Account
    */
@@ -2230,6 +2954,30 @@ export type Subscription$paymentsArgs<ExtArgs extends runtime.Types.Extensions.I
   take?: number
   skip?: number
   distinct?: Prisma.PaymentScalarFieldEnum | Prisma.PaymentScalarFieldEnum[]
+}
+
+/**
+ * Subscription.passes
+ */
+export type Subscription$passesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Pass
+   */
+  select?: Prisma.PassSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Pass
+   */
+  omit?: Prisma.PassOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PassInclude<ExtArgs> | null
+  where?: Prisma.PassWhereInput
+  orderBy?: Prisma.PassOrderByWithRelationInput | Prisma.PassOrderByWithRelationInput[]
+  cursor?: Prisma.PassWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PassScalarFieldEnum | Prisma.PassScalarFieldEnum[]
 }
 
 /**

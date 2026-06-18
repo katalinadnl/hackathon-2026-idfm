@@ -29,8 +29,8 @@ export * from "./enums.js"
  * const prisma = new PrismaClient({
  *   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL })
  * })
- * // Fetch zero or more Departments
- * const departments = await prisma.department.findMany()
+ * // Fetch zero or more Addresses
+ * const addresses = await prisma.address.findMany()
  * ```
  * 
  * Read more in our [docs](https://pris.ly/d/client).
@@ -39,6 +39,11 @@ export const PrismaClient = $Class.getPrismaClientClass()
 export type PrismaClient<LogOpts extends Prisma.LogLevel = never, OmitOpts extends Prisma.PrismaClientOptions["omit"] = Prisma.PrismaClientOptions["omit"], ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = $Class.PrismaClient<LogOpts, OmitOpts, ExtArgs>
 export { Prisma }
 
+/**
+ * Model Address
+ * 
+ */
+export type Address = Prisma.AddressModel
 /**
  * Model Department
  * 
@@ -50,15 +55,30 @@ export type Department = Prisma.DepartmentModel
  */
 export type Beneficiary = Prisma.BeneficiaryModel
 /**
- * Model StatusVerification
+ * Model Pass
  * 
  */
-export type StatusVerification = Prisma.StatusVerificationModel
+export type Pass = Prisma.PassModel
+/**
+ * Model PassUsage
+ * 
+ */
+export type PassUsage = Prisma.PassUsageModel
+/**
+ * Model Delivery
+ * 
+ */
+export type Delivery = Prisma.DeliveryModel
 /**
  * Model Account
  * 
  */
 export type Account = Prisma.AccountModel
+/**
+ * Model BankInfo
+ * 
+ */
+export type BankInfo = Prisma.BankInfoModel
 /**
  * Model Subscription
  * 
@@ -69,6 +89,11 @@ export type Subscription = Prisma.SubscriptionModel
  * 
  */
 export type Payment = Prisma.PaymentModel
+/**
+ * Model StatusVerification
+ * 
+ */
+export type StatusVerification = Prisma.StatusVerificationModel
 /**
  * Model TransportProduct
  * 

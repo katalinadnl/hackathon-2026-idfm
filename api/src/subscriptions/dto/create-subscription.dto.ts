@@ -1,4 +1,10 @@
-import { IsDateString, IsInt, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateSubscriptionDto {
   @IsInt()
@@ -7,10 +13,6 @@ export class CreateSubscriptionDto {
   @IsOptional()
   @IsInt()
   referrerId?: number;
-
-  @IsOptional()
-  @IsInt()
-  payerId?: number;
 
   @IsString()
   navigoNumber: string;
@@ -28,7 +30,6 @@ export class CreateSubscriptionDto {
   @IsDateString()
   endDate: string;
 
-  @IsOptional()
-  @IsString()
-  status?: string;
+  @IsInt()
+  bankInfoId: number;
 }
