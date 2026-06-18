@@ -1,6 +1,6 @@
 services:
 
-  # ── Reverse proxy ────────────────────────────────────────────────────────────
+  # reverse proxy Traefik (v3) pour gérer les certificats SSL et le routage des services
   traefik:
     image: traefik:v3.3
     restart: unless-stopped
@@ -34,12 +34,12 @@ services:
     networks:
       - public
 
-  # ── API NestJS ────────────────────────────────────────────────────────────────
   api:
     build:
       context: .
       dockerfile: docker/api/Dockerfile
       target: production
+    command: node dist/main
     restart: unless-stopped
     environment:
       PORT: 3000
@@ -69,7 +69,6 @@ services:
       - public
       - internal
 
-  # ── Frontend Expo/web ─────────────────────────────────────────────────────────
   app:
     build:
       context: .
@@ -93,7 +92,6 @@ services:
     networks:
       - public
 
-  # ── Base de données ───────────────────────────────────────────────────────────
   database:
     image: postgres:16-alpine
     restart: unless-stopped
@@ -112,7 +110,6 @@ services:
     networks:
       - internal
 
-  # ── Analytics (Umami) ─────────────────────────────────────────────────────────
   umami:
     image: ghcr.io/umami-software/umami:postgresql-latest
     restart: unless-stopped
@@ -133,7 +130,6 @@ services:
       - public
       - internal
 
-  # ── CMS (Directus) ───────────────────────────────────────────────────────────
   directus:
     image: directus/directus:11
     restart: unless-stopped
@@ -166,6 +162,14 @@ services:
     networks:
       - public
       - internal
+
+  # Désactiver les services dev-only en prod
+  nginx:
+    profiles: ["dev"]
+  mailhog:
+    profiles: ["dev"]
+  adminer:
+    profiles: ["dev"]
 
 networks:
   public:
