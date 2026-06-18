@@ -48,11 +48,13 @@ export class BillingService {
         OR: [
           { referrerId: accountId },
           { beneficiary: { account: { id: accountId } } },
+          { bankInfo: { accountId } },
         ],
       },
       include: {
         beneficiary: { include: { account: true } },
         passes: { where: { status: PassStatus.active }, take: 1 },
+        bankInfo: true,
       },
       orderBy: { startDate: 'desc' },
     });
@@ -61,6 +63,7 @@ export class BillingService {
       const roles: BillingRole[] = [];
       if (sub.beneficiary.account?.id === accountId) roles.push('holder');
       if (sub.referrerId === accountId) roles.push('referrer');
+      if (sub.bankInfo?.accountId === accountId) roles.push('payer');
       return { sub, roles, activePass: sub.passes[0] ?? null };
     });
   }
@@ -912,6 +915,56 @@ export class BillingService {
     if (asPayer) return asPayer.sub.id;
     const any = visible.find(isSepa);
     return any?.sub.id ?? null;
+  }
+
+  async createSubscriptionCheckout(
+    accountId: number,
+    subscriptionId: number,
+    baseUrl: string,
+  ): Promise<{ url: string | null; sessionId: string | null; message: string }> {
+    const sub = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { beneficiary: true, bankInfo: true },
+    });
+    if (!sub) throw new NotFoundException('Abonnement introuvable.');
+    if (sub.bankInfo.accountId !== accountId && sub.referrerId !== accountId) {
+      throw new ForbiddenException('Accès interdit.');
+    }
+
+    const amount = sub.annualAmount || sub.monthlyAmount || 0;
+    if (amount <= 0) {
+      return { url: null, sessionId: null, message: 'Montant nul — rien à payer.' };
+    }
+
+    const payment = await this.prisma.payment.create({
+      data: {
+        subscriptionId,
+        amount,
+        method: 'CARD_ONCE',
+        status: 'pending',
+      },
+    });
+
+    const description = `Abonnement ${sub.subscriptionType} — ${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`;
+    const apiBase = process.env.API_BASE_URL ?? 'http://localhost:3000/api';
+    const redirect = encodeURIComponent(`/subscriptions/${subscriptionId}`);
+    const successUrl = `${apiBase}/billing/payment/card-return?paymentId=${payment.id}&sessionId={CHECKOUT_SESSION_ID}&redirectTo=${redirect}`;
+    const cancelUrl = `${baseUrl}/subscriptions/new?checkoutCancel=1`;
+
+    const result = await this.stripe.createCardCheckoutSession(
+      accountId,
+      amount,
+      description,
+      successUrl,
+      cancelUrl,
+    );
+
+    if (!result) {
+      await this.prisma.payment.delete({ where: { id: payment.id } });
+      return { url: null, sessionId: null, message: 'Impossible de créer la session de paiement.' };
+    }
+
+    return { url: result.url, sessionId: result.sessionId, message: 'Redirection vers Stripe.' };
   }
 
   private hash(seed: string): number {

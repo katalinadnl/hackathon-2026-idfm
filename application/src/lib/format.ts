@@ -34,4 +34,7 @@ export const METHOD_LABELS: Record<string, string> = {
   card: "Carte bancaire",
   direct_debit: "Prélèvement",
   sepa_debit: "Prélèvement SEPA",
+  SEPA_MONTHLY: "Prélèvement SEPA",
+  SEPA_ONCE: "Prélèvement SEPA",
+  CARD_ONCE: "Carte bancaire",
 };

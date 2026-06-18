@@ -30,6 +30,11 @@ import { ApiError } from "@/services/api";
 import type { BeneficiaryStatus } from "@/types/beneficiary";
 import { statusVerificationsApi } from "@/lib/api/statusVerification";
 import { subscriptionsApi } from "@/lib/api/subscriptions";
+import type { PaymentMode } from "@/lib/api/subscriptions";
+import { createBankInfo } from "@/lib/api/bank-info";
+import { createSubscriptionCheckout } from "@/lib/api/billing";
+import { http } from "@/services/api";
+import type { AuthUser } from "@/lib/api/auth";
 
 // ─── Types & static data (alignés sur schema.prisma) ───────────────────────
 
@@ -43,6 +48,7 @@ type Step =
   | "reduction-proof"
   | "plan"
   | "review"
+  | "payment"
   | "success";
 
 const STEP_FLOW: Step[] = [
@@ -54,6 +60,7 @@ const STEP_FLOW: Step[] = [
   "reduction-proof",
   "plan",
   "review",
+  "payment",
   "success",
 ];
 
@@ -88,9 +95,12 @@ function guessNameFromEmail(email: string): {
   };
 }
 
-function pickRandomStatus(): BeneficiaryStatus {
-  const idx = Math.floor(Math.random() * STATUS_OPTIONS.length);
-  return STATUS_OPTIONS[idx].value;
+function pickRandomStatus(excludeMinor = false): BeneficiaryStatus {
+  const options = excludeMinor
+    ? STATUS_OPTIONS.filter((o) => o.value !== "MINOR")
+    : STATUS_OPTIONS;
+  const idx = Math.floor(Math.random() * options.length);
+  return options[idx].value;
 }
 
 function generateSimulatedSsn(birth: string, deptCode: string): string {
@@ -98,14 +108,6 @@ function generateSimulatedSsn(birth: string, deptCode: string): string {
   const yy = parsed ? String(parsed.getFullYear()).slice(-2) : "00";
   const mm = parsed ? String(parsed.getMonth() + 1).padStart(2, "0") : "00";
   return `1 ${yy} ${mm} ${deptCode} 123 456 78`;
-}
-
-function generateNavigoNumber(): string {
-  const year = new Date().getFullYear();
-  const random = Math.floor(Math.random() * 1_000_000)
-    .toString()
-    .padStart(6, "0");
-  return `NAV-${year}-${random}`;
 }
 
 const PLAN_DURATION_MONTHS = 12;
@@ -281,6 +283,25 @@ export default function NewSubscriptionPage() {
   const [status, setStatus] = useState<BeneficiaryStatus | null>(null);
   const [birthDate, setBirthDate] = useState("");
 
+  const age = useMemo(() => {
+    const d = parseFrDate(birthDate);
+    if (!d) return null;
+    const now = new Date();
+    let a = now.getFullYear() - d.getFullYear();
+    if (
+      now.getMonth() < d.getMonth() ||
+      (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())
+    )
+      a -= 1;
+    return a;
+  }, [birthDate]);
+
+  useEffect(() => {
+    if (age === null) return;
+    if (age >= 62) setStatus("SENIOR");
+    else if (age < 16) setStatus("MINOR");
+  }, [age]);
+
   const heldTariffIds = useMemo(
     () =>
       target === "self" ? new Set(heldLongPlans.keys()) : new Set<number>(),
@@ -345,6 +366,14 @@ export default function NewSubscriptionPage() {
   const [startDate, setStartDate] = useState(todayFr);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // ── Payment fields ──
+  const [paymentMode, setPaymentMode] = useState<PaymentMode | null>(null);
+  const [iban, setIban] = useState("");
+  const [bic, setBic] = useState("");
+  const [holderName, setHolderName] = useState(() =>
+    [user?.firstName, user?.lastName].filter(Boolean).join(" "),
+  );
 
   const selectedPlan = useMemo(
     () => tariffs.find((t) => t.id === planId) ?? null,
@@ -417,8 +446,27 @@ export default function NewSubscriptionPage() {
 
     setResidenceDept(residenceCode);
     setWorkDept(workCode);
-    setStatus(pickRandomStatus());
-    setSsn(generateSimulatedSsn(birth, residenceCode));
+
+    const parsed = parseFrDate(birth);
+    if (parsed) {
+      const now = new Date();
+      let a = now.getFullYear() - parsed.getFullYear();
+      if (
+        now.getMonth() < parsed.getMonth() ||
+        (now.getMonth() === parsed.getMonth() &&
+          now.getDate() < parsed.getDate())
+      )
+        a -= 1;
+      if (a >= 62) {
+        setStatus("SENIOR");
+        return;
+      }
+      if (a < 16) {
+        setStatus("MINOR");
+        return;
+      }
+    }
+    setStatus(pickRandomStatus(true));
   }
 
   function regenerateStatus() {
@@ -500,6 +548,8 @@ export default function NewSubscriptionPage() {
   function validateStatus(): boolean {
     const next: Record<string, string> = {};
     if (!status) next.status = "Le statut est requis.";
+    if (status === "DISABLED" && !ssn.trim())
+      next.ssn = "Le numéro de sécurité sociale est requis.";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -511,6 +561,23 @@ export default function NewSubscriptionPage() {
       next.startDate = "La date de début est requise.";
     } else if (!parseFrDate(startDate)) {
       next.startDate = "Format attendu : JJ/MM/AAAA.";
+    }
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  }
+
+  function validatePayment(): boolean {
+    const next: Record<string, string> = {};
+    if (!paymentMode) {
+      next.paymentMode = "Choisissez un mode de paiement.";
+    } else if (paymentMode === "SEPA_MONTHLY" || paymentMode === "SEPA_ONCE") {
+      if (!iban.trim()) {
+        next.iban = "L'IBAN est requis.";
+      } else if (iban.replace(/\s/g, "").length < 15) {
+        next.iban = "L'IBAN semble trop court.";
+      }
+      if (!holderName.trim())
+        next.holderName = "Le nom du titulaire est requis.";
     }
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -564,7 +631,8 @@ export default function NewSubscriptionPage() {
   }
 
   async function confirm() {
-    if (!selectedPlan || !status) return;
+    if (!selectedPlan || !status || !paymentMode) return;
+    if (!validatePayment()) return;
 
     const startDateObjForSubmit = parseFrDate(startDate);
     if (!startDateObjForSubmit) return;
@@ -600,29 +668,61 @@ export default function NewSubscriptionPage() {
       if (target === "self" && user?.beneficiaryId) {
         beneficiaryId = user.beneficiaryId;
       } else {
-        const beneficiary = await beneficiariesApi.create({
-          firstName,
-          lastName,
-          email,
-          phone: phone.trim() || undefined,
-          birthDate: birthDateObj.toISOString(),
-          socialSecurityNumber: ssn.trim() || undefined,
-          status,
-          residenceDepartmentId,
-          workStudyDepartmentId,
-          linkToMe: target === "self",
-        });
-        beneficiaryId = beneficiary.id;
+        try {
+          const beneficiary = await beneficiariesApi.create({
+            firstName,
+            lastName,
+            email,
+            phone: phone.trim() || undefined,
+            birthDate: birthDateObj.toISOString(),
+            socialSecurityNumber: ssn.trim() || undefined,
+            status,
+            residenceDepartmentId,
+            workStudyDepartmentId,
+            linkToMe: target === "self",
+          });
+          beneficiaryId = beneficiary.id;
+        } catch (createErr) {
+          if (
+            createErr instanceof ApiError &&
+            createErr.status === 409 &&
+            target === "self"
+          ) {
+            const me = await http.get<AuthUser>("/auth/me");
+            if (me?.beneficiaryId) {
+              beneficiaryId = me.beneficiaryId;
+            } else {
+              throw createErr;
+            }
+          } else {
+            throw createErr;
+          }
+        }
       }
-      // TODO : create
-      await subscriptionsApi.create({
+
+      const isSepa = paymentMode === "SEPA_MONTHLY" || paymentMode === "SEPA_ONCE";
+      const bankInfo = await createBankInfo({
+        accountId: user!.id,
+        iban: isSepa
+          ? iban.replace(/\s/g, "")
+          : "FR7600000000000000000000000",
+        bic: isSepa && bic.trim() ? bic.trim() : undefined,
+        holderName: isSepa
+          ? holderName.trim()
+          : [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+            "CB",
+        isDefault: true,
+      });
+
+      const subscription = await subscriptionsApi.create({
         beneficiaryId,
         referrerId: user?.id,
-        navigoNumber: generateNavigoNumber(),
         subscriptionType: selectedPlan.name,
         transportProductId: selectedPlan.id,
         startDate: startDateObjForSubmit.toISOString(),
         endDate: endDateObjForSubmit.toISOString(),
+        bankInfoId: bankInfo.id,
+        paymentMode,
       });
 
       if (
@@ -641,6 +741,19 @@ export default function NewSubscriptionPage() {
               : undefined,
           verified: proofSource === "MANUAL_DOCUMENT",
         });
+      }
+
+      if (paymentMode === "CARD_ONCE") {
+        const checkout = await createSubscriptionCheckout(subscription.id);
+        if (checkout.url) {
+          window.location.href = checkout.url;
+          return;
+        }
+        setSubmitError(
+          checkout.message || "Impossible de créer la session de paiement.",
+        );
+        setSubmitting(false);
+        return;
       }
 
       setStep("success");
@@ -891,8 +1004,19 @@ export default function NewSubscriptionPage() {
                 label="Date de naissance"
                 placeholder="JJ/MM/AAAA"
                 value={birthDate}
-                onChangeText={setBirthDate}
+                onChangeText={(text) => {
+                  const digits = text.replace(/\D/g, "").slice(0, 8);
+                  let formatted = digits;
+                  if (digits.length > 4) {
+                    formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+                  } else if (digits.length > 2) {
+                    formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                  }
+                  setBirthDate(formatted);
+                }}
                 error={errors.birthDate}
+                keyboardType="number-pad"
+                maxLength={10}
               />
 
               <StepActions onBack={goBack} onContinue={continueFromProfile} />
@@ -904,9 +1028,8 @@ export default function NewSubscriptionPage() {
               <SectionTitle>Adresse</SectionTitle>
 
               <Text style={s.noteText}>
-                Ces départements ont été pré-remplis automatiquement (simulation
-                d&apos;un appel aux services de l&apos;État). Vous pouvez les
-                modifier si besoin.
+                Sélectionnez votre département de résidence et, si applicable,
+                votre département de travail ou d&apos;études.
               </Text>
 
               {departmentsLoading && (
@@ -1003,23 +1126,49 @@ export default function NewSubscriptionPage() {
             <View style={s.section}>
               <SectionTitle>Statut</SectionTitle>
 
-              <Text style={s.noteText}>
-                Statut et numéro de sécurité sociale simulés via les services de
-                l&apos;État ; le statut est tiré au hasard à chaque simulation.
-              </Text>
+              {age !== null && age >= 62 ? (
+                <Text style={s.noteText}>
+                  Le bénéficiaire a {age} ans : le statut Senior est attribué
+                  automatiquement.
+                </Text>
+              ) : age !== null && age < 16 ? (
+                <Text style={s.noteText}>
+                  Le bénéficiaire a {age} ans : le statut Mineur est attribué
+                  automatiquement.
+                </Text>
+              ) : (
+                <Text style={s.noteText}>
+                  Sélectionnez la situation actuelle. Le forfait recommandé
+                  sera adapté en fonction du statut et de l&apos;âge.
+                </Text>
+              )}
 
               <View>
                 <FieldLabel>Statut</FieldLabel>
                 <View style={s.chipsRow}>
-                  {STATUS_OPTIONS.map((opt) => {
+                  {STATUS_OPTIONS.filter((opt) => {
+                    if (age !== null && age >= 62) return opt.value === "SENIOR";
+                    if (age !== null && age < 16) return opt.value === "MINOR";
+                    if (opt.value === "MINOR") return false;
+                    if (opt.value === "SENIOR") return age === null || age >= 62;
+                    if (opt.value === "STUDENT") return age === null || age <= 26;
+                    return true;
+                  }).map((opt) => {
                     const selected = status === opt.value;
+                    const locked =
+                      (age !== null && age >= 62) ||
+                      (age !== null && age < 16);
                     return (
                       <Pressable
                         key={opt.value}
-                        onPress={() => setStatus(opt.value)}
+                        onPress={() => !locked && setStatus(opt.value)}
                         accessibilityRole="button"
                         accessibilityState={{ selected }}
-                        style={[s.chip, selected && s.chipSelected]}
+                        style={[
+                          s.chip,
+                          selected && s.chipSelected,
+                          locked && selected && { opacity: 0.8 },
+                        ]}
                       >
                         <Text
                           style={[s.chipLabel, selected && s.chipLabelSelected]}
@@ -1033,24 +1182,18 @@ export default function NewSubscriptionPage() {
                 {!!errors.status && (
                   <Text style={s.fieldError}>{errors.status}</Text>
                 )}
-                <Button
-                  variant="tertiary"
-                  size="sm"
-                  leadingIcon="refresh"
-                  style={s.regenerateBtn}
-                  onPress={regenerateStatus}
-                >
-                  Tirer un nouveau statut (simulation)
-                </Button>
               </View>
 
-              <Input
-                label="Numéro de sécurité sociale (optionnel)"
-                placeholder="1 23 45 67 890 123"
-                value={ssn}
-                onChangeText={setSsn}
-                keyboardType="number-pad"
-              />
+              {status === "DISABLED" && (
+                <Input
+                  label="Numéro de sécurité sociale"
+                  placeholder="1 23 45 67 890 123"
+                  value={ssn}
+                  onChangeText={setSsn}
+                  error={errors.ssn}
+                  keyboardType="number-pad"
+                />
+              )}
 
               <StepActions onBack={goBack} onContinue={continueFromStatus} />
             </View>
@@ -1416,12 +1559,285 @@ export default function NewSubscriptionPage() {
 
               <StepActions
                 onBack={goBack}
+                onContinue={goNext}
+                continueLabel="Passer au paiement"
+                continueIcon="arrow-right"
+              />
+            </View>
+          )}
+
+          {step === "payment" && (
+            <View style={s.section}>
+              <SectionTitle>Paiement</SectionTitle>
+              <Text style={s.sectionLead}>
+                Choisissez votre mode de paiement et renseignez vos coordonnées
+                bancaires.
+              </Text>
+
+              <View>
+                <FieldLabel>Mode de paiement</FieldLabel>
+                <View style={s.paymentChoices}>
+                  <Pressable
+                    onPress={() => setPaymentMode("CARD_ONCE")}
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: paymentMode === "CARD_ONCE",
+                    }}
+                  >
+                    <Card
+                      style={[
+                        s.paymentChoice,
+                        paymentMode === "CARD_ONCE" && s.paymentChoiceSelected,
+                      ]}
+                    >
+                      <View style={s.paymentChoiceRow}>
+                        <View
+                          style={[
+                            s.planRadio,
+                            paymentMode === "CARD_ONCE" && s.planRadioSelected,
+                          ]}
+                        >
+                          {paymentMode === "CARD_ONCE" && (
+                            <View style={s.planRadioDot} />
+                          )}
+                        </View>
+                        <View style={s.paymentChoiceIcon}>
+                          <Icon
+                            name="creditcard"
+                            size={20}
+                            color={
+                              paymentMode === "CARD_ONCE"
+                                ? DS.actionPrimary
+                                : DS.textMuted
+                            }
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              s.paymentChoiceLabel,
+                              paymentMode === "CARD_ONCE" &&
+                                s.paymentChoiceLabelSelected,
+                            ]}
+                          >
+                            Carte bancaire
+                          </Text>
+                          <Text style={s.paymentChoiceDesc}>
+                            Paiement annuel en une fois par carte ({selectedPlan ? `${((selectedPlan.priceCents ?? 0) / 100 * 12).toFixed(2).replace(".", ",")} €` : "—"})
+                          </Text>
+                        </View>
+                      </View>
+                    </Card>
+                  </Pressable>
+
+                  <Pressable
+                    onPress={() => setPaymentMode("SEPA_ONCE")}
+                    accessibilityRole="button"
+                    accessibilityState={{
+                      selected: paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY",
+                    }}
+                  >
+                    <Card
+                      style={[
+                        s.paymentChoice,
+                        (paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY") &&
+                          s.paymentChoiceSelected,
+                      ]}
+                    >
+                      <View style={s.paymentChoiceRow}>
+                        <View
+                          style={[
+                            s.planRadio,
+                            (paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY") &&
+                              s.planRadioSelected,
+                          ]}
+                        >
+                          {(paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY") && (
+                            <View style={s.planRadioDot} />
+                          )}
+                        </View>
+                        <View style={s.paymentChoiceIcon}>
+                          <Icon
+                            name="receipt"
+                            size={20}
+                            color={
+                              paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY"
+                                ? DS.actionPrimary
+                                : DS.textMuted
+                            }
+                          />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                          <Text
+                            style={[
+                              s.paymentChoiceLabel,
+                              (paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY") &&
+                                s.paymentChoiceLabelSelected,
+                            ]}
+                          >
+                            Prélèvement SEPA
+                          </Text>
+                          <Text style={s.paymentChoiceDesc}>
+                            Prélèvement bancaire par IBAN
+                          </Text>
+                        </View>
+                      </View>
+                    </Card>
+                  </Pressable>
+                </View>
+                {!!errors.paymentMode && (
+                  <Text style={s.fieldError}>{errors.paymentMode}</Text>
+                )}
+              </View>
+
+              {paymentMode === "CARD_ONCE" && (
+                <View style={s.infoBanner}>
+                  <Icon name="lock" size={16} color={DS.infoText} />
+                  <Text style={s.infoBannerText}>
+                    Vous serez redirigé·e vers notre partenaire Stripe pour
+                    saisir vos informations de carte bancaire en toute sécurité.
+                  </Text>
+                </View>
+              )}
+
+              {(paymentMode === "SEPA_ONCE" || paymentMode === "SEPA_MONTHLY") && (
+                <View style={s.section}>
+                  <FieldLabel>Fréquence de prélèvement</FieldLabel>
+                  <View style={s.paymentChoices}>
+                    <Pressable
+                      onPress={() => setPaymentMode("SEPA_ONCE")}
+                      accessibilityRole="button"
+                    >
+                      <Card
+                        style={[
+                          s.paymentChoice,
+                          paymentMode === "SEPA_ONCE" && s.paymentChoiceSelected,
+                        ]}
+                      >
+                        <View style={s.paymentChoiceRow}>
+                          <View
+                            style={[
+                              s.planRadio,
+                              paymentMode === "SEPA_ONCE" && s.planRadioSelected,
+                            ]}
+                          >
+                            {paymentMode === "SEPA_ONCE" && (
+                              <View style={s.planRadioDot} />
+                            )}
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={[
+                                s.paymentChoiceLabel,
+                                paymentMode === "SEPA_ONCE" &&
+                                  s.paymentChoiceLabelSelected,
+                              ]}
+                            >
+                              En une fois
+                            </Text>
+                            <Text style={s.paymentChoiceDesc}>
+                              {selectedPlan ? `${((selectedPlan.priceCents ?? 0) / 100 * 12).toFixed(2).replace(".", ",")} € prélevés en une fois` : "—"}
+                            </Text>
+                          </View>
+                        </View>
+                      </Card>
+                    </Pressable>
+
+                    <Pressable
+                      onPress={() => setPaymentMode("SEPA_MONTHLY")}
+                      accessibilityRole="button"
+                    >
+                      <Card
+                        style={[
+                          s.paymentChoice,
+                          paymentMode === "SEPA_MONTHLY" && s.paymentChoiceSelected,
+                        ]}
+                      >
+                        <View style={s.paymentChoiceRow}>
+                          <View
+                            style={[
+                              s.planRadio,
+                              paymentMode === "SEPA_MONTHLY" && s.planRadioSelected,
+                            ]}
+                          >
+                            {paymentMode === "SEPA_MONTHLY" && (
+                              <View style={s.planRadioDot} />
+                            )}
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text
+                              style={[
+                                s.paymentChoiceLabel,
+                                paymentMode === "SEPA_MONTHLY" &&
+                                  s.paymentChoiceLabelSelected,
+                              ]}
+                            >
+                              Mensuel
+                            </Text>
+                            <Text style={s.paymentChoiceDesc}>
+                              {selectedPlan ? `${((selectedPlan.priceCents ?? 0) / 100).toFixed(2).replace(".", ",")} € / mois pendant 12 mois` : "—"}
+                            </Text>
+                          </View>
+                        </View>
+                      </Card>
+                    </Pressable>
+                  </View>
+
+                  <FieldLabel>Coordonnées bancaires (RIB)</FieldLabel>
+
+                  <Input
+                    label="IBAN"
+                    placeholder="FR76 1234 5678 9012 3456 7890 123"
+                    value={iban}
+                    onChangeText={setIban}
+                    error={errors.iban}
+                    autoCapitalize="characters"
+                  />
+
+                  <Input
+                    label="BIC"
+                    placeholder="BNPAFRPP"
+                    value={bic}
+                    onChangeText={setBic}
+                    autoCapitalize="characters"
+                  />
+
+                  <Input
+                    label="Titulaire du compte"
+                    placeholder="Nom et prénom du titulaire"
+                    value={holderName}
+                    onChangeText={setHolderName}
+                    error={errors.holderName}
+                    autoCapitalize="words"
+                  />
+                </View>
+              )}
+
+              {!!submitError && (
+                <View style={s.inlineError}>
+                  <Icon name="alert-triangle" size={16} color={DS.dangerText} />
+                  <Text style={s.inlineErrorText}>{submitError}</Text>
+                </View>
+              )}
+
+              <StepActions
+                onBack={goBack}
                 onContinue={confirm}
                 continueLabel={
-                  submitting ? "Envoi en cours…" : "Confirmer la demande"
+                  submitting
+                    ? "Envoi en cours…"
+                    : paymentMode === "CARD_ONCE"
+                      ? "Payer par carte"
+                      : "Valider et payer"
                 }
-                continueIcon={submitting ? undefined : "check"}
-                disabled={submitting}
+                continueIcon={
+                  submitting
+                    ? undefined
+                    : paymentMode === "CARD_ONCE"
+                      ? "link"
+                      : "check"
+                }
+                disabled={submitting || !paymentMode}
               />
               {submitting && <ActivityIndicator color={DS.actionPrimary} />}
             </View>
@@ -1765,6 +2181,44 @@ const s = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     color: DS.infoText,
+  },
+
+  paymentChoices: {
+    gap: DS.space3,
+  },
+  paymentChoice: {
+    borderWidth: 1.5,
+    borderColor: DS.borderDefault,
+  },
+  paymentChoiceSelected: {
+    borderColor: DS.actionPrimary,
+    backgroundColor: DS.bluePale,
+  },
+  paymentChoiceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: DS.space3,
+  },
+  paymentChoiceIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: DS.radiusMd,
+    backgroundColor: DS.surfaceSelected,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  paymentChoiceLabel: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  paymentChoiceLabelSelected: {
+    color: DS.actionPrimary,
+  },
+  paymentChoiceDesc: {
+    fontSize: 13,
+    color: DS.textMuted,
   },
 
   successWrap: {

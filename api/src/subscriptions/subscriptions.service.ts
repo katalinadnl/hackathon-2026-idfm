@@ -73,12 +73,73 @@ export class SubscriptionsService {
           endDate: createSubscriptionDto.endDate,
           referrerId: createSubscriptionDto.referrerId,
           bankInfoId: createSubscriptionDto.bankInfoId,
+          ...(createSubscriptionDto.paymentMode && {
+            paymentMode: createSubscriptionDto.paymentMode,
+          }),
         },
       });
     }
 
+    const beneficiary = await this.prisma.beneficiary.findUnique({
+      where: { id: createSubscriptionDto.beneficiaryId },
+      include: { addresses: true },
+    });
+    if (!beneficiary) {
+      throw new NotFoundException('Bénéficiaire introuvable.');
+    }
+
+    const product = createSubscriptionDto.transportProductId
+      ? await this.prisma.transportProduct.findUnique({
+          where: { id: createSubscriptionDto.transportProductId },
+        })
+      : null;
+
+    const monthlyAmount = product?.priceCents
+      ? product.priceCents / 100
+      : 0;
+    const annualAmount = monthlyAmount * 12;
+
+    const deliveryAddress =
+      this.resolveDeliveryAddress(beneficiary.addresses) ??
+      beneficiary.addresses[0] ??
+      null;
+
+    const paymentMode = createSubscriptionDto.paymentMode ?? 'SEPA_MONTHLY';
+    const isSepa = paymentMode !== 'CARD_ONCE';
+
     return this.prisma.subscription.create({
-      data: createSubscriptionDto,
+      data: {
+        ...createSubscriptionDto,
+        annualAmount,
+        monthlyAmount,
+        passes: {
+          create: {
+            navigoNumber: this.generateNavigoNumber(),
+            ...(deliveryAddress
+              ? {
+                  delivery: {
+                    create: {
+                      addressId: deliveryAddress.id,
+                      reason: 'initial_order',
+                      estimatedAt: this.addBusinessDays(new Date(), 7),
+                    },
+                  },
+                }
+              : {}),
+          },
+        },
+        payments:
+          isSepa && annualAmount > 0
+            ? {
+                create: {
+                  amount: paymentMode === 'SEPA_MONTHLY' ? monthlyAmount : annualAmount,
+                  method: paymentMode,
+                  status: 'succeeded',
+                },
+              }
+            : undefined,
+      },
+      include: { passes: true },
     });
   }
 
@@ -179,27 +240,22 @@ export class SubscriptionsService {
     return {
       id: subscription.id,
       bankInfo: subscription.bankInfo,
-      passes: subscription.passes.map((pass) => {
-        if (!pass.delivery) {
-          throw new Error(
-            `Incohérence de données : le pass ${pass.id} n'a pas de livraison associée.`,
-          );
-        }
-        return {
-          id: pass.id,
-          navigoNumber: pass.navigoNumber,
-          status: pass.status,
-          issuedAt: pass.issuedAt.toISOString(),
-          delivery: {
-            status: pass.delivery.status,
-            reason: pass.delivery.reason,
-            orderedAt: pass.delivery.orderedAt.toISOString(),
-            estimatedAt: pass.delivery.estimatedAt?.toISOString() ?? null,
-            trackingNumber: pass.delivery.trackingNumber,
-          },
-          subscriptionId: subscription.id,
-        };
-      }),
+      passes: subscription.passes.map((pass) => ({
+        id: pass.id,
+        navigoNumber: pass.navigoNumber,
+        status: pass.status,
+        issuedAt: pass.issuedAt.toISOString(),
+        delivery: pass.delivery
+          ? {
+              status: pass.delivery.status,
+              reason: pass.delivery.reason,
+              orderedAt: pass.delivery.orderedAt.toISOString(),
+              estimatedAt: pass.delivery.estimatedAt?.toISOString() ?? null,
+              trackingNumber: pass.delivery.trackingNumber,
+            }
+          : null,
+        subscriptionId: subscription.id,
+      })),
       subscriptionType: subscription.subscriptionType,
       transportProductId: subscription.transportProductId,
       startDate: subscription.startDate.toISOString(),
@@ -207,6 +263,7 @@ export class SubscriptionsService {
       clientNumber: account?.accountNumber ?? '',
       status: subscription.status,
       renewed: false,
+      paymentMode: subscription.paymentMode,
       beneficiary: {
         id: beneficiary.id,
         firstName: beneficiary.firstName,
