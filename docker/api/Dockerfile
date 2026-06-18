@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM node:20-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 COPY api/package.json api/package-lock.json ./
 RUN npm ci --frozen-lockfile
@@ -13,7 +13,7 @@ COPY api/ ./
 EXPOSE 3000
 CMD ["npm", "run", "start:dev"]
 
-FROM node:20-alpine AS production
+FROM node:24-alpine AS production
 WORKDIR /app
 
 RUN addgroup -S app && adduser -S app -G app
