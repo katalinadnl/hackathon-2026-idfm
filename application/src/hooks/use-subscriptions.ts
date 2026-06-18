@@ -1,22 +1,20 @@
 import { useEffect, useState } from "react";
 
 import { API_BASE_URL } from "@/services/api";
+import { SubscriptionResponse } from "@/types/subscription";
 
 const API_URL = API_BASE_URL;
 
 export type SubscriptionRole = "titulaire" | "payeur" | "gestionnaire";
 
-export interface ApiSubscription {
-  id: number;
-  navigoNumber: string;
-  subscriptionType: string;
-  startDate: string;
-  endDate: string;
-  status: string;
+export type ApiSubscription = Pick<
+  SubscriptionResponse,
+  "id" | "subscriptionType" | "startDate" | "endDate" | "status" | "reference"
+> & {
   roles: SubscriptionRole[];
   beneficiary: { id: number; firstName: string; lastName: string };
   latestPayment: { amount: number; paidAt: string; status: string } | null;
-}
+};
 
 export function useSubscriptions(accountId: number | null) {
   const enabled = accountId !== null;

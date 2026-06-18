@@ -1,11 +1,12 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 
 import { PrismaService } from '../prisma/prisma.service';
-import { InvoiceData } from './invoice-pdf.service';
+import { PassStatus } from 'src/generated/prisma/enums';
 import {
   BillingRole,
   CurrentMonthStatus,
@@ -22,37 +23,36 @@ import {
 } from './dto/billing.types';
 import { PaymentMode } from '../generated/prisma/enums';
 import { StripeProvider } from './stripe/stripe.provider';
+import { InvoiceData } from './invoice-pdf.service';
+import { SubscriptionsService } from 'src/subscriptions/subscriptions.service';
 
 const CREDITOR_NAME = 'Île-de-France Mobilités';
 const CREDITOR_ICS = 'FR93ZZZ123456';
-
-const BANKS = [
-  'Crédit Agricole',
-  'BNP Paribas',
-  'Société Générale',
-  'La Banque Postale',
-  "Caisse d'Épargne",
-  'Crédit Mutuel',
-];
 
 @Injectable()
 export class BillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stripe: StripeProvider,
+    private readonly subscribeService: SubscriptionsService,
   ) {}
 
+  /**
+   * Un compte "voit" un abonnement s'il en est le titulaire ou le référant.
+   * Le propriétaire du BankInfo (qui paie réellement) n'intervient plus dans
+   * cette visibilité — c'est une information affichée, pas une permission.
+   */
   private async getVisibleSubscriptions(accountId: number) {
     const subs = await this.prisma.subscription.findMany({
       where: {
         OR: [
-          { payerId: accountId },
           { referrerId: accountId },
           { beneficiary: { account: { id: accountId } } },
         ],
       },
       include: {
         beneficiary: { include: { account: true } },
+        passes: { where: { status: PassStatus.active }, take: 1 },
       },
       orderBy: { startDate: 'desc' },
     });
@@ -61,29 +61,30 @@ export class BillingService {
       const roles: BillingRole[] = [];
       if (sub.beneficiary.account?.id === accountId) roles.push('holder');
       if (sub.referrerId === accountId) roles.push('referrer');
-      if (sub.payerId === accountId) roles.push('payer');
-      return { sub, roles };
+      return { sub, roles, activePass: sub.passes[0] ?? null };
     });
   }
 
   private toModeLabel(mode: PaymentMode): PaymentModeLabel {
     switch (mode) {
       case PaymentMode.CARD_ONCE:
-        return 'card_once';
+        return 'CARD_ONCE';
       case PaymentMode.SEPA_ONCE:
-        return 'sepa_once';
+        return 'SEPA_ONCE';
       case PaymentMode.SEPA_MONTHLY:
-        return 'sepa_monthly';
+        return 'SEPA_MONTHLY';
     }
   }
 
   async getPasses(accountId: number): Promise<PassSummary[]> {
     const visible = await this.getVisibleSubscriptions(accountId);
-    return visible.map(({ sub, roles }) => {
+    return visible.map(({ sub, roles, activePass }) => {
       const mode = this.toModeLabel(sub.paymentMode);
+
       return {
         subscriptionId: sub.id,
-        navigoNumber: sub.navigoNumber,
+        navigoNumber: activePass?.navigoNumber ?? null,
+        passStatus: activePass?.status ?? null,
         subscriptionType: sub.subscriptionType,
         status: sub.status,
         holderName: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
@@ -93,7 +94,7 @@ export class BillingService {
         paymentMode: mode,
         annualAmount: sub.annualAmount,
         monthlyAmount: sub.monthlyAmount,
-        hasSepa: mode !== 'card_once',
+        hasSepa: mode !== 'CARD_ONCE',
       };
     });
   }
@@ -118,7 +119,7 @@ export class BillingService {
 
     const mode = targetSub
       ? this.toModeLabel(targetSub.paymentMode)
-      : 'sepa_monthly';
+      : 'SEPA_MONTHLY';
 
     if (targetIds.length === 0) {
       return {
@@ -140,7 +141,8 @@ export class BillingService {
         subscription: {
           include: {
             beneficiary: true,
-            payer: { include: { beneficiary: true } },
+            passes: { where: { status: PassStatus.active }, take: 1 },
+            bankInfo: { include: { account: true } },
           },
         },
       },
@@ -156,8 +158,10 @@ export class BillingService {
       const signedAmount =
         status === 'refunded' ? Math.abs(p.amount) : -Math.abs(p.amount);
       const holder = p.subscription.beneficiary;
+      const activePass = p.subscription.passes[0] ?? null;
+
       const isMine = payerSubIds.has(p.subscriptionId);
-      const payer = p.subscription.payer;
+      const payer = p.subscription.bankInfo;
       return {
         id: String(p.id),
         date: p.paidAt.toISOString(),
@@ -165,11 +169,12 @@ export class BillingService {
         amount: Number(signedAmount.toFixed(2)),
         status,
         method: p.method,
-        navigoNumber: p.subscription.navigoNumber,
+        subscriptionId: p.subscriptionId,
+        navigoNumber: activePass?.navigoNumber ?? null,
         paidByOther: isMine
           ? null
-          : payer?.beneficiary
-            ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+          : payer?.accountId
+            ? `${payer.account.email}`
             : null,
       };
     });
@@ -191,9 +196,7 @@ export class BillingService {
     const payerSubs = visible
       .filter((v) => v.roles.includes('payer'))
       .map((v) => v.sub);
-    const targetSubs = isAllPasses
-      ? payerSubs
-      : [targetSub].filter(Boolean);
+    const targetSubs = isAllPasses ? payerSubs : [targetSub].filter(Boolean);
 
     const statusPayments = isAllPasses
       ? payments.filter((p) => payerSubIds.has(p.subscriptionId))
@@ -363,8 +366,7 @@ export class BillingService {
     accountId: number,
     subscriptionId?: number,
   ): Promise<MandateResponse> {
-    const subId =
-      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    const subId = subscriptionId ?? (await this.firstSepaSubId(accountId));
     if (!subId) {
       return { connected: false, active: null, history: [] };
     }
@@ -383,76 +385,91 @@ export class BillingService {
     return { connected: false, active, history };
   }
 
+  /**
+   * Construit le mandat à partir du BankInfo réellement associé à
+   * l'abonnement — plus de génération d'IBAN factice : si bankInfo est null,
+   * il n'y a simplement pas encore de mandat actif pour cet abonnement.
+   */
   private async buildLocalMandates(
     subscriptionId: number,
-  ): Promise<{ active: SepaMandate; history: SepaMandate[] }> {
+  ): Promise<{ active: SepaMandate | null; history: SepaMandate[] }> {
     const sub = await this.prisma.subscription.findUniqueOrThrow({
       where: { id: subscriptionId },
       include: {
         beneficiary: true,
-        payer: { include: { beneficiary: true } },
+        bankInfo: { include: { account: { include: { beneficiary: true } } } },
       },
     });
 
-    const payer = sub.payer;
-    const debtorName = payer?.beneficiary
-      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
-      : payer?.email
-        ? payer.email
-            .split('@')[0]
-            .replace(/[._]/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase())
-        : `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`;
+    if (!sub.bankInfo) {
+      return { active: null, history: [] };
+    }
 
-    const seed = payer?.accountNumber ?? sub.navigoNumber;
-    const mask = (tail: string) => `FR76 •••• •••• •••• •••• ••${tail}`;
+    const payerAccount = sub.bankInfo.account;
+    const debtorName =
+      sub.bankInfo.holderName ||
+      (payerAccount.beneficiary
+        ? `${payerAccount.beneficiary.firstName} ${payerAccount.beneficiary.lastName}`
+        : payerAccount.email);
 
+    const subscribe = await this.subscribeService.findOne(subscriptionId);
+    const navigo = this.subscribeService.getActivePass(subscribe.passes);
+    if (!navigo) {
+      throw new BadRequestException('Aucun pass actif pour cet abonnement.');
+    }
     const active: SepaMandate = {
-      reference: `IDFM-${sub.navigoNumber}`,
+      reference: `IDFM-SUB-${sub.id}`,
       status: sub.status === 'active' ? 'active' : 'revoked',
       scheme: 'CORE',
       creditorName: CREDITOR_NAME,
       creditorIcs: CREDITOR_ICS,
       debtorName,
-      ibanMasked: mask(this.deriveIbanLast2(seed)),
-      signedAt: sub.startDate.toISOString(),
+      navigoNumber: navigo.navigoNumber,
+      ibanMasked: this.maskIban(sub.bankInfo.iban),
+      signedAt: sub.bankInfo.createdAt.toISOString(),
       revokedAt: null,
-      navigoNumber: sub.navigoNumber,
+      subscriptionId: sub.id,
       source: 'local',
     };
 
-    const prevSigned = new Date(sub.startDate.getTime());
-    prevSigned.setUTCFullYear(prevSigned.getUTCFullYear() - 1);
-    const previous: SepaMandate = {
-      ...active,
-      reference: `IDFM-${sub.navigoNumber}-ANT`,
-      status: 'revoked',
-      ibanMasked: mask(this.deriveIbanLast2(`${seed}-prev`)),
-      signedAt: prevSigned.toISOString(),
-      revokedAt: sub.startDate.toISOString(),
-    };
-
-    return { active, history: [previous] };
+    return { active, history: [] };
   }
 
-  private deriveIbanLast2(seed: string): string {
-    let h = 0;
-    for (const ch of seed) h = (h * 31 + ch.charCodeAt(0)) % 100;
-    return String(h).padStart(2, '0');
+  /**
+   * Masque un IBAN réel pour l'affichage : conserve le code pays et les 4
+   * derniers chiffres, masque le reste.
+   */
+  private maskIban(iban: string): string {
+    const cleaned = iban.replace(/\s+/g, '');
+    const country = cleaned.slice(0, 2);
+    const last4 = cleaned.slice(-4);
+    return `${country}${'•'.repeat(Math.max(cleaned.length - 6, 0))}${last4}`
+      .replace(/(.{4})/g, '$1 ')
+      .trim();
   }
 
   async getMandateDocumentHtml(
     accountId: number,
     subscriptionId: number,
   ): Promise<string> {
+    await this.assertCanAccessPass(accountId, subscriptionId);
     const { active } = await this.getMandate(accountId, subscriptionId);
     if (!active) {
       return '<!doctype html><meta charset="utf-8"><p>Aucun mandat disponible pour ce pass.</p>';
     }
-    return this.renderMandateHtml(active);
+
+    const sub = await this.prisma.subscription.findUniqueOrThrow({
+      where: { id: subscriptionId },
+      select: { reference: true },
+    });
+
+    return this.renderMandateHtml(active, sub.reference);
   }
 
-  private renderMandateHtml(m: SepaMandate): string {
+  private renderMandateHtml(
+    m: SepaMandate,
+    subscriptionReference: string,
+  ): string {
     const esc = (s: string) =>
       s.replace(
         /[&<>"]/g,
@@ -499,11 +516,11 @@ export class BillingService {
     <div class="sub">Type : prélèvement récurrent (CORE) · Statut : <span class="badge">${esc(statusLabel)}</span></div>
     <dl class="grid">
       <dt>Référence (RUM)</dt><dd>${esc(m.reference)}</dd>
+      <dt>Référence abonnement</dt><dd>${esc(subscriptionReference)}</dd>
       <dt>Créancier</dt><dd>${esc(m.creditorName)}</dd>
       <dt>ICS</dt><dd>${esc(m.creditorIcs)}</dd>
       <dt>Débiteur</dt><dd>${esc(m.debtorName)}</dd>
       <dt>IBAN</dt><dd>${esc(m.ibanMasked)}</dd>
-      <dt>Pass Navigo</dt><dd>${esc(m.navigoNumber)}</dd>
       <dt>Signé le</dt><dd>${esc(signed)}</dd>
     </dl>
     <p class="legal">
@@ -526,8 +543,7 @@ export class BillingService {
     accountId: number,
     subscriptionId?: number,
   ): Promise<PaymentMethodResponse> {
-    const subId =
-      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    const subId = subscriptionId ?? (await this.firstSepaSubId(accountId));
     if (!subId) {
       return { connected: false, paymentMethod: null };
     }
@@ -544,14 +560,22 @@ export class BillingService {
     };
   }
 
+  /**
+   * Le nom de la banque n'est plus déduit d'un hash — on ne le connaît pas
+   * réellement (un IBAN ne porte pas le nom de la banque de façon fiable
+   * sans appel à un service de lookup BIC), donc on l'omet plutôt que de le
+   * fabriquer artificiellement.
+   */
   private async buildLocalPaymentMethod(
     subscriptionId: number,
-  ): Promise<PaymentMethodInfo> {
+  ): Promise<PaymentMethodInfo | null> {
     const { active } = await this.buildLocalMandates(subscriptionId);
+    if (!active) return null;
+
     return {
       type: 'sepa_debit',
       ibanMasked: active.ibanMasked,
-      bankName: BANKS[this.hash(active.ibanMasked) % BANKS.length],
+      bankName: null,
       holderName: active.debtorName,
       isDefault: true,
       source: 'local',
@@ -559,8 +583,7 @@ export class BillingService {
   }
 
   async startRibChange(accountId: number, subscriptionId?: number) {
-    const subId =
-      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    const subId = subscriptionId ?? (await this.firstSepaSubId(accountId));
     if (!subId) {
       return {
         connected: false,
@@ -587,7 +610,7 @@ export class BillingService {
       billingName: null,
       billingEmail: null,
       message:
-        "La collecte du nouvel IBAN se fait à l'inscription. Le changement en self-service sera disponible au branchement de Stripe.",
+        "Utilisez le changement de moyen de paiement depuis la page de l'abonnement pour choisir un nouvel IBAN.",
     };
   }
 
@@ -596,15 +619,11 @@ export class BillingService {
     subscriptionId: number | undefined,
     setupIntentId: string,
   ) {
-    const subId =
-      subscriptionId ?? (await this.firstSepaSubId(accountId));
+    const subId = subscriptionId ?? (await this.firstSepaSubId(accountId));
     if (!subId) return { ok: false, connected: false };
     await this.assertCanAccessPass(accountId, subId);
     if (!this.stripe.isConnected) return { ok: false, connected: false };
-    const res = await this.stripe.finalizeRibChange(
-      subId,
-      setupIntentId,
-    );
+    const res = await this.stripe.finalizeRibChange(subId, setupIntentId);
     return { ok: res.ok, connected: true };
   }
 
@@ -618,9 +637,7 @@ export class BillingService {
     }
 
     const visible = await this.getVisibleSubscriptions(accountId);
-    const allowed = visible.some(
-      (v) => v.sub.id === payment.subscriptionId,
-    );
+    const allowed = visible.some((v) => v.sub.id === payment.subscriptionId);
     if (!allowed) {
       throw new ForbiddenException(
         'This payment is not linked to your account.',
@@ -628,9 +645,7 @@ export class BillingService {
     }
 
     if (payment.status !== 'failed') {
-      throw new ForbiddenException(
-        'Only failed payments can be retried.',
-      );
+      throw new ForbiddenException('Only failed payments can be retried.');
     }
 
     if (this.stripe.isConnected) {
@@ -662,12 +677,19 @@ export class BillingService {
     accountId: number,
     paymentId: number,
     baseUrl: string,
-  ): Promise<{ url: string | null; sessionId: string | null; message: string }> {
+  ): Promise<{
+    url: string | null;
+    sessionId: string | null;
+    message: string;
+  }> {
     const payment = await this.prisma.payment.findUnique({
       where: { id: paymentId },
       include: {
         subscription: {
-          include: { beneficiary: true, payer: true },
+          include: {
+            beneficiary: true,
+            bankInfo: { include: { account: true } },
+          },
         },
       },
     });
@@ -676,9 +698,7 @@ export class BillingService {
     }
 
     const visible = await this.getVisibleSubscriptions(accountId);
-    const allowed = visible.some(
-      (v) => v.sub.id === payment.subscriptionId,
-    );
+    const allowed = visible.some((v) => v.sub.id === payment.subscriptionId);
     if (!allowed) {
       throw new ForbiddenException(
         'This payment is not linked to your account.',
@@ -686,15 +706,13 @@ export class BillingService {
     }
 
     if (payment.status !== 'failed') {
-      throw new ForbiddenException(
-        'Only failed payments can be paid by card.',
-      );
+      throw new ForbiddenException('Only failed payments can be paid by card.');
     }
 
     if (!this.stripe.isConnected) {
       await this.prisma.payment.update({
         where: { id: paymentId },
-        data: { status: 'succeeded', method: 'card' },
+        data: { status: 'succeeded', method: 'CARD_ONCE' },
       });
       return {
         url: null,
@@ -705,7 +723,7 @@ export class BillingService {
 
     const holder = payment.subscription.beneficiary;
     const description = `Régularisation ${payment.subscription.subscriptionType} — ${holder.firstName} ${holder.lastName}`;
-    const payerId = payment.subscription.payerId ?? accountId;
+    const payerId = payment.subscription.bankInfo.accountId ?? accountId;
     const apiBase = process.env.API_BASE_URL ?? 'http://localhost:3000/api';
     const successUrl = `${apiBase}/billing/payment/card-return?paymentId=${paymentId}&sessionId={CHECKOUT_SESSION_ID}`;
     const cancelUrl = `${baseUrl}/billing`;
@@ -719,10 +737,18 @@ export class BillingService {
     );
 
     if (!result) {
-      return { url: null, sessionId: null, message: 'Impossible de créer la session de paiement.' };
+      return {
+        url: null,
+        sessionId: null,
+        message: 'Impossible de créer la session de paiement.',
+      };
     }
 
-    return { url: result.url, sessionId: result.sessionId, message: 'Redirection vers la page de paiement.' };
+    return {
+      url: result.url,
+      sessionId: result.sessionId,
+      message: 'Redirection vers la page de paiement.',
+    };
   }
 
   async confirmCardPayment(
@@ -732,12 +758,12 @@ export class BillingService {
     if (this.stripe.isConnected) {
       const { paid } = await this.stripe.checkCheckoutSession(sessionId);
       if (!paid) {
-        return { ok: false, message: 'Le paiement n\'a pas été finalisé.' };
+        return { ok: false, message: "Le paiement n'a pas été finalisé." };
       }
     }
     await this.prisma.payment.update({
       where: { id: paymentId },
-      data: { status: 'succeeded', method: 'card' },
+      data: { status: 'succeeded', method: 'CARD_ONCE' },
     });
     return { ok: true, message: 'Paiement confirmé.' };
   }
@@ -752,7 +778,8 @@ export class BillingService {
         subscription: {
           include: {
             beneficiary: true,
-            payer: { include: { beneficiary: true } },
+            bankInfo: { include: { account: true } },
+            passes: true,
           },
         },
       },
@@ -770,9 +797,9 @@ export class BillingService {
 
     const sub = payment.subscription;
     const holder = sub.beneficiary;
-    const payer = sub.payer;
-    const payerName = payer?.beneficiary
-      ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+    const payer = sub.bankInfo.account;
+    const payerName = payer
+      ? `${payer.email}`
       : `${holder.firstName} ${holder.lastName}`;
 
     const paidAt = new Date(payment.paidAt);
@@ -781,17 +808,20 @@ export class BillingService {
       year: 'numeric',
     });
     const period =
-      sub.paymentMode === 'SEPA_MONTHLY' ? month : `Année ${paidAt.getFullYear()}`;
+      sub.paymentMode === 'SEPA_MONTHLY'
+        ? month
+        : `Année ${paidAt.getFullYear()}`;
 
     const fmtDate = (d: Date) =>
       d.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
     const subscriptionPeriod = `${fmtDate(sub.startDate)} — ${fmtDate(sub.endDate)}`;
 
+    // TODO : à vérifier
     return {
-      invoiceNumber: `F-${sub.navigoNumber}-${String(payment.id).padStart(4, '0')}`,
+      invoiceNumber: `F-${sub.passes[0].navigoNumber}-${String(payment.id).padStart(4, '0')}`,
       date: payment.paidAt.toISOString(),
       holderName: `${holder.firstName} ${holder.lastName}`,
-      navigoNumber: sub.navigoNumber,
+      navigoNumber: sub.passes[0].navigoNumber,
       subscriptionType: sub.subscriptionType,
       subscriptionPeriod,
       paymentMethod: payment.method,
@@ -824,7 +854,8 @@ export class BillingService {
         subscription: {
           include: {
             beneficiary: true,
-            payer: { include: { beneficiary: true } },
+            bankInfo: { include: { account: true } },
+            passes: true,
           },
         },
       },
@@ -832,17 +863,15 @@ export class BillingService {
     });
 
     if (payments.length === 0) {
-      throw new NotFoundException(
-        `Aucune facture pour le mois ${month}.`,
-      );
+      throw new NotFoundException(`Aucune facture pour le mois ${month}.`);
     }
 
     return payments.map((p) => {
       const sub = p.subscription;
       const holder = sub.beneficiary;
-      const payer = sub.payer;
-      const payerName = payer?.beneficiary
-        ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+      const payer = sub.bankInfo.account;
+      const payerName = payer
+        ? `${payer.email}`
         : `${holder.firstName} ${holder.lastName}`;
 
       const paidAt = new Date(p.paidAt);
@@ -860,10 +889,11 @@ export class BillingService {
       const subscriptionPeriod = `${fmtDate(sub.startDate)} — ${fmtDate(sub.endDate)}`;
 
       return {
-        invoiceNumber: `F-${sub.navigoNumber}-${String(p.id).padStart(4, '0')}`,
+        invoiceNumber: `F-${sub.passes[0].navigoNumber}-${String(p.id).padStart(4, '0')}`,
+
         date: p.paidAt.toISOString(),
         holderName: `${holder.firstName} ${holder.lastName}`,
-        navigoNumber: sub.navigoNumber,
+        navigoNumber: sub.passes[0].navigoNumber,
         subscriptionType: sub.subscriptionType,
         subscriptionPeriod,
         paymentMethod: p.method,
@@ -880,9 +910,7 @@ export class BillingService {
     const isSepa = (v: (typeof visible)[number]) =>
       v.sub.paymentMode === PaymentMode.SEPA_MONTHLY ||
       v.sub.paymentMode === PaymentMode.SEPA_ONCE;
-    const asPayer = visible.find(
-      (v) => isSepa(v) && v.roles.includes('payer'),
-    );
+    const asPayer = visible.find((v) => isSepa(v) && v.roles.includes('payer'));
     if (asPayer) return asPayer.sub.id;
     const any = visible.find(isSepa);
     return any?.sub.id ?? null;

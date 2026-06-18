@@ -1,0 +1,91 @@
+enum SubscriptionStatus {
+  active
+  expired
+  cancelled
+  pending_cancellation
+}
+
+model Subscription {
+  id        Int    @id @default(autoincrement())
+  reference String @unique @default(cuid())
+
+  beneficiaryId    Int
+  referrerId       Int?
+  subscriptionType String
+  startDate        DateTime
+  endDate          DateTime
+  status           SubscriptionStatus @default(active)
+
+  // Renseignés uniquement lors d'une résiliation, conformément aux CGU IDFM :
+  // pas de préavis pour la demande, mais le mois en cours reste dû et la
+  // résiliation ne prend effet qu'au 1er jour du mois suivant.
+  cancelledAt             DateTime? // date à laquelle la demande a été faite
+  cancellationEffectiveAt DateTime? // date à laquelle status passera à "cancelled"
+  cancelledById           Int? // qui a fait la demande (titulaire ou référant)
+  bankInfoId              Int
+
+  beneficiary Beneficiary @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
+  referrer    Account?    @relation("SubscriptionReferrer", fields: [referrerId], references: [id])
+  cancelledBy Account?    @relation("SubscriptionCancelledBy", fields: [cancelledById], references: [id])
+  bankInfo    BankInfo    @relation("BankInfo", fields: [bankInfoId], references: [id])
+
+
+  paymentMode      PaymentMode @default(SEPA_MONTHLY)
+  annualAmount     Float       @default(0)
+  monthlyAmount    Float?
+  payments Payment[]
+  passes   Pass[]
+}
+
+enum PaymentMode {
+  CARD_ONCE
+  SEPA_ONCE
+  SEPA_MONTHLY
+}
+
+enum PaymentStatus {
+  succeeded
+  failed
+  pending
+}
+
+model Payment {
+  id             Int           @id @default(autoincrement())
+  subscriptionId Int
+  amount         Float
+  paidAt         DateTime      @default(now())
+  method         PaymentMode
+  status         PaymentStatus @default(succeeded)
+
+  subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+    @@unique([subscriptionId, paidAt, amount])
+
+}
+
+enum VerificationSource {
+  MANUAL_DOCUMENT
+  STATE_API
+  DECLARATIVE
+}
+
+model StatusVerification {
+  id            Int                @id @default(autoincrement())
+  beneficiaryId Int
+  status        BeneficiaryStatus
+  source        VerificationSource
+  verified      Boolean            @default(false)
+
+  documentUrl    String?
+  expirationDate DateTime?
+
+  apiName      String?
+  apiReference String?
+  apiQueriedAt DateTime?
+
+  validFrom  DateTime?
+  validUntil DateTime?
+  createdAt  DateTime  @default(now())
+
+  beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
+}

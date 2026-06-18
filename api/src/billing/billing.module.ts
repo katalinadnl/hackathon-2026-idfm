@@ -11,9 +11,10 @@ import { StripeWebhookController } from './stripe/stripe-webhook.controller';
 import { StripeWebhookService } from './stripe/stripe-webhook.service';
 import { AdminBillingController } from './admin/admin-billing.controller';
 import { AdminBillingService } from './admin/admin-billing.service';
+import { SubscriptionsModule } from 'src/subscriptions/subscriptions.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, SubscriptionsModule],
   controllers: [
     BillingController,
     BillingPublicController,

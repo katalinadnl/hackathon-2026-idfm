@@ -182,7 +182,6 @@ export class BillingController {
     return this.billing.payByCard(accountIdOf(user), paymentId, baseUrl);
   }
 
-
   @Post('payment-method/change')
   @ApiQuery({ name: 'subscriptionId', type: Number, required: false })
   startRibChange(

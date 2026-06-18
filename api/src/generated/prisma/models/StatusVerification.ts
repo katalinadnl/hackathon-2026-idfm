@@ -586,14 +586,6 @@ export type EnumVerificationSourceFieldUpdateOperationsInput = {
   set?: $Enums.VerificationSource
 }
 
-export type BoolFieldUpdateOperationsInput = {
-  set?: boolean
-}
-
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type StatusVerificationCreateWithoutBeneficiaryInput = {
   status: $Enums.BeneficiaryStatus
   source: $Enums.VerificationSource

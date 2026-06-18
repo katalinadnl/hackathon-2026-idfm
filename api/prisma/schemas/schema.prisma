@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AccountRole {
+  client
+  admin
+}
+
+model Account {
+  id            Int         @id @default(autoincrement())
+  email         String      @unique
+  passwordHash  String
+  accountNumber String      @unique
+  createdAt     DateTime    @default(now())
+  role          AccountRole @default(client)
+
+  beneficiaryId Int?         @unique
+  beneficiary   Beneficiary? @relation(fields: [beneficiaryId], references: [id])
+
+  // Stripe linkage — set for accounts that pay (payers become customers).
+  stripeCustomerId        String? @unique
+  stripePaymentMethodId   String? // default SEPA payment method
+  stripeMandateId         String? // mandate generated for that payment method
+  stripePreviousMandateId String? // last revoked mandate (after a RIB change)
+
+    // 2FA via email OTP
+  twoFactorCode      String?
+  twoFactorExpiresAt DateTime?
+
+  // Reset mot de passe
+  resetPasswordToken     String?   @unique
+  resetPasswordExpiresAt DateTime?
+
+  referredSubscriptions Subscription[] @relation("SubscriptionReferrer")
+
+  subscriptions Subscription[] @relation("SubscriptionCancelledBy")
+
+  bankInfos BankInfo[]
+}
+
+model BankInfo {
+  id         Int      @id @default(autoincrement())
+  accountId  Int
+  iban       String
+  bic        String?
+  holderName String
+  label      String? // ex: "Mon compte", "Compte de mes parents"
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  account Account @relation(fields: [accountId], references: [id])
+
+  subscriptions Subscription[] @relation("BankInfo")
+}

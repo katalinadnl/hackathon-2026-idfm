@@ -269,6 +269,7 @@ export type BeneficiaryWhereInput = {
   statusVerifications?: Prisma.StatusVerificationListRelationFilter
   account?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
   subscriptions?: Prisma.SubscriptionListRelationFilter
+  addresses?: Prisma.AddressListRelationFilter
 }
 
 export type BeneficiaryOrderByWithRelationInput = {
@@ -287,6 +288,7 @@ export type BeneficiaryOrderByWithRelationInput = {
   statusVerifications?: Prisma.StatusVerificationOrderByRelationAggregateInput
   account?: Prisma.AccountOrderByWithRelationInput
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
+  addresses?: Prisma.AddressOrderByRelationAggregateInput
 }
 
 export type BeneficiaryWhereUniqueInput = Prisma.AtLeast<{
@@ -308,6 +310,7 @@ export type BeneficiaryWhereUniqueInput = Prisma.AtLeast<{
   statusVerifications?: Prisma.StatusVerificationListRelationFilter
   account?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
   subscriptions?: Prisma.SubscriptionListRelationFilter
+  addresses?: Prisma.AddressListRelationFilter
 }, "id" | "email" | "socialSecurityNumber">
 
 export type BeneficiaryOrderByWithAggregationInput = {
@@ -357,6 +360,7 @@ export type BeneficiaryCreateInput = {
   statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryUncheckedCreateInput = {
@@ -373,6 +377,7 @@ export type BeneficiaryUncheckedCreateInput = {
   statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryUpdateInput = {
@@ -388,6 +393,7 @@ export type BeneficiaryUpdateInput = {
   statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateInput = {
@@ -404,6 +410,7 @@ export type BeneficiaryUncheckedUpdateInput = {
   statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryCreateManyInput = {
@@ -440,6 +447,11 @@ export type BeneficiaryUncheckedUpdateManyInput = {
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
   residenceDepartmentId?: Prisma.IntFieldUpdateOperationsInput | number
   workStudyDepartmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type BeneficiaryScalarRelationFilter = {
+  is?: Prisma.BeneficiaryWhereInput
+  isNot?: Prisma.BeneficiaryWhereInput
 }
 
 export type BeneficiaryListRelationFilter = {
@@ -503,14 +515,23 @@ export type BeneficiarySumOrderByAggregateInput = {
   workStudyDepartmentId?: Prisma.SortOrder
 }
 
-export type BeneficiaryScalarRelationFilter = {
-  is?: Prisma.BeneficiaryWhereInput
-  isNot?: Prisma.BeneficiaryWhereInput
-}
-
 export type BeneficiaryNullableScalarRelationFilter = {
   is?: Prisma.BeneficiaryWhereInput | null
   isNot?: Prisma.BeneficiaryWhereInput | null
+}
+
+export type BeneficiaryCreateNestedOneWithoutAddressesInput = {
+  create?: Prisma.XOR<Prisma.BeneficiaryCreateWithoutAddressesInput, Prisma.BeneficiaryUncheckedCreateWithoutAddressesInput>
+  connectOrCreate?: Prisma.BeneficiaryCreateOrConnectWithoutAddressesInput
+  connect?: Prisma.BeneficiaryWhereUniqueInput
+}
+
+export type BeneficiaryUpdateOneRequiredWithoutAddressesNestedInput = {
+  create?: Prisma.XOR<Prisma.BeneficiaryCreateWithoutAddressesInput, Prisma.BeneficiaryUncheckedCreateWithoutAddressesInput>
+  connectOrCreate?: Prisma.BeneficiaryCreateOrConnectWithoutAddressesInput
+  upsert?: Prisma.BeneficiaryUpsertWithoutAddressesInput
+  connect?: Prisma.BeneficiaryWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BeneficiaryUpdateToOneWithWhereWithoutAddressesInput, Prisma.BeneficiaryUpdateWithoutAddressesInput>, Prisma.BeneficiaryUncheckedUpdateWithoutAddressesInput>
 }
 
 export type BeneficiaryCreateNestedManyWithoutResidenceDepartmentInput = {
@@ -597,14 +618,6 @@ export type BeneficiaryUncheckedUpdateManyWithoutWorkStudyDepartmentNestedInput 
   deleteMany?: Prisma.BeneficiaryScalarWhereInput | Prisma.BeneficiaryScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
-export type DateTimeFieldUpdateOperationsInput = {
-  set?: Date | string
-}
-
 export type EnumBeneficiaryStatusFieldUpdateOperationsInput = {
   set?: $Enums.BeneficiaryStatus
 }
@@ -615,20 +628,6 @@ export type NullableIntFieldUpdateOperationsInput = {
   decrement?: number
   multiply?: number
   divide?: number
-}
-
-export type BeneficiaryCreateNestedOneWithoutStatusVerificationsInput = {
-  create?: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
-  connectOrCreate?: Prisma.BeneficiaryCreateOrConnectWithoutStatusVerificationsInput
-  connect?: Prisma.BeneficiaryWhereUniqueInput
-}
-
-export type BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput = {
-  create?: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
-  connectOrCreate?: Prisma.BeneficiaryCreateOrConnectWithoutStatusVerificationsInput
-  upsert?: Prisma.BeneficiaryUpsertWithoutStatusVerificationsInput
-  connect?: Prisma.BeneficiaryWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.BeneficiaryUpdateToOneWithWhereWithoutStatusVerificationsInput, Prisma.BeneficiaryUpdateWithoutStatusVerificationsInput>, Prisma.BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput>
 }
 
 export type BeneficiaryCreateNestedOneWithoutAccountInput = {
@@ -661,6 +660,98 @@ export type BeneficiaryUpdateOneRequiredWithoutSubscriptionsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BeneficiaryUpdateToOneWithWhereWithoutSubscriptionsInput, Prisma.BeneficiaryUpdateWithoutSubscriptionsInput>, Prisma.BeneficiaryUncheckedUpdateWithoutSubscriptionsInput>
 }
 
+export type BeneficiaryCreateNestedOneWithoutStatusVerificationsInput = {
+  create?: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
+  connectOrCreate?: Prisma.BeneficiaryCreateOrConnectWithoutStatusVerificationsInput
+  connect?: Prisma.BeneficiaryWhereUniqueInput
+}
+
+export type BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
+  connectOrCreate?: Prisma.BeneficiaryCreateOrConnectWithoutStatusVerificationsInput
+  upsert?: Prisma.BeneficiaryUpsertWithoutStatusVerificationsInput
+  connect?: Prisma.BeneficiaryWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BeneficiaryUpdateToOneWithWhereWithoutStatusVerificationsInput, Prisma.BeneficiaryUpdateWithoutStatusVerificationsInput>, Prisma.BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput>
+}
+
+export type BeneficiaryCreateWithoutAddressesInput = {
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string | null
+  birthDate: Date | string
+  socialSecurityNumber?: string | null
+  status?: $Enums.BeneficiaryStatus
+  residenceDepartment: Prisma.DepartmentCreateNestedOneWithoutResidentsInput
+  workStudyDepartment?: Prisma.DepartmentCreateNestedOneWithoutWorkersStudentsInput
+  statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutBeneficiaryInput
+  account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
+}
+
+export type BeneficiaryUncheckedCreateWithoutAddressesInput = {
+  id?: number
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string | null
+  birthDate: Date | string
+  socialSecurityNumber?: string | null
+  status?: $Enums.BeneficiaryStatus
+  residenceDepartmentId: number
+  workStudyDepartmentId?: number | null
+  statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutBeneficiaryInput
+  account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
+}
+
+export type BeneficiaryCreateOrConnectWithoutAddressesInput = {
+  where: Prisma.BeneficiaryWhereUniqueInput
+  create: Prisma.XOR<Prisma.BeneficiaryCreateWithoutAddressesInput, Prisma.BeneficiaryUncheckedCreateWithoutAddressesInput>
+}
+
+export type BeneficiaryUpsertWithoutAddressesInput = {
+  update: Prisma.XOR<Prisma.BeneficiaryUpdateWithoutAddressesInput, Prisma.BeneficiaryUncheckedUpdateWithoutAddressesInput>
+  create: Prisma.XOR<Prisma.BeneficiaryCreateWithoutAddressesInput, Prisma.BeneficiaryUncheckedCreateWithoutAddressesInput>
+  where?: Prisma.BeneficiaryWhereInput
+}
+
+export type BeneficiaryUpdateToOneWithWhereWithoutAddressesInput = {
+  where?: Prisma.BeneficiaryWhereInput
+  data: Prisma.XOR<Prisma.BeneficiaryUpdateWithoutAddressesInput, Prisma.BeneficiaryUncheckedUpdateWithoutAddressesInput>
+}
+
+export type BeneficiaryUpdateWithoutAddressesInput = {
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  residenceDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutResidentsNestedInput
+  workStudyDepartment?: Prisma.DepartmentUpdateOneWithoutWorkersStudentsNestedInput
+  statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutBeneficiaryNestedInput
+  account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
+}
+
+export type BeneficiaryUncheckedUpdateWithoutAddressesInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  residenceDepartmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  workStudyDepartmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
+}
+
 export type BeneficiaryCreateWithoutResidenceDepartmentInput = {
   firstName: string
   lastName: string
@@ -673,6 +764,7 @@ export type BeneficiaryCreateWithoutResidenceDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryUncheckedCreateWithoutResidenceDepartmentInput = {
@@ -688,6 +780,7 @@ export type BeneficiaryUncheckedCreateWithoutResidenceDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryCreateOrConnectWithoutResidenceDepartmentInput = {
@@ -712,6 +805,7 @@ export type BeneficiaryCreateWithoutWorkStudyDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryUncheckedCreateWithoutWorkStudyDepartmentInput = {
@@ -727,6 +821,7 @@ export type BeneficiaryUncheckedCreateWithoutWorkStudyDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryCreateOrConnectWithoutWorkStudyDepartmentInput = {
@@ -787,80 +882,6 @@ export type BeneficiaryUpdateManyWithWhereWithoutWorkStudyDepartmentInput = {
   data: Prisma.XOR<Prisma.BeneficiaryUpdateManyMutationInput, Prisma.BeneficiaryUncheckedUpdateManyWithoutWorkStudyDepartmentInput>
 }
 
-export type BeneficiaryCreateWithoutStatusVerificationsInput = {
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string | null
-  birthDate: Date | string
-  socialSecurityNumber?: string | null
-  status?: $Enums.BeneficiaryStatus
-  residenceDepartment: Prisma.DepartmentCreateNestedOneWithoutResidentsInput
-  workStudyDepartment?: Prisma.DepartmentCreateNestedOneWithoutWorkersStudentsInput
-  account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
-  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
-}
-
-export type BeneficiaryUncheckedCreateWithoutStatusVerificationsInput = {
-  id?: number
-  firstName: string
-  lastName: string
-  email: string
-  phone?: string | null
-  birthDate: Date | string
-  socialSecurityNumber?: string | null
-  status?: $Enums.BeneficiaryStatus
-  residenceDepartmentId: number
-  workStudyDepartmentId?: number | null
-  account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
-  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
-}
-
-export type BeneficiaryCreateOrConnectWithoutStatusVerificationsInput = {
-  where: Prisma.BeneficiaryWhereUniqueInput
-  create: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
-}
-
-export type BeneficiaryUpsertWithoutStatusVerificationsInput = {
-  update: Prisma.XOR<Prisma.BeneficiaryUpdateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput>
-  create: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
-  where?: Prisma.BeneficiaryWhereInput
-}
-
-export type BeneficiaryUpdateToOneWithWhereWithoutStatusVerificationsInput = {
-  where?: Prisma.BeneficiaryWhereInput
-  data: Prisma.XOR<Prisma.BeneficiaryUpdateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput>
-}
-
-export type BeneficiaryUpdateWithoutStatusVerificationsInput = {
-  firstName?: Prisma.StringFieldUpdateOperationsInput | string
-  lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
-  residenceDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutResidentsNestedInput
-  workStudyDepartment?: Prisma.DepartmentUpdateOneWithoutWorkersStudentsNestedInput
-  account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
-  subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
-}
-
-export type BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput = {
-  id?: Prisma.IntFieldUpdateOperationsInput | number
-  firstName?: Prisma.StringFieldUpdateOperationsInput | string
-  lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
-  residenceDepartmentId?: Prisma.IntFieldUpdateOperationsInput | number
-  workStudyDepartmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
-  account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
-  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
-}
-
 export type BeneficiaryCreateWithoutAccountInput = {
   firstName: string
   lastName: string
@@ -873,6 +894,7 @@ export type BeneficiaryCreateWithoutAccountInput = {
   workStudyDepartment?: Prisma.DepartmentCreateNestedOneWithoutWorkersStudentsInput
   statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryUncheckedCreateWithoutAccountInput = {
@@ -888,6 +910,7 @@ export type BeneficiaryUncheckedCreateWithoutAccountInput = {
   workStudyDepartmentId?: number | null
   statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutBeneficiaryInput
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryCreateOrConnectWithoutAccountInput = {
@@ -918,6 +941,7 @@ export type BeneficiaryUpdateWithoutAccountInput = {
   workStudyDepartment?: Prisma.DepartmentUpdateOneWithoutWorkersStudentsNestedInput
   statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateWithoutAccountInput = {
@@ -933,6 +957,7 @@ export type BeneficiaryUncheckedUpdateWithoutAccountInput = {
   workStudyDepartmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryCreateWithoutSubscriptionsInput = {
@@ -947,6 +972,7 @@ export type BeneficiaryCreateWithoutSubscriptionsInput = {
   workStudyDepartment?: Prisma.DepartmentCreateNestedOneWithoutWorkersStudentsInput
   statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryUncheckedCreateWithoutSubscriptionsInput = {
@@ -962,6 +988,7 @@ export type BeneficiaryUncheckedCreateWithoutSubscriptionsInput = {
   workStudyDepartmentId?: number | null
   statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutBeneficiaryInput
   account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutBeneficiaryInput
 }
 
 export type BeneficiaryCreateOrConnectWithoutSubscriptionsInput = {
@@ -992,6 +1019,7 @@ export type BeneficiaryUpdateWithoutSubscriptionsInput = {
   workStudyDepartment?: Prisma.DepartmentUpdateOneWithoutWorkersStudentsNestedInput
   statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateWithoutSubscriptionsInput = {
@@ -1007,6 +1035,85 @@ export type BeneficiaryUncheckedUpdateWithoutSubscriptionsInput = {
   workStudyDepartmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutBeneficiaryNestedInput
+}
+
+export type BeneficiaryCreateWithoutStatusVerificationsInput = {
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string | null
+  birthDate: Date | string
+  socialSecurityNumber?: string | null
+  status?: $Enums.BeneficiaryStatus
+  residenceDepartment: Prisma.DepartmentCreateNestedOneWithoutResidentsInput
+  workStudyDepartment?: Prisma.DepartmentCreateNestedOneWithoutWorkersStudentsInput
+  account?: Prisma.AccountCreateNestedOneWithoutBeneficiaryInput
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressCreateNestedManyWithoutBeneficiaryInput
+}
+
+export type BeneficiaryUncheckedCreateWithoutStatusVerificationsInput = {
+  id?: number
+  firstName: string
+  lastName: string
+  email: string
+  phone?: string | null
+  birthDate: Date | string
+  socialSecurityNumber?: string | null
+  status?: $Enums.BeneficiaryStatus
+  residenceDepartmentId: number
+  workStudyDepartmentId?: number | null
+  account?: Prisma.AccountUncheckedCreateNestedOneWithoutBeneficiaryInput
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutBeneficiaryInput
+  addresses?: Prisma.AddressUncheckedCreateNestedManyWithoutBeneficiaryInput
+}
+
+export type BeneficiaryCreateOrConnectWithoutStatusVerificationsInput = {
+  where: Prisma.BeneficiaryWhereUniqueInput
+  create: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
+}
+
+export type BeneficiaryUpsertWithoutStatusVerificationsInput = {
+  update: Prisma.XOR<Prisma.BeneficiaryUpdateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput>
+  create: Prisma.XOR<Prisma.BeneficiaryCreateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedCreateWithoutStatusVerificationsInput>
+  where?: Prisma.BeneficiaryWhereInput
+}
+
+export type BeneficiaryUpdateToOneWithWhereWithoutStatusVerificationsInput = {
+  where?: Prisma.BeneficiaryWhereInput
+  data: Prisma.XOR<Prisma.BeneficiaryUpdateWithoutStatusVerificationsInput, Prisma.BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput>
+}
+
+export type BeneficiaryUpdateWithoutStatusVerificationsInput = {
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  residenceDepartment?: Prisma.DepartmentUpdateOneRequiredWithoutResidentsNestedInput
+  workStudyDepartment?: Prisma.DepartmentUpdateOneWithoutWorkersStudentsNestedInput
+  account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutBeneficiaryNestedInput
+}
+
+export type BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  firstName?: Prisma.StringFieldUpdateOperationsInput | string
+  lastName?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  residenceDepartmentId?: Prisma.IntFieldUpdateOperationsInput | number
+  workStudyDepartmentId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryCreateManyResidenceDepartmentInput = {
@@ -1045,6 +1152,7 @@ export type BeneficiaryUpdateWithoutResidenceDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateWithoutResidenceDepartmentInput = {
@@ -1060,6 +1168,7 @@ export type BeneficiaryUncheckedUpdateWithoutResidenceDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateManyWithoutResidenceDepartmentInput = {
@@ -1086,6 +1195,7 @@ export type BeneficiaryUpdateWithoutWorkStudyDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUpdateOneWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateWithoutWorkStudyDepartmentInput = {
@@ -1101,6 +1211,7 @@ export type BeneficiaryUncheckedUpdateWithoutWorkStudyDepartmentInput = {
   statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutBeneficiaryNestedInput
   account?: Prisma.AccountUncheckedUpdateOneWithoutBeneficiaryNestedInput
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutBeneficiaryNestedInput
+  addresses?: Prisma.AddressUncheckedUpdateManyWithoutBeneficiaryNestedInput
 }
 
 export type BeneficiaryUncheckedUpdateManyWithoutWorkStudyDepartmentInput = {
@@ -1123,11 +1234,13 @@ export type BeneficiaryUncheckedUpdateManyWithoutWorkStudyDepartmentInput = {
 export type BeneficiaryCountOutputType = {
   statusVerifications: number
   subscriptions: number
+  addresses: number
 }
 
 export type BeneficiaryCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   statusVerifications?: boolean | BeneficiaryCountOutputTypeCountStatusVerificationsArgs
   subscriptions?: boolean | BeneficiaryCountOutputTypeCountSubscriptionsArgs
+  addresses?: boolean | BeneficiaryCountOutputTypeCountAddressesArgs
 }
 
 /**
@@ -1154,6 +1267,13 @@ export type BeneficiaryCountOutputTypeCountSubscriptionsArgs<ExtArgs extends run
   where?: Prisma.SubscriptionWhereInput
 }
 
+/**
+ * BeneficiaryCountOutputType without action
+ */
+export type BeneficiaryCountOutputTypeCountAddressesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AddressWhereInput
+}
+
 
 export type BeneficiarySelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1171,6 +1291,7 @@ export type BeneficiarySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   statusVerifications?: boolean | Prisma.Beneficiary$statusVerificationsArgs<ExtArgs>
   account?: boolean | Prisma.Beneficiary$accountArgs<ExtArgs>
   subscriptions?: boolean | Prisma.Beneficiary$subscriptionsArgs<ExtArgs>
+  addresses?: boolean | Prisma.Beneficiary$addressesArgs<ExtArgs>
   _count?: boolean | Prisma.BeneficiaryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["beneficiary"]>
 
@@ -1224,6 +1345,7 @@ export type BeneficiaryInclude<ExtArgs extends runtime.Types.Extensions.Internal
   statusVerifications?: boolean | Prisma.Beneficiary$statusVerificationsArgs<ExtArgs>
   account?: boolean | Prisma.Beneficiary$accountArgs<ExtArgs>
   subscriptions?: boolean | Prisma.Beneficiary$subscriptionsArgs<ExtArgs>
+  addresses?: boolean | Prisma.Beneficiary$addressesArgs<ExtArgs>
   _count?: boolean | Prisma.BeneficiaryCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type BeneficiaryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1243,6 +1365,7 @@ export type $BeneficiaryPayload<ExtArgs extends runtime.Types.Extensions.Interna
     statusVerifications: Prisma.$StatusVerificationPayload<ExtArgs>[]
     account: Prisma.$AccountPayload<ExtArgs> | null
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
+    addresses: Prisma.$AddressPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1654,6 +1777,7 @@ export interface Prisma__BeneficiaryClient<T, Null = never, ExtArgs extends runt
   statusVerifications<T extends Prisma.Beneficiary$statusVerificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Beneficiary$statusVerificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   account<T extends Prisma.Beneficiary$accountArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Beneficiary$accountArgs<ExtArgs>>): Prisma.Prisma__AccountClient<runtime.Types.Result.GetResult<Prisma.$AccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   subscriptions<T extends Prisma.Beneficiary$subscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Beneficiary$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  addresses<T extends Prisma.Beneficiary$addressesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Beneficiary$addressesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AddressPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2177,6 +2301,30 @@ export type Beneficiary$subscriptionsArgs<ExtArgs extends runtime.Types.Extensio
   take?: number
   skip?: number
   distinct?: Prisma.SubscriptionScalarFieldEnum | Prisma.SubscriptionScalarFieldEnum[]
+}
+
+/**
+ * Beneficiary.addresses
+ */
+export type Beneficiary$addressesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Address
+   */
+  select?: Prisma.AddressSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Address
+   */
+  omit?: Prisma.AddressOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AddressInclude<ExtArgs> | null
+  where?: Prisma.AddressWhereInput
+  orderBy?: Prisma.AddressOrderByWithRelationInput | Prisma.AddressOrderByWithRelationInput[]
+  cursor?: Prisma.AddressWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AddressScalarFieldEnum | Prisma.AddressScalarFieldEnum[]
 }
 
 /**

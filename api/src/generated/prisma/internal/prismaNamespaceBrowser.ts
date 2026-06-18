@@ -51,12 +51,17 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
+  Address: 'Address',
   Department: 'Department',
   Beneficiary: 'Beneficiary',
-  StatusVerification: 'StatusVerification',
+  Pass: 'Pass',
+  PassUsage: 'PassUsage',
+  Delivery: 'Delivery',
   Account: 'Account',
+  BankInfo: 'BankInfo',
   Subscription: 'Subscription',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  StatusVerification: 'StatusVerification'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -73,6 +78,22 @@ export const TransactionIsolationLevel = runtime.makeStrictEnum({
 } as const)
 
 export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
+
+export const AddressScalarFieldEnum = {
+  id: 'id',
+  beneficiaryId: 'beneficiaryId',
+  type: 'type',
+  isDefault: 'isDefault',
+  line1: 'line1',
+  line2: 'line2',
+  city: 'city',
+  postalCode: 'postalCode',
+  country: 'country',
+  createdAt: 'createdAt'
+} as const
+
+export type AddressScalarFieldEnum = (typeof AddressScalarFieldEnum)[keyof typeof AddressScalarFieldEnum]
 
 
 export const DepartmentScalarFieldEnum = {
@@ -101,23 +122,39 @@ export const BeneficiaryScalarFieldEnum = {
 export type BeneficiaryScalarFieldEnum = (typeof BeneficiaryScalarFieldEnum)[keyof typeof BeneficiaryScalarFieldEnum]
 
 
-export const StatusVerificationScalarFieldEnum = {
+export const PassScalarFieldEnum = {
   id: 'id',
-  beneficiaryId: 'beneficiaryId',
+  subscriptionId: 'subscriptionId',
+  navigoNumber: 'navigoNumber',
   status: 'status',
-  source: 'source',
-  verified: 'verified',
-  documentUrl: 'documentUrl',
-  expirationDate: 'expirationDate',
-  apiName: 'apiName',
-  apiReference: 'apiReference',
-  apiQueriedAt: 'apiQueriedAt',
-  validFrom: 'validFrom',
-  validUntil: 'validUntil',
-  createdAt: 'createdAt'
+  issuedAt: 'issuedAt'
 } as const
 
-export type StatusVerificationScalarFieldEnum = (typeof StatusVerificationScalarFieldEnum)[keyof typeof StatusVerificationScalarFieldEnum]
+export type PassScalarFieldEnum = (typeof PassScalarFieldEnum)[keyof typeof PassScalarFieldEnum]
+
+
+export const PassUsageScalarFieldEnum = {
+  id: 'id',
+  passId: 'passId',
+  usedAt: 'usedAt',
+  station: 'station'
+} as const
+
+export type PassUsageScalarFieldEnum = (typeof PassUsageScalarFieldEnum)[keyof typeof PassUsageScalarFieldEnum]
+
+
+export const DeliveryScalarFieldEnum = {
+  id: 'id',
+  passId: 'passId',
+  addressId: 'addressId',
+  reason: 'reason',
+  status: 'status',
+  orderedAt: 'orderedAt',
+  estimatedAt: 'estimatedAt',
+  trackingNumber: 'trackingNumber'
+} as const
+
+export type DeliveryScalarFieldEnum = (typeof DeliveryScalarFieldEnum)[keyof typeof DeliveryScalarFieldEnum]
 
 
 export const AccountScalarFieldEnum = {
@@ -141,16 +178,33 @@ export const AccountScalarFieldEnum = {
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
 
 
+export const BankInfoScalarFieldEnum = {
+  id: 'id',
+  accountId: 'accountId',
+  iban: 'iban',
+  bic: 'bic',
+  holderName: 'holderName',
+  label: 'label',
+  isDefault: 'isDefault',
+  createdAt: 'createdAt'
+} as const
+
+export type BankInfoScalarFieldEnum = (typeof BankInfoScalarFieldEnum)[keyof typeof BankInfoScalarFieldEnum]
+
+
 export const SubscriptionScalarFieldEnum = {
   id: 'id',
+  reference: 'reference',
   beneficiaryId: 'beneficiaryId',
   referrerId: 'referrerId',
-  payerId: 'payerId',
-  navigoNumber: 'navigoNumber',
   subscriptionType: 'subscriptionType',
   startDate: 'startDate',
   endDate: 'endDate',
   status: 'status',
+  cancelledAt: 'cancelledAt',
+  cancellationEffectiveAt: 'cancellationEffectiveAt',
+  cancelledById: 'cancelledById',
+  bankInfoId: 'bankInfoId',
   paymentMode: 'paymentMode',
   annualAmount: 'annualAmount',
   monthlyAmount: 'monthlyAmount'
@@ -169,6 +223,25 @@ export const PaymentScalarFieldEnum = {
 } as const
 
 export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+export const StatusVerificationScalarFieldEnum = {
+  id: 'id',
+  beneficiaryId: 'beneficiaryId',
+  status: 'status',
+  source: 'source',
+  verified: 'verified',
+  documentUrl: 'documentUrl',
+  expirationDate: 'expirationDate',
+  apiName: 'apiName',
+  apiReference: 'apiReference',
+  apiQueriedAt: 'apiQueriedAt',
+  validFrom: 'validFrom',
+  validUntil: 'validUntil',
+  createdAt: 'createdAt'
+} as const
+
+export type StatusVerificationScalarFieldEnum = (typeof StatusVerificationScalarFieldEnum)[keyof typeof StatusVerificationScalarFieldEnum]
 
 
 export const SortOrder = {

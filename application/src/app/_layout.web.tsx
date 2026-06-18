@@ -94,7 +94,12 @@ function AuthGate() {
     <View style={styles.root}>
       <SkipLink />
       <SiteHeader />
-      <View style={styles.pageSlot} nativeID="main-content" role="main" {...({ tabIndex: -1 } as any)}>
+      <View
+        style={styles.pageSlot}
+        nativeID="main-content"
+        role="main"
+        {...({ tabIndex: -1 } as any)}
+      >
         <Slot />
       </View>
     </View>
@@ -113,10 +118,12 @@ function NavLink({ href, children }: { href: string; children: string }) {
           pressed && styles.navLinkPressed,
         ]}
         accessibilityRole="link"
-        aria-current={isActive ? 'page' : undefined}
+        aria-current={isActive ? "page" : undefined}
         accessibilityLabel={children}
       >
-        <Text style={[styles.navLinkText, isActive && styles.navLinkTextActive]}>
+        <Text
+          style={[styles.navLinkText, isActive && styles.navLinkTextActive]}
+        >
           {children}
         </Text>
         {isActive && <View style={styles.navLinkIndicator} />}
@@ -143,7 +150,10 @@ function UserChip() {
         onPress={logout}
         accessibilityRole="button"
         accessibilityLabel="Se déconnecter"
-        style={({ pressed }) => [styles.logoutIconBtn, pressed && styles.logoutIconBtnPressed]}
+        style={({ pressed }) => [
+          styles.logoutIconBtn,
+          pressed && styles.logoutIconBtnPressed,
+        ]}
       >
         <Icon name="log-out" size={16} color={DS.textMuted} />
       </Pressable>
@@ -160,7 +170,10 @@ function AuthButtons() {
         onPress={() => router.push("/login")}
         accessibilityRole="button"
         accessibilityLabel="Se connecter"
-        style={({ pressed }) => [styles.btnOutline, pressed && styles.btnPressed]}
+        style={({ pressed }) => [
+          styles.btnOutline,
+          pressed && styles.btnPressed,
+        ]}
       >
         <Text style={styles.btnOutlineText}>Se connecter</Text>
       </Pressable>
@@ -170,7 +183,15 @@ function AuthButtons() {
 
 const DESKTOP_BP = 768;
 
-function MobileNavItem({ href, children, onPress }: { href: string; children: string; onPress: () => void }) {
+function MobileNavItem({
+  href,
+  children,
+  onPress,
+}: {
+  href: string;
+  children: string;
+  onPress: () => void;
+}) {
   const pathname = usePathname();
   const isActive = pathname === href;
 
@@ -179,14 +200,19 @@ function MobileNavItem({ href, children, onPress }: { href: string; children: st
       <Pressable
         onPress={onPress}
         accessibilityRole="link"
-        aria-current={isActive ? 'page' : undefined}
+        aria-current={isActive ? "page" : undefined}
         style={({ pressed }) => [
           styles.mobileNavItem,
           isActive && styles.mobileNavItemActive,
           pressed && styles.btnPressed,
         ]}
       >
-        <Text style={[styles.mobileNavItemText, isActive && styles.mobileNavItemTextActive]}>
+        <Text
+          style={[
+            styles.mobileNavItemText,
+            isActive && styles.mobileNavItemTextActive,
+          ]}
+        >
           {children}
         </Text>
       </Pressable>
@@ -197,16 +223,29 @@ function MobileNavItem({ href, children, onPress }: { href: string; children: st
 function MobileMenu({ onClose }: { onClose: () => void }) {
   const { token, user, logout } = useAuth();
   const router = useRouter();
-  const name = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email;
+  const name =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.email;
 
   return (
     <View style={styles.mobileMenuOverlay}>
       <Pressable style={styles.mobileMenuBackdrop} onPress={onClose} />
       <View style={styles.mobileMenuPanel}>
-        <MobileNavItem href="/" onPress={onClose}>Accueil</MobileNavItem>
-        <MobileNavItem href="/visitors" onPress={onClose}>Visiteurs</MobileNavItem>
-        {token && <MobileNavItem href="/billing" onPress={onClose}>Facturation</MobileNavItem>}
-        {token && <MobileNavItem href="/dashboard" onPress={onClose}>Mon espace</MobileNavItem>}
+        <MobileNavItem href="/" onPress={onClose}>
+          Accueil
+        </MobileNavItem>
+        <MobileNavItem href="/visitors" onPress={onClose}>
+          Visiteurs
+        </MobileNavItem>
+        {token && (
+          <MobileNavItem href="/billing" onPress={onClose}>
+            Facturation
+          </MobileNavItem>
+        )}
+        {token && (
+          <MobileNavItem href="/dashboard" onPress={onClose}>
+            Mon espace
+          </MobileNavItem>
+        )}
 
         <View style={styles.mobileMenuDivider} />
 
@@ -214,13 +253,21 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           <View style={styles.mobileMenuFooter}>
             <View style={styles.mobileMenuUser}>
               <Icon name="person" size={18} color={DS.actionPrimary} />
-              <Text style={styles.mobileMenuUserName} numberOfLines={1}>{name}</Text>
+              <Text style={styles.mobileMenuUserName} numberOfLines={1}>
+                {name}
+              </Text>
             </View>
             <Pressable
-              onPress={() => { onClose(); logout(); }}
+              onPress={() => {
+                onClose();
+                logout();
+              }}
               accessibilityRole="button"
               accessibilityLabel="Se déconnecter"
-              style={({ pressed }) => [styles.mobileLogoutBtn, pressed && styles.btnPressed]}
+              style={({ pressed }) => [
+                styles.mobileLogoutBtn,
+                pressed && styles.btnPressed,
+              ]}
             >
               <Icon name="log-out" size={16} color={DS.danger} />
               <Text style={styles.mobileLogoutText}>Déconnexion</Text>
@@ -228,9 +275,15 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           </View>
         ) : (
           <Pressable
-            onPress={() => { onClose(); router.push("/login"); }}
+            onPress={() => {
+              onClose();
+              router.push("/login");
+            }}
             accessibilityRole="button"
-            style={({ pressed }) => [styles.mobileLoginBtn, pressed && styles.btnPressed]}
+            style={({ pressed }) => [
+              styles.mobileLoginBtn,
+              pressed && styles.btnPressed,
+            ]}
           >
             <Text style={styles.btnOutlineText}>Se connecter</Text>
           </Pressable>
@@ -286,10 +339,19 @@ function SiteHeader() {
               <Pressable
                 onPress={() => setMenuOpen((v) => !v)}
                 accessibilityRole="button"
-                accessibilityLabel={menuOpen ? "Fermer le menu" : "Ouvrir le menu"}
-                style={({ pressed }) => [styles.hamburger, pressed && styles.btnPressed]}
+                accessibilityLabel={
+                  menuOpen ? "Fermer le menu" : "Ouvrir le menu"
+                }
+                style={({ pressed }) => [
+                  styles.hamburger,
+                  pressed && styles.btnPressed,
+                ]}
               >
-                <Icon name={menuOpen ? "close" : "menu"} size={24} color={DS.textStrong} />
+                <Icon
+                  name={menuOpen ? "close" : "menu"}
+                  size={24}
+                  color={DS.textStrong}
+                />
               </Pressable>
             </View>
           )}

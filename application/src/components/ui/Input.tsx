@@ -1,25 +1,38 @@
-import { useState } from 'react';
-import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputProps,
+  View,
+  ViewProps,
+} from "react-native";
 
-import { DS } from '@/constants/theme';
-import { Icon } from './Icon';
+import { DS } from "@/constants/theme";
+import { Icon } from "./Icon";
 
 type InputProps = TextInputProps & {
   label: string;
   leadingIcon?: string;
   trailingIcon?: string;
   error?: string;
+  wrapperProps?: ViewProps;
 };
 
-export function Input({ label, leadingIcon, trailingIcon, error, style, ...rest }: InputProps) {
+export function Input({
+  label,
+  leadingIcon,
+  trailingIcon,
+  error,
+  style,
+  wrapperProps,
+  ...rest
+}: InputProps) {
   const [focused, setFocused] = useState(false);
 
   return (
-    <View style={styles.wrapper}>
-      <Text
-        style={styles.label}
-        accessibilityRole="text"
-      >
+    <View style={[styles.wrapper, wrapperProps?.style]}>
+      <Text style={styles.label} accessibilityRole="text">
         {label}
       </Text>
       <View
@@ -45,15 +58,15 @@ export function Input({ label, leadingIcon, trailingIcon, error, style, ...rest 
           {...rest}
         />
         {trailingIcon && (
-          <Icon
-            name={trailingIcon}
-            size={20}
-            color={DS.textMuted}
-          />
+          <Icon name={trailingIcon} size={20} color={DS.textMuted} />
         )}
       </View>
       {!!error && (
-        <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite">
+        <Text
+          style={styles.error}
+          accessibilityRole="alert"
+          accessibilityLiveRegion="polite"
+        >
           {error}
         </Text>
       )}
@@ -67,13 +80,13 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
     color: DS.textStrong,
     lineHeight: 20,
   },
   inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     minHeight: DS.targetMin,
     borderRadius: DS.radiusMd,
     borderWidth: 1.5,
@@ -102,6 +115,6 @@ const styles = StyleSheet.create({
   error: {
     fontSize: 13,
     color: DS.dangerText,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

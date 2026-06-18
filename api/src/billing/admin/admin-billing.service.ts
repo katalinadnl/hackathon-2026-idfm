@@ -6,6 +6,7 @@ import {
 
 import { PrismaService } from '../../prisma/prisma.service';
 import { StripeProvider } from '../stripe/stripe.provider';
+import { SubscriptionsService } from 'src/subscriptions/subscriptions.service';
 
 interface PaginationOpts {
   page: number;
@@ -30,6 +31,7 @@ export class AdminBillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stripe: StripeProvider,
+    private readonly subscriptionService: SubscriptionsService,
   ) {}
 
   // ── #57 : Subscriptions ───────────────────────────────────────────────────
@@ -45,25 +47,20 @@ export class AdminBillingService {
     }
     if (filters.search) {
       where.OR = [
-        { navigoNumber: { contains: filters.search, mode: 'insensitive' } },
+        // navigoNumber vit sur Pass désormais, pas directement sur Subscription
+        {
+          passes: {
+            some: {
+              navigoNumber: { contains: filters.search, mode: 'insensitive' },
+            },
+          },
+        },
         {
           beneficiary: {
             OR: [
-              {
-                firstName: {
-                  contains: filters.search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                lastName: {
-                  contains: filters.search,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                email: { contains: filters.search, mode: 'insensitive' },
-              },
+              { firstName: { contains: filters.search, mode: 'insensitive' } },
+              { lastName: { contains: filters.search, mode: 'insensitive' } },
+              { email: { contains: filters.search, mode: 'insensitive' } },
             ],
           },
         },
@@ -75,8 +72,9 @@ export class AdminBillingService {
         where,
         include: {
           beneficiary: true,
-          payer: { select: { id: true, email: true, accountNumber: true } },
+          bankInfo: { include: { account: true } },
           referrer: { select: { id: true, email: true, accountNumber: true } },
+          passes: { include: { delivery: true } },
           _count: { select: { payments: true } },
         },
         orderBy: { startDate: 'desc' },
@@ -87,26 +85,27 @@ export class AdminBillingService {
     ]);
 
     return {
-      items: items.map((sub) => ({
-        id: sub.id,
-        navigoNumber: sub.navigoNumber,
-        subscriptionType: sub.subscriptionType,
-        status: sub.status,
-        startDate: sub.startDate.toISOString(),
-        endDate: sub.endDate.toISOString(),
-        beneficiary: {
-          id: sub.beneficiary.id,
-          name: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
-          email: sub.beneficiary.email,
-        },
-        payer: sub.payer
-          ? { id: sub.payer.id, email: sub.payer.email }
-          : null,
-        referrer: sub.referrer
-          ? { id: sub.referrer.id, email: sub.referrer.email }
-          : null,
-        paymentCount: sub._count.payments,
-      })),
+      items: items.map((sub) => {
+        const activePass = this.subscriptionService.getActivePass(sub.passes);
+        return {
+          id: sub.id,
+          navigoNumber: activePass?.navigoNumber ?? null,
+          subscriptionType: sub.subscriptionType,
+          status: sub.status,
+          startDate: sub.startDate.toISOString(),
+          endDate: sub.endDate.toISOString(),
+          beneficiary: {
+            id: sub.beneficiary.id,
+            name: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
+            email: sub.beneficiary.email,
+          },
+          bankInfo: sub.bankInfo,
+          referrer: sub.referrer
+            ? { id: sub.referrer.id, email: sub.referrer.email }
+            : null,
+          paymentCount: sub._count.payments,
+        };
+      }),
       total,
       page: filters.page,
       totalPages: Math.ceil(total / filters.limit),
@@ -118,9 +117,10 @@ export class AdminBillingService {
       where: { id },
       include: {
         beneficiary: true,
-        payer: { include: { beneficiary: true } },
+        bankInfo: { include: { account: { include: { beneficiary: true } } } },
         referrer: { include: { beneficiary: true } },
         payments: { orderBy: { paidAt: 'desc' } },
+        passes: { include: { delivery: true } },
       },
     });
     if (!sub) throw new NotFoundException(`Subscription ${id} not found`);
@@ -132,10 +132,13 @@ export class AdminBillingService {
       .filter((p) => p.status === 'failed')
       .reduce((sum, p) => sum + p.amount, 0);
 
+    const activePass = this.subscriptionService.getActivePass(sub.passes);
+
     return {
       ...sub,
       startDate: sub.startDate.toISOString(),
       endDate: sub.endDate.toISOString(),
+      navigoNumber: activePass?.navigoNumber ?? null,
       summary: {
         totalPaid: Number(totalPaid.toFixed(2)),
         totalFailed: Number(totalFailed.toFixed(2)),
@@ -169,7 +172,8 @@ export class AdminBillingService {
           subscription: {
             include: {
               beneficiary: true,
-              payer: { select: { id: true, email: true } },
+              bankInfo: { include: { account: true } },
+              passes: { where: { status: 'active' } },
             },
           },
         },
@@ -181,22 +185,32 @@ export class AdminBillingService {
     ]);
 
     return {
-      items: items.map((p) => ({
-        id: p.id,
-        amount: p.amount,
-        status: p.status,
-        method: p.method,
-        paidAt: p.paidAt.toISOString(),
-        subscription: {
-          id: p.subscription.id,
-          navigoNumber: p.subscription.navigoNumber,
-          subscriptionType: p.subscription.subscriptionType,
-          beneficiaryName: `${p.subscription.beneficiary.firstName} ${p.subscription.beneficiary.lastName}`,
-        },
-        payer: p.subscription.payer
-          ? { id: p.subscription.payer.id, email: p.subscription.payer.email }
-          : null,
-      })),
+      items: items.map((p) => {
+        const activePass = this.subscriptionService.getActivePass(
+          p.subscription.passes,
+        );
+        return {
+          id: p.id,
+          amount: p.amount,
+          status: p.status,
+          method: p.method,
+          paidAt: p.paidAt.toISOString(),
+          subscription: {
+            id: p.subscription.id,
+            navigoNumber: activePass?.navigoNumber ?? null,
+            subscriptionType: p.subscription.subscriptionType,
+            beneficiaryName: `${p.subscription.beneficiary.firstName} ${p.subscription.beneficiary.lastName}`,
+          },
+          // "payeur" est désormais le compte propriétaire du BankInfo utilisé,
+          // une information dérivée, plus une relation directe sur Subscription.
+          payer: p.subscription.bankInfo
+            ? {
+                id: p.subscription.bankInfo.account.id,
+                email: p.subscription.bankInfo.account.email,
+              }
+            : null,
+        };
+      }),
       total,
       page: filters.page,
       totalPages: Math.ceil(total / filters.limit),
@@ -265,8 +279,7 @@ export class AdminBillingService {
       where: { id: accountId },
       include: { beneficiary: true },
     });
-    if (!account)
-      throw new NotFoundException(`Account ${accountId} not found`);
+    if (!account) throw new NotFoundException(`Account ${accountId} not found`);
 
     return {
       accountId: account.id,
@@ -286,8 +299,7 @@ export class AdminBillingService {
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
     });
-    if (!account)
-      throw new NotFoundException(`Account ${accountId} not found`);
+    if (!account) throw new NotFoundException(`Account ${accountId} not found`);
 
     if (!account.stripeMandateId && !account.stripePaymentMethodId) {
       throw new BadRequestException('No active mandate to revoke');

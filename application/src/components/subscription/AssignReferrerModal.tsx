@@ -1,0 +1,225 @@
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Modal, StyleSheet, Text, View } from "react-native";
+
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Icon } from "@/components/ui/Icon";
+import { Input } from "@/components/ui/Input";
+import { DS } from "@/constants/theme";
+import { AccountInfo } from "@/types/subscription";
+import { assignReferrer, searchAccountsByEmail } from "@/lib/api/subscriptions";
+
+type Props = {
+  visible: boolean;
+  subscriptionId: number;
+  onClose: () => void;
+  onSuccess: () => void;
+};
+
+function accountLabel(account: AccountInfo) {
+  return account.beneficiary
+    ? `${account.beneficiary.firstName} ${account.beneficiary.lastName}`
+    : account.accountNumber;
+}
+
+export function AssignReferrerModal({
+  visible,
+  subscriptionId,
+  onClose,
+  onSuccess,
+}: Props) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<AccountInfo[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selected, setSelected] = useState<AccountInfo | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    if (query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+
+    debounceRef.current = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const accounts = await searchAccountsByEmail(query.trim());
+        setResults(accounts);
+      } catch {
+        setResults([]);
+      } finally {
+        setSearching(false);
+      }
+    }, 350);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [query, visible]);
+
+  const handleClose = () => {
+    setQuery("");
+    setResults([]);
+    setSelected(null);
+    setError(null);
+    onClose();
+  };
+
+  const handleConfirm = async () => {
+    if (!selected) return;
+
+    setSubmitting(true);
+    setError(null);
+    try {
+      await assignReferrer(subscriptionId, selected.id);
+      handleClose();
+      onSuccess();
+    } catch {
+      setError("Impossible d'associer ce compte. Veuillez réessayer.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+    >
+      <View style={s.overlay}>
+        <Card style={s.modal}>
+          <View style={s.header}>
+            <Icon name="person" size={22} color={DS.actionPrimary} />
+            <Text style={s.title}>Ajouter un référant</Text>
+          </View>
+
+          <Text style={s.body}>
+            Recherchez un compte par email pour lui donner accès à la gestion de
+            cet abonnement.
+          </Text>
+
+          <Input
+            label="Email du référant"
+            placeholder="prenom.nom@email.fr"
+            value={query}
+            onChangeText={(text) => {
+              setQuery(text);
+              setSelected(null);
+            }}
+            leadingIcon="search"
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+          />
+
+          {searching && (
+            <View style={s.searchingRow}>
+              <ActivityIndicator size="small" color={DS.actionPrimary} />
+              <Text style={s.searchingText}>Recherche…</Text>
+            </View>
+          )}
+
+          {!searching && results.length > 0 && (
+            <View style={s.resultsList}>
+              {results.map((account) => (
+                <Card
+                  key={account.id}
+                  interactive
+                  onPress={() => setSelected(account)}
+                  style={[
+                    s.resultCard,
+                    selected?.id === account.id && s.resultCardSelected,
+                  ]}
+                >
+                  <View style={s.resultCardRow}>
+                    <View style={s.resultCardText}>
+                      <Text style={s.resultName}>{accountLabel(account)}</Text>
+                      <Text style={s.resultEmail}>{account.email}</Text>
+                    </View>
+                    {selected?.id === account.id && (
+                      <Icon name="check" size={18} color={DS.actionPrimary} />
+                    )}
+                  </View>
+                </Card>
+              ))}
+            </View>
+          )}
+
+          {!searching && query.trim().length >= 2 && results.length === 0 && (
+            <Text style={s.noResults}>
+              Aucun compte trouvé pour cette recherche.
+            </Text>
+          )}
+
+          {error && <Text style={s.error}>{error}</Text>}
+
+          <View style={s.actions}>
+            <Button
+              variant="tertiary"
+              onPress={handleClose}
+              disabled={submitting}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="primary"
+              onPress={handleConfirm}
+              disabled={!selected || submitting}
+            >
+              {submitting ? "Association…" : "Associer"}
+            </Button>
+          </View>
+        </Card>
+      </View>
+    </Modal>
+  );
+}
+
+const s = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: DS.space5,
+  },
+  modal: { width: "100%", maxWidth: 440, gap: DS.space3 },
+  header: { flexDirection: "row", alignItems: "center", gap: DS.space2 },
+  title: { fontSize: 17, fontWeight: "700", color: DS.textStrong, flex: 1 },
+  body: { fontSize: 14, color: DS.textBody, lineHeight: 20 },
+  searchingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: DS.space2,
+    paddingVertical: DS.space2,
+  },
+  searchingText: { fontSize: 13, color: DS.textMuted },
+  resultsList: { gap: DS.space2, maxHeight: 240 },
+  resultCard: { padding: DS.space3 },
+  resultCardSelected: { borderColor: DS.actionPrimary, borderWidth: 1.5 },
+  resultCardRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  resultCardText: { gap: 2 },
+  resultName: { fontSize: 14, fontWeight: "600", color: DS.textStrong },
+  resultEmail: { fontSize: 12, color: DS.textMuted },
+  noResults: { fontSize: 13, color: DS.textMuted, fontStyle: "italic" },
+  error: { fontSize: 13, color: DS.dangerText },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "flex-end",
+    gap: DS.space3,
+    marginTop: DS.space2,
+  },
+});

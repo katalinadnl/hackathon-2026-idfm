@@ -8,10 +8,15 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/Address.js'
 export type * from './models/Department.js'
 export type * from './models/Beneficiary.js'
-export type * from './models/StatusVerification.js'
+export type * from './models/Pass.js'
+export type * from './models/PassUsage.js'
+export type * from './models/Delivery.js'
 export type * from './models/Account.js'
+export type * from './models/BankInfo.js'
 export type * from './models/Subscription.js'
 export type * from './models/Payment.js'
+export type * from './models/StatusVerification.js'
 export type * from './commonInputTypes.js'
