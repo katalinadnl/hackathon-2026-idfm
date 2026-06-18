@@ -13,11 +13,11 @@ import {
   SubscriptionWithRelations,
 } from './subscriptions.type';
 import { ReportLostOrStolenDto } from './dto/report-lost-or-stolen.dto';
-import { AddressType, PassStatus } from 'src/generated/prisma/enums';
 import { MailService } from 'src/mail/mail.service';
 import { AccountsService } from 'src/accounts/accounts.service';
 import { Pass, SubscriptionResponse } from './dto/subscription-response.dto';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
+import { AddressType, PassStatus } from 'src/generated/prisma/enums';
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 
