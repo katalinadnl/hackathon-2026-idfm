@@ -9,3 +9,7 @@ api.{$DOMAIN} {
 mail.{$DOMAIN} {
 	reverse_proxy mailhog:8025
 }
+
+cms.{$DOMAIN} {
+	reverse_proxy directus:8055
+}
