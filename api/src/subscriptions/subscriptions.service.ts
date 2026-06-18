@@ -35,8 +35,13 @@ export interface SubscriptionWithRoles {
 @Injectable()
 export class SubscriptionsService {
   constructor(private readonly prisma: PrismaService) {}
-  // TODO : verify bank info id
+
   async create(createSubscriptionDto: CreateSubscriptionDto) {
+    await this.ensureBankInfoBelongsToReferrer(
+      createSubscriptionDto.bankInfoId,
+      createSubscriptionDto.referrerId,
+    );
+
     const existing = await this.findExistingSubscriptionForPlan(
       createSubscriptionDto.beneficiaryId,
       createSubscriptionDto.subscriptionType,
@@ -53,11 +58,6 @@ export class SubscriptionsService {
         );
       }
 
-      // Abonnement existant pour cette même formule, mais inactif ou
-      // expiré : on le réactive avec les nouvelles dates plutôt que de
-      // créer un doublon. On garde volontairement le même navigoNumber
-      // (même "carte"/référence) — celui généré côté front pour cette
-      // soumission est simplement ignoré dans ce cas.
       return this.prisma.subscription.update({
         where: { id: existing.id },
         data: {
@@ -73,6 +73,41 @@ export class SubscriptionsService {
     return this.prisma.subscription.create({
       data: createSubscriptionDto,
     });
+  }
+
+  /**
+   * Empêche d'utiliser les coordonnées bancaires d'un autre compte pour
+   * payer un abonnement : le bankInfoId fourni doit exister et appartenir
+   * au compte référent (toujours le compte authentifié à ce stade, voir
+   * SubscriptionsController.create). On exige referrerId plutôt que de
+   * l'accepter undefined : sans lui, impossible de vérifier l'appartenance.
+   */
+  private async ensureBankInfoBelongsToReferrer(
+    bankInfoId: number,
+    referrerId?: number,
+  ) {
+    if (referrerId === undefined) {
+      throw new ForbiddenException(
+        'Impossible de vérifier les coordonnées bancaires sans compte authentifié.',
+      );
+    }
+
+    const bankInfo = await this.prisma.bankInfo.findUnique({
+      where: { id: bankInfoId },
+      select: { accountId: true },
+    });
+
+    if (!bankInfo) {
+      throw new NotFoundException(
+        `Coordonnées bancaires ${bankInfoId} introuvables.`,
+      );
+    }
+
+    if (bankInfo.accountId !== referrerId) {
+      throw new ForbiddenException(
+        "Ces coordonnées bancaires n'appartiennent pas à votre compte.",
+      );
+    }
   }
 
   private async findExistingSubscriptionForPlan(
