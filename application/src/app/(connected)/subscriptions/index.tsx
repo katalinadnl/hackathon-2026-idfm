@@ -1,14 +1,4 @@
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
 import { DS } from "@/constants/theme";

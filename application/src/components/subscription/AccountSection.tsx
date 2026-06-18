@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
@@ -67,7 +66,7 @@ export function AccountsSection({
               <>
                 <Text style={s.accountCardSub}>Aucun compte associé</Text>
                 <Button
-                  variant="secondary"
+                  variant="tertiary"
                   size="sm"
                   fullWidth
                   accessibilityLabel="Associer à un compte"
@@ -113,21 +112,6 @@ export function AccountsSection({
             </Button>
           )}
         </Card>
-
-        <Card style={s.accountCard}>
-          <View style={s.accountCardHeader}>
-            <Icon name="person" size={16} color={DS.actionPrimary} />
-            <Text style={s.accountCardTitle}>Payeur</Text>
-          </View>
-          {payer ? (
-            <>
-              <Text style={s.accountCardValue}>{accountName(payer)}</Text>
-              <Text style={s.accountCardSub}>{payer.email}</Text>
-            </>
-          ) : (
-            <Badge tone="neutral">Titulaire</Badge>
-          )}
-        </Card>
       </View>
       <ConfirmModal
         visible={unlinkVisible}
@@ -136,7 +120,10 @@ export function AccountsSection({
         confirmLabel="Dissocier"
         confirmVariant="danger"
         loading={unlinking}
-        onConfirm={handleConfirmUnlink}
+        onConfirm={() => {
+          handleConfirmUnlink();
+          onReferrerChanged();
+        }}
         onCancel={() => setUnlinkVisible(false)}
       />
 
