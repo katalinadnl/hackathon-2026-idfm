@@ -21,15 +21,7 @@ export function RibTab({ accountId, subscriptionId }: Props) {
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState(false);
 
-  if (subscriptionId === null) {
-    return (
-      <Card>
-        <Text style={styles.hint}>
-          Sélectionnez un pass précis pour afficher le RIB associé.
-        </Text>
-      </Card>
-    );
-  }
+  const isGlobal = subscriptionId === null;
 
   if (loading) {
     return (
@@ -104,7 +96,11 @@ export function RibTab({ accountId, subscriptionId }: Props) {
             onPress={handleModify}
             disabled={busy}
           >
-            {busy ? "Préparation…" : "Modifier mon RIB"}
+            {busy
+              ? "Préparation…"
+              : isGlobal
+                ? "Modifier mon RIB (tous les passes)"
+                : "Modifier mon RIB"}
           </Button>
         )}
       </Card>

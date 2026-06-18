@@ -77,12 +77,13 @@ export const SubscriptionStatus = {
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
 
 
-export const PaymentMethod = {
-  card: 'card',
-  direct_debit: 'direct_debit'
+export const PaymentMode = {
+  CARD_ONCE: 'CARD_ONCE',
+  SEPA_ONCE: 'SEPA_ONCE',
+  SEPA_MONTHLY: 'SEPA_MONTHLY'
 } as const
 
-export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
+export type PaymentMode = (typeof PaymentMode)[keyof typeof PaymentMode]
 
 
 export const PaymentStatus = {

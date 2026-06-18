@@ -132,8 +132,24 @@ export class StripeProvider {
     const { payer, beneficiary } = await this.payerOf(subscriptionId);
     if (!payer?.stripeCustomerId) return null;
 
-    const intent = await this.getClient().setupIntents.create({
-      customer: payer.stripeCustomerId,
+    const stripe = this.getClient();
+    let customerId = payer.stripeCustomerId;
+
+    if (!customerId) {
+      const customer = await stripe.customers.create({
+        email: payer.email,
+        name: payer.email,
+        metadata: { accountId: String(payer.id) },
+      });
+      customerId = customer.id;
+      await this.prisma.account.update({
+        where: { id: payer.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const intent = await stripe.setupIntents.create({
+      customer: customerId,
       payment_method_types: ['sepa_debit'],
       usage: 'off_session',
     });
@@ -147,6 +163,96 @@ export class StripeProvider {
       billingName,
       billingEmail: payer.email,
     };
+  }
+
+  async retryPayment(
+    subscriptionId: number,
+    amount: number,
+  ): Promise<{ ok: boolean; error?: string }> {
+    const { payer } = await this.payerOf(subscriptionId);
+    if (!payer?.stripeCustomerId || !payer?.stripePaymentMethodId) {
+      return { ok: false, error: 'Aucun moyen de paiement configuré.' };
+    }
+
+    try {
+      const stripe = this.getClient();
+      const intent = await stripe.paymentIntents.create({
+        amount: Math.round(amount * 100),
+        currency: 'eur',
+        customer: payer.stripeCustomerId,
+        payment_method: payer.stripePaymentMethodId,
+        payment_method_types: ['sepa_debit'],
+        confirm: true,
+        off_session: true,
+      });
+      return {
+        ok: intent.status === 'succeeded' || intent.status === 'processing',
+      };
+    } catch (err: any) {
+      return { ok: false, error: err.message };
+    }
+  }
+
+  async createCardCheckoutSession(
+    payerId: number,
+    amount: number,
+    description: string,
+    successUrl: string,
+    cancelUrl: string,
+  ): Promise<{ url: string; sessionId: string } | null> {
+    const payer = await this.prisma.account.findUnique({
+      where: { id: payerId },
+      include: { beneficiary: true },
+    });
+    if (!payer) return null;
+
+    const stripe = this.getClient();
+    let customerId = payer.stripeCustomerId;
+
+    if (!customerId) {
+      const name = payer.beneficiary
+        ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
+        : payer.email.split('@')[0];
+      const customer = await stripe.customers.create({
+        email: payer.email,
+        name,
+        metadata: { accountId: String(payer.id) },
+      });
+      customerId = customer.id;
+      await this.prisma.account.update({
+        where: { id: payer.id },
+        data: { stripeCustomerId: customerId },
+      });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      customer: customerId,
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            unit_amount: Math.round(amount * 100),
+            product_data: { name: description },
+          },
+          quantity: 1,
+        },
+      ],
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+    });
+    return session.url ? { url: session.url, sessionId: session.id } : null;
+  }
+
+  async checkCheckoutSession(sessionId: string): Promise<{ paid: boolean }> {
+    try {
+      const session =
+        await this.getClient().checkout.sessions.retrieve(sessionId);
+      return { paid: session.payment_status === 'paid' };
+    } catch {
+      return { paid: false };
+    }
   }
 
   async finalizeRibChange(

@@ -1,6 +1,7 @@
 import { Platform, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { AuthScreen } from '@/components/auth/AuthScreen';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Icon } from '@/components/ui/Icon';
@@ -17,7 +18,10 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
+  const { user, logout, token } = useAuth();
+
+  if (!token) return <AuthScreen />;
+
   const fullName =
     [user?.firstName, user?.lastName].filter(Boolean).join(' ') || '—';
 

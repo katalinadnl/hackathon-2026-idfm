@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Platform,
   Pressable,
@@ -120,7 +120,7 @@ const CONFIDENCE_FEATURES = {
 
 function SectionTitle({ children }: { children: string }) {
   return (
-    <Text style={styles.sectionTitle} accessibilityRole="header">
+    <Text style={styles.sectionTitle} role="heading" aria-level={2}>
       {children}
     </Text>
   );
@@ -202,6 +202,7 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
         accessibilityRole="button"
         accessibilityState={{ expanded: open }}
         accessibilityLabel={question}
+        accessibilityHint={open ? 'Appuyez pour fermer la réponse' : 'Appuyez pour afficher la réponse'}
         hitSlop={8}
       >
         <Text style={styles.faqQuestionText}>{question}</Text>
@@ -243,6 +244,12 @@ export default function VisitorsScreen() {
     { q: t('faq_q5'), a: t('faq_a5') },
   ];
 
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof document !== 'undefined') {
+      document.title = lang === 'en' ? 'Visitors – Comutitres' : 'Visiteurs – Comutitres';
+    }
+  }, [lang]);
+
   const sectionPad = {
     paddingHorizontal: hPad,
     paddingVertical: isDesktop ? DS.space8 : DS.space7,
@@ -281,7 +288,8 @@ export default function VisitorsScreen() {
             {/* Title */}
             <Text
               style={[styles.heroTitle, isDesktop && styles.heroTitleDesktop]}
-              accessibilityRole="header"
+              role="heading"
+              aria-level={1}
             >
               {t('visitors_title')}
             </Text>
@@ -290,9 +298,9 @@ export default function VisitorsScreen() {
             </Text>
 
             {/* Stat pills */}
-            <View style={styles.statRow} accessibilityRole="list">
+            <View style={styles.statRow} role="list">
               {[t('stat_languages'), t('stat_no_account'), t('stat_network')].map((s) => (
-                <View key={s} style={styles.statPill}>
+                <View key={s} style={styles.statPill} role="listitem">
                   <Icon name="check" size={14} color={DS.success} />
                   <Text style={styles.statText}>{s}</Text>
                 </View>
@@ -412,14 +420,15 @@ export default function VisitorsScreen() {
                       </View>
                     ))}
                   </View>
-                  <Button
-                    variant={on ? 'primary' : 'secondary'}
-                    fullWidth
-                    accessibilityLabel={`${t('passes_select')} ${p.name}`}
-                    onPress={() => setSelectedPass(p.id)}
-                  >
-                    {t('passes_select')}
-                  </Button>
+                  <View importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+                    <Button
+                      variant={on ? 'primary' : 'secondary'}
+                      fullWidth
+                      onPress={() => setSelectedPass(p.id)}
+                    >
+                      {t('passes_select')}
+                    </Button>
+                  </View>
                 </Card>
               );
             })}
@@ -461,7 +470,11 @@ export default function VisitorsScreen() {
           <SectionTitle>{t('airports_title')}</SectionTitle>
           <View style={[isDesktop && styles.airportsGrid]}>
             {airports.map((a, i) => (
-              <Card key={i} style={[styles.airportCard, isDesktop && styles.gridItem]}>
+              <Card
+                key={i}
+                style={[styles.airportCard, isDesktop && styles.gridItem]}
+                accessibilityLabel={`${a.name}. ${a.route}. Durée : ${a.mins}. Prix : ${a.price}`}
+              >
                 <View style={styles.airportHeader}>
                   <LineBadge mode={a.mode} line={a.line} />
                   <Text style={styles.airportName}>{a.name}</Text>
@@ -519,7 +532,7 @@ export default function VisitorsScreen() {
         </View>
 
         {/* ─── Footer ──────────────────────────────────────────── */}
-        <View style={styles.footer} accessible accessibilityRole="none">
+        <View style={styles.footer} role="contentinfo">
           <Text style={styles.footerBrand}>Comutitres</Text>
           <Text style={styles.footerCopy}>© 2026 Comutitres · Île-de-France Mobilités</Text>
         </View>

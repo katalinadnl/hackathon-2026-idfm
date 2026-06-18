@@ -29,13 +29,18 @@ model Subscription {
   cancelledBy Account?    @relation("SubscriptionCancelledBy", fields: [cancelledById], references: [id])
   bankInfo    BankInfo    @relation("BankInfo", fields: [bankInfoId], references: [id])
 
+
+  paymentMode      PaymentMode @default(SEPA_MONTHLY)
+  annualAmount     Float       @default(0)
+  monthlyAmount    Float?
   payments Payment[]
   passes   Pass[]
 }
 
-enum PaymentMethod {
-  card
-  direct_debit
+enum PaymentMode {
+  CARD_ONCE
+  SEPA_ONCE
+  SEPA_MONTHLY
 }
 
 enum PaymentStatus {
@@ -49,10 +54,13 @@ model Payment {
   subscriptionId Int
   amount         Float
   paidAt         DateTime      @default(now())
-  method         PaymentMethod
+  method         PaymentMode
   status         PaymentStatus @default(succeeded)
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
+
+    @@unique([subscriptionId, paidAt, amount])
+
 }
 
 enum VerificationSource {

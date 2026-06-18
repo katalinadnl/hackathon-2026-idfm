@@ -19,7 +19,7 @@ import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
-
+import { Badge } from "@/components/ui/Badge";
 type TabKey = "transactions" | "mandate" | "rib";
 
 const TABS = [
@@ -29,7 +29,6 @@ const TABS = [
 ];
 
 export default function BillingScreen() {
-  const { isDesktop, hPad } = usePageLayout();
   const { user } = useAuth();
   const accountId = user?.id ?? null;
   const { data: passes, loading, error } = usePasses(accountId);
@@ -38,6 +37,33 @@ export default function BillingScreen() {
     passes?.length === 1 ? passes[0].subscriptionId : null,
   );
   const [activeTab, setActiveTab] = useState<TabKey>("transactions");
+  const hasMultiplePasses = (passes?.length ?? 0) > 1;
+  const effectivePassId =
+    selectedPassId ?? (passes?.length === 1 ? passes[0].subscriptionId : null);
+
+  const selectedPass = passes?.find(
+    (p) => p.subscriptionId === effectivePassId,
+  );
+  const anySepa = passes?.some((p) => p.hasSepa) ?? false;
+  const hasSepa = selectedPass ? selectedPass.hasSepa : anySepa;
+
+  const tabs = [
+    { key: "transactions", label: "Historique" },
+    ...(hasSepa
+      ? [
+          { key: "mandate", label: "Mandat SEPA" },
+          { key: "rib", label: "RIB" },
+        ]
+      : []),
+  ];
+
+  const paymentModeLabel = selectedPass
+    ? selectedPass.paymentMode === "card_once"
+      ? "Paiement CB en une fois"
+      : selectedPass.paymentMode === "sepa_once"
+        ? "Prélèvement SEPA annuel"
+        : "Prélèvement SEPA mensuel"
+    : null;
 
   if (accountId === null) {
     return (
@@ -48,7 +74,7 @@ export default function BillingScreen() {
   }
 
   return (
-    <>
+    <View>
       <View style={[styles.header]}>
         <Text style={styles.title} accessibilityRole="header">
           Facturation
@@ -59,7 +85,7 @@ export default function BillingScreen() {
         </Text>
       </View>
 
-      <View>
+      <View style={[]}>
         {loading && (
           <View style={styles.center}>
             <ActivityIndicator color={DS.actionPrimary} />
@@ -73,42 +99,52 @@ export default function BillingScreen() {
             <Text style={styles.errorBody}>{error}</Text>
           </Card>
         )}
-        {passes && (
+        {passes && hasMultiplePasses && (
           <PassSelector
             passes={passes}
-            selectedId={selectedPassId}
+            selectedId={effectivePassId}
             onSelect={setSelectedPassId}
           />
         )}
       </View>
 
-      <View>
-        <SegmentedTabs
-          segments={TABS}
-          active={activeTab}
-          onChange={(k) => setActiveTab(k as TabKey)}
-        />
-      </View>
+      {paymentModeLabel && (
+        <View style={[]}>
+          <Badge tone="info">
+            <Text>{paymentModeLabel}</Text>
+          </Badge>
+        </View>
+      )}
 
-      <View>
+      {tabs.length > 1 && (
+        <View style={[]}>
+          <SegmentedTabs
+            segments={tabs}
+            active={activeTab}
+            onChange={(k) => setActiveTab(k as TabKey)}
+          />
+        </View>
+      )}
+
+      <View style={[]}>
         {activeTab === "transactions" && (
           <TransactionsTab
             accountId={accountId}
-            subscriptionId={selectedPassId}
+            subscriptionId={effectivePassId}
           />
         )}
-        {activeTab === "mandate" && (
+        {activeTab === "mandate" && hasSepa && (
           <MandateTab
             accountId={accountId}
-            subscriptionId={selectedPassId}
+            subscriptionId={effectivePassId}
             onGoToRib={() => setActiveTab("rib")}
           />
         )}
-        {activeTab === "rib" && (
-          <RibTab accountId={accountId} subscriptionId={selectedPassId} />
+        {activeTab === "rib" && hasSepa && (
+          <RibTab accountId={accountId} subscriptionId={effectivePassId} />
         )}
       </View>
-    </>
+    </View>
   );
 }
 

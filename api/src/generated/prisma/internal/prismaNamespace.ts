@@ -1355,7 +1355,11 @@ export const AccountScalarFieldEnum = {
   stripeCustomerId: 'stripeCustomerId',
   stripePaymentMethodId: 'stripePaymentMethodId',
   stripeMandateId: 'stripeMandateId',
-  stripePreviousMandateId: 'stripePreviousMandateId'
+  stripePreviousMandateId: 'stripePreviousMandateId',
+  twoFactorCode: 'twoFactorCode',
+  twoFactorExpiresAt: 'twoFactorExpiresAt',
+  resetPasswordToken: 'resetPasswordToken',
+  resetPasswordExpiresAt: 'resetPasswordExpiresAt'
 } as const
 
 export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
@@ -1387,7 +1391,10 @@ export const SubscriptionScalarFieldEnum = {
   cancelledAt: 'cancelledAt',
   cancellationEffectiveAt: 'cancellationEffectiveAt',
   cancelledById: 'cancelledById',
-  bankInfoId: 'bankInfoId'
+  bankInfoId: 'bankInfoId',
+  paymentMode: 'paymentMode',
+  annualAmount: 'annualAmount',
+  monthlyAmount: 'monthlyAmount'
 } as const
 
 export type SubscriptionScalarFieldEnum = (typeof SubscriptionScalarFieldEnum)[keyof typeof SubscriptionScalarFieldEnum]
@@ -1602,6 +1609,20 @@ export type ListEnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'PaymentMode'
+ */
+export type EnumPaymentModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMode'>
+    
+
+
+/**
+ * Reference to a field of type 'PaymentMode[]'
+ */
+export type ListEnumPaymentModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMode[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1612,20 +1633,6 @@ export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, '
  * Reference to a field of type 'Float[]'
  */
 export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
-
-
-/**
- * Reference to a field of type 'PaymentMethod'
- */
-export type EnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod'>
-    
-
-
-/**
- * Reference to a field of type 'PaymentMethod[]'
- */
-export type ListEnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod[]'>
     
 
 

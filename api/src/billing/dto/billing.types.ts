@@ -1,6 +1,7 @@
 export type BillingRole = 'holder' | 'referrer' | 'payer';
 
 export type PassStatus = 'active' | 'blocked' | 'replaced';
+export type PaymentModeLabel = 'CARD_ONCE' | 'SEPA_ONCE' | 'SEPA_MONTHLY';
 
 export interface PassSummary {
   subscriptionId: number;
@@ -12,6 +13,10 @@ export interface PassSummary {
   roles: BillingRole[];
   startDate: string;
   endDate: string;
+  paymentMode: PaymentModeLabel;
+  annualAmount: number;
+  monthlyAmount: number | null;
+  hasSepa: boolean;
 }
 
 export type MandateStatus = 'active' | 'pending' | 'revoked';
@@ -51,7 +56,6 @@ export interface PaymentMethodResponse {
 }
 
 export type TransactionStatus = 'succeeded' | 'failed' | 'refunded';
-export type TransactionMethod = 'card' | 'direct_debit';
 
 export interface Transaction {
   id: string;
@@ -59,9 +63,25 @@ export interface Transaction {
   label: string;
   amount: number;
   status: TransactionStatus;
-  method: TransactionMethod;
+  method: PaymentModeLabel;
   subscriptionId: number;
-  navigoNumber: string | null;
+  navigoNumber: string;
+  paidByOther: string | null;
+}
+
+export type CurrentMonthStatus =
+  | 'paid'
+  | 'pending'
+  | 'upcoming'
+  | 'failed'
+  | 'not_applicable';
+
+export interface MonthGroup {
+  month: string;
+  label: string;
+  total: number;
+  outstanding: number;
+  transactions: Transaction[];
 }
 
 export interface TransactionsResponse {
@@ -69,4 +89,9 @@ export interface TransactionsResponse {
   outstanding: number;
   currency: 'EUR';
   transactions: Transaction[];
+  monthGroups: MonthGroup[] | null;
+  paymentMode: PaymentModeLabel;
+  currentMonthStatus: CurrentMonthStatus;
+  nextPayment: { date: string; amount: number } | null;
+  annualPaid: boolean;
 }
