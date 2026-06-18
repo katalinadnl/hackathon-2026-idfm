@@ -1,10 +1,8 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import {
   ActivityIndicator,
   Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -14,7 +12,6 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card";
-import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { ApiSubscription, SubscriptionRole } from "@/hooks/use-subscriptions";
@@ -23,53 +20,6 @@ import {
   STATUS_LABEL,
   STATUS_TONE,
 } from "@/components/subscription/SubscriptionHeader";
-
-type Section = "dashboard" | "subscriptions" | "billing" | "history";
-
-const NAV_ITEMS: { id: Section; icon: string; label: string }[] = [
-  { id: "dashboard", icon: "star", label: "Tableau de bord" },
-  { id: "subscriptions", icon: "ticket", label: "Vos abonnements" },
-  { id: "billing", icon: "receipt", label: "Facturations" },
-  { id: "history", icon: "clock", label: "Historique" },
-];
-
-const HISTORY = [
-  {
-    id: "H1",
-    date: "15 juin 2026",
-    type: "Validation",
-    desc: "Métro ligne 1 — Châtelet",
-    time: "08:04",
-  },
-  {
-    id: "H2",
-    date: "15 juin 2026",
-    type: "Validation",
-    desc: "RER A — Gare de Lyon",
-    time: "08:27",
-  },
-  {
-    id: "H3",
-    date: "14 juin 2026",
-    type: "Validation",
-    desc: "Métro ligne 14 — Saint-Lazare",
-    time: "18:12",
-  },
-  {
-    id: "H4",
-    date: "14 juin 2026",
-    type: "Validation",
-    desc: "Métro ligne 6 — Montparnasse",
-    time: "18:41",
-  },
-  {
-    id: "H5",
-    date: "13 juin 2026",
-    type: "Recharge",
-    desc: "Navigo Easy — +10 tickets",
-    time: "12:05",
-  },
-];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -98,52 +48,6 @@ const ROLE_LABELS: Record<SubscriptionRole, string> = {
 };
 
 // ─── Sub-components ────────────────────────────────────────────────────────────
-
-function SidebarItem({
-  icon,
-  label,
-  active,
-  onPress,
-  horizontal,
-}: {
-  icon: string;
-  label: string;
-  active: boolean;
-  onPress: () => void;
-  horizontal?: boolean;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.navItem,
-        active && styles.navItemActive,
-        pressed && !active && styles.navItemPressed,
-        horizontal && styles.navItemHoriz,
-        active && horizontal && styles.navItemActiveHoriz,
-      ]}
-      accessibilityRole="button"
-      accessibilityState={{ selected: active }}
-      accessibilityLabel={label}
-    >
-      <Icon
-        name={icon}
-        size={20}
-        color={active ? DS.actionPrimary : DS.textMuted}
-      />
-      <Text
-        style={[
-          styles.navLabel,
-          active && styles.navLabelActive,
-          horizontal && styles.navLabelHoriz,
-        ]}
-        numberOfLines={1}
-      >
-        {label}
-      </Text>
-    </Pressable>
-  );
-}
 
 function ActivePassCard({ sub }: { sub: ApiSubscription }) {
   const router = useRouter();
@@ -203,7 +107,7 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
   );
 }
 
-function PassRow({ sub }: { sub: ApiSubscription }) {
+export function PassRow({ sub }: { sub: ApiSubscription }) {
   const router = useRouter();
   const expiring = isExpiringSoon(sub.endDate);
   return (
@@ -271,30 +175,6 @@ function PaymentRow({ sub }: { sub: ApiSubscription }) {
   );
 }
 
-function HistoryRow({ entry }: { entry: (typeof HISTORY)[0] }) {
-  const isRecharge = entry.type === "Recharge";
-  return (
-    <View style={styles.historyRow}>
-      <View
-        style={[styles.historyIcon, isRecharge && styles.historyIconRecharge]}
-      >
-        <Icon
-          name={isRecharge ? "creditcard" : "arrow-right"}
-          size={16}
-          color={isRecharge ? DS.success : DS.actionPrimary}
-        />
-      </View>
-      <View style={styles.historyInfo}>
-        <Text style={styles.historyDesc}>{entry.desc}</Text>
-        <Text style={styles.historyMeta}>
-          {entry.type} · {entry.date}
-        </Text>
-      </View>
-      <Text style={styles.historyTime}>{entry.time}</Text>
-    </View>
-  );
-}
-
 function SectionHeader({
   title,
   action,
@@ -321,7 +201,7 @@ function SectionHeader({
   );
 }
 
-function LoadingPlaceholder() {
+export function LoadingPlaceholder() {
   return (
     <View style={styles.loadingRow}>
       <ActivityIndicator color={DS.actionPrimary} />
@@ -330,173 +210,7 @@ function LoadingPlaceholder() {
   );
 }
 
-// ─── Section content renderers ─────────────────────────────────────────────────
-
-function DashboardHome({
-  subscriptions,
-  loading,
-  onNav,
-}: {
-  subscriptions: ApiSubscription[];
-  loading: boolean;
-  onNav: (s: Section) => void;
-}) {
-  const active =
-    subscriptions.find((s) => s.status === "active") ?? subscriptions[0];
-  const withPayments = subscriptions.filter((s) => s.latestPayment);
-
-  return (
-    <View style={styles.sectionContent}>
-      {loading ? (
-        <LoadingPlaceholder />
-      ) : active ? (
-        <ActivePassCard sub={active} />
-      ) : null}
-
-      <SectionHeader
-        title="Vos abonnements"
-        action="Tout voir"
-        onAction={() => onNav("subscriptions")}
-      />
-      <View>
-        {loading ? (
-          <LoadingPlaceholder />
-        ) : subscriptions.length === 0 ? (
-          <Text style={styles.emptyText}>Aucun abonnement trouvé.</Text>
-        ) : (
-          subscriptions.map((s, i) => (
-            <View key={s.id}>
-              <PassRow sub={s} />
-              {i < subscriptions.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))
-        )}
-      </View>
-
-      <SectionHeader
-        title="Dernières facturations"
-        action="Tout voir"
-        onAction={() => onNav("billing")}
-      />
-      <View style={styles.card}>
-        {loading ? (
-          <LoadingPlaceholder />
-        ) : withPayments.length === 0 ? (
-          <Text style={styles.emptyText}>Aucune facturation.</Text>
-        ) : (
-          withPayments.slice(0, 2).map((s, i) => (
-            <View key={s.id}>
-              <PaymentRow sub={s} />
-              {i < Math.min(withPayments.length, 2) - 1 && (
-                <View style={styles.divider} />
-              )}
-            </View>
-          ))
-        )}
-      </View>
-    </View>
-  );
-}
-
-function SubscriptionsView({
-  subscriptions,
-  loading,
-}: {
-  subscriptions: ApiSubscription[];
-  loading: boolean;
-}) {
-  return (
-    <View style={styles.sectionContent}>
-      <Text style={styles.viewTitle}>Vos abonnements</Text>
-      <Text style={styles.viewSubtitle}>
-        Gérez vos titres de transport actifs et renouvelés automatiquement.
-      </Text>
-
-      <View style={styles.card}>
-        {loading ? (
-          <LoadingPlaceholder />
-        ) : subscriptions.length === 0 ? (
-          <Text style={styles.emptyText}>Aucun abonnement trouvé.</Text>
-        ) : (
-          subscriptions.map((s, i) => (
-            <View key={s.id}>
-              <PassRow sub={s} />
-              {i < subscriptions.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))
-        )}
-      </View>
-
-      <Button variant="secondary" size="md" leadingIcon="ticket">
-        Ajouter un abonnement
-      </Button>
-    </View>
-  );
-}
-
-function BillingView({
-  subscriptions,
-  loading,
-}: {
-  subscriptions: ApiSubscription[];
-  loading: boolean;
-}) {
-  const withPayments = subscriptions.filter((s) => s.latestPayment);
-  return (
-    <View style={styles.sectionContent}>
-      <Text style={styles.viewTitle}>Facturations</Text>
-      <Text style={styles.viewSubtitle}>
-        Retrouvez l&apos;ensemble de vos factures et justificatifs.
-      </Text>
-
-      <View style={styles.card}>
-        {loading ? (
-          <LoadingPlaceholder />
-        ) : withPayments.length === 0 ? (
-          <Text style={styles.emptyText}>Aucune facturation.</Text>
-        ) : (
-          withPayments.map((s, i) => (
-            <View key={s.id}>
-              <PaymentRow sub={s} />
-              {i < withPayments.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))
-        )}
-      </View>
-
-      <Text style={styles.billingNote}>
-        Les factures sont disponibles en téléchargement au format PDF.
-      </Text>
-    </View>
-  );
-}
-
-function HistoryView() {
-  return (
-    <View style={styles.sectionContent}>
-      <Text style={styles.viewTitle}>Historique</Text>
-      <Text style={styles.viewSubtitle}>
-        Vos dernières validations et recharges sur les 30 derniers jours.
-      </Text>
-
-      <View style={styles.card}>
-        {HISTORY.map((entry, i) => (
-          <View key={entry.id}>
-            <HistoryRow entry={entry} />
-            {i < HISTORY.length - 1 && <View style={styles.divider} />}
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-// ─── Main page ─────────────────────────────────────────────────────────────────
-
-export default function DashboardPage() {
-  const { isDesktop } = usePageLayout();
-  const [activeSection, setActiveSection] = useState<Section>("dashboard");
-
+export default function DashboardHome() {
   const { user } = useAuth();
   const {
     data: subscriptions,
@@ -507,203 +221,92 @@ export default function DashboardPage() {
   );
 
   if (!user || !subscriptions) return null;
+  const active =
+    subscriptions.find((s) => s.status === "active") ?? subscriptions[0];
+  const withPayments = subscriptions.filter((s) => s.latestPayment);
   const accountName = user?.firstName ?? user?.email ?? "";
 
   return (
-    <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
-      <View
-        style={[styles.layout, isDesktop && styles.layoutDesktop, pageInner]}
-      >
-        {/* ── Sidebar ──────────────────────────────────────────────── */}
-        {isDesktop ? (
-          <View style={styles.sidebar}>
-            <Text style={styles.sidebarTitle}>Mon espace</Text>
-            {NAV_ITEMS.map((item) => (
-              <SidebarItem
-                key={item.id}
-                icon={item.icon}
-                label={item.label}
-                active={activeSection === item.id}
-                onPress={() => setActiveSection(item.id)}
-              />
-            ))}
-          </View>
-        ) : (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.horizNav}
-            contentContainerStyle={styles.horizNavContent}
-          >
-            {NAV_ITEMS.map((item) => (
-              <SidebarItem
-                key={item.id}
-                icon={item.icon}
-                label={item.label}
-                active={activeSection === item.id}
-                onPress={() => setActiveSection(item.id)}
-                horizontal
-              />
-            ))}
-          </ScrollView>
-        )}
-
-        {/* ── Main content ─────────────────────────────────────────── */}
-        <View style={[styles.main, isDesktop && styles.mainDesktop]}>
-          {/* Greeting */}
-          <View style={styles.greeting}>
-            <View style={styles.avatarBubble}>
-              <Text style={styles.avatarText}>
-                {accountName.slice(0, 2).toUpperCase()}
-              </Text>
-            </View>
-            <View>
-              <Text style={styles.greetingText}>Bonjour, {accountName}</Text>
-              <Text style={styles.greetingSubtitle}>
-                Voici votre tableau de bord.
-              </Text>
-            </View>
-          </View>
-
-          {error && (
-            <View style={styles.errorBanner}>
-              <Icon name="warning" size={16} color={DS.warning} />
-              <Text style={styles.errorText}>
-                Impossible de charger les données. Vérifiez que l&apos;API est
-                démarrée.
-              </Text>
-            </View>
-          )}
-
-          {activeSection === "dashboard" && (
-            <DashboardHome
-              subscriptions={subscriptions}
-              loading={loading}
-              onNav={setActiveSection}
-            />
-          )}
-          {activeSection === "subscriptions" && (
-            <SubscriptionsView
-              subscriptions={subscriptions}
-              loading={loading}
-            />
-          )}
-          {activeSection === "billing" && (
-            <BillingView subscriptions={subscriptions} loading={loading} />
-          )}
-          {activeSection === "history" && <HistoryView />}
+    <>
+      <View style={styles.greeting}>
+        <View style={styles.avatarBubble}>
+          <Text style={styles.avatarText}>
+            {accountName.slice(0, 2).toUpperCase()}
+          </Text>
+        </View>
+        <View>
+          <Text style={styles.greetingText}>Bonjour, {accountName}</Text>
+          <Text style={styles.greetingSubtitle}>
+            Voici votre tableau de bord.
+          </Text>
         </View>
       </View>
-    </ScrollView>
+
+      {error && (
+        <View style={styles.errorBanner}>
+          <Icon name="warning" size={16} color={DS.warning} />
+          <Text style={styles.errorText}>
+            Impossible de charger les données. Vérifiez que l&apos;API est
+            démarrée.
+          </Text>
+        </View>
+      )}
+      <View style={styles.sectionContent}>
+        {loading ? (
+          <LoadingPlaceholder />
+        ) : active ? (
+          <ActivePassCard sub={active} />
+        ) : null}
+
+        <SectionHeader
+          title="Vos abonnements"
+          action="Tout voir"
+          onAction={() => {}}
+        />
+        <View>
+          {loading ? (
+            <LoadingPlaceholder />
+          ) : subscriptions.length === 0 ? (
+            <Text style={styles.emptyText}>Aucun abonnement trouvé.</Text>
+          ) : (
+            subscriptions.map((s, i) => (
+              <View key={s.id}>
+                <PassRow sub={s} />
+                {i < subscriptions.length - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </View>
+            ))
+          )}
+        </View>
+
+        <SectionHeader
+          title="Dernières facturations"
+          action="Tout voir"
+          onAction={() => {}}
+        />
+        <View style={styles.card}>
+          {loading ? (
+            <LoadingPlaceholder />
+          ) : withPayments.length === 0 ? (
+            <Text style={styles.emptyText}>Aucune facturation.</Text>
+          ) : (
+            withPayments.slice(0, 2).map((s, i) => (
+              <View key={s.id}>
+                <PaymentRow sub={s} />
+                {i < Math.min(withPayments.length, 2) - 1 && (
+                  <View style={styles.divider} />
+                )}
+              </View>
+            ))
+          )}
+        </View>
+      </View>
+    </>
   );
 }
 
-// ─── Styles ────────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: DS.surfacePage,
-  },
-  pageContent: {
-    flexGrow: 1,
-    paddingHorizontal: DS.space5,
-    paddingVertical: DS.space6,
-    paddingBottom: DS.space9,
-  },
-
-  layout: {
-    flexDirection: "column",
-    gap: DS.space4,
-  },
-  layoutDesktop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: DS.space6,
-  },
-
-  sidebar: {
-    width: 228,
-    flexShrink: 0,
-    backgroundColor: DS.surfaceCard,
-    borderRadius: DS.radiusMd,
-    borderWidth: 1,
-    borderColor: DS.borderSubtle,
-    padding: DS.space3,
-    gap: 2,
-  },
-  sidebarTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: DS.textMuted,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    paddingHorizontal: DS.space3,
-    paddingTop: DS.space2,
-    paddingBottom: DS.space3,
-  },
-
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space3,
-    paddingHorizontal: DS.space3,
-    paddingVertical: 11,
-    borderRadius: DS.radiusSm,
-  },
-  navItemActive: {
-    backgroundColor: DS.surfaceSelected,
-  },
-  navItemPressed: {
-    backgroundColor: DS.grey200,
-  },
-  navLabel: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: DS.textStrong,
-    flex: 1,
-  },
-  navLabelActive: {
-    color: DS.actionPrimary,
-    fontWeight: "600",
-  },
-
-  horizNav: {
-    backgroundColor: DS.surfaceCard,
-    borderRadius: DS.radiusMd,
-    borderWidth: 1,
-    borderColor: DS.borderSubtle,
-  },
-  horizNavContent: {
-    paddingHorizontal: DS.space2,
-    paddingVertical: DS.space2,
-    gap: DS.space1,
-    flexDirection: "row",
-  },
-  navItemHoriz: {
-    flexDirection: "column",
-    alignItems: "center",
-    paddingHorizontal: DS.space3,
-    paddingVertical: DS.space2,
-    gap: DS.space1,
-    minWidth: 80,
-  },
-  navItemActiveHoriz: {
-    backgroundColor: DS.surfaceSelected,
-    borderRadius: DS.radiusSm,
-  },
-  navLabelHoriz: {
-    fontSize: 12,
-  },
-
-  main: {
-    flex: 1,
-    gap: DS.space5,
-  },
-  mainDesktop: {
-    gap: DS.space6,
-  },
-
   greeting: {
     flexDirection: "row",
     alignItems: "center",
@@ -961,59 +564,5 @@ const styles = StyleSheet.create({
     color: DS.textStrong,
     width: 72,
     textAlign: "right",
-  },
-
-  // History rows
-  historyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: DS.space5,
-    paddingVertical: DS.space4,
-    gap: DS.space3,
-  },
-  historyIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: DS.radiusPill,
-    backgroundColor: DS.infoTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  historyIconRecharge: {
-    backgroundColor: DS.successTint,
-  },
-  historyInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  historyDesc: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: DS.textStrong,
-  },
-  historyMeta: {
-    fontSize: 13,
-    color: DS.textMuted,
-  },
-  historyTime: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: DS.textMuted,
-  },
-
-  viewTitle: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: DS.textStrong,
-  },
-  viewSubtitle: {
-    fontSize: 15,
-    color: DS.textMuted,
-    marginTop: -DS.space2,
-  },
-  billingNote: {
-    fontSize: 13,
-    color: DS.textMuted,
-    fontStyle: "italic",
   },
 });

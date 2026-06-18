@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBankInfoDto } from './dto/create-bank-info.dto';
@@ -12,29 +16,44 @@ export class BankInfoService {
     return this.prisma.bankInfo.create({ data: createBankInfoDto });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, requesterId: number) {
     const bankInfo = await this.prisma.bankInfo.findUnique({ where: { id } });
 
     if (!bankInfo) {
       throw new NotFoundException(`BankInfo ${id} introuvable`);
     }
+    if (bankInfo.accountId !== requesterId) {
+      throw new ForbiddenException();
+    }
 
     return bankInfo;
   }
 
-  async update(id: number, updateBankInfoDto: UpdateBankInfoDto) {
+  async update(
+    id: number,
+    updateBankInfoDto: UpdateBankInfoDto,
+    requesterId: number,
+  ) {
     await this.ensureExists(id);
 
-    return this.prisma.bankInfo.update({
+    const bankInfo = await this.prisma.bankInfo.update({
       where: { id },
       data: updateBankInfoDto,
     });
+    if (bankInfo.accountId !== requesterId) {
+      throw new ForbiddenException();
+    }
+    return bankInfo;
   }
 
-  async remove(id: number) {
+  async remove(id: number, requesterId: number) {
     await this.ensureExists(id);
 
-    return this.prisma.bankInfo.delete({ where: { id } });
+    const bankInfo = await this.prisma.bankInfo.delete({ where: { id } });
+    if (bankInfo.accountId !== requesterId) {
+      throw new ForbiddenException();
+    }
+    return bankInfo;
   }
 
   private async ensureExists(id: number) {

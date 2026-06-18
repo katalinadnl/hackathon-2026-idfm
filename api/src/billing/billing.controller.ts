@@ -36,7 +36,7 @@ export class BillingController {
   @ApiQuery({ name: 'subscriptionId', type: Number, required: false })
   getTransactions(
     @GetMe() user: JwtPayload,
-    @Query('subscriptionId') subscriptionId?: string,
+    @Query('subscriptionId') subscriptionId?: number,
   ) {
     const subId = subscriptionId ? Number(subscriptionId) : undefined;
     return this.billing.getTransactions(accountIdOf(user), subId);

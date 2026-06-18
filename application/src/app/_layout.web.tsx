@@ -158,8 +158,8 @@ function SiteHeader() {
         <View style={styles.nav}>
           <NavLink href="/">Accueil</NavLink>
           <NavLink href="/visitors">Visiteurs</NavLink>
-          <NavLink href="/uikit">UI Kit</NavLink>
-          <NavLink href="/billing">Facturation</NavLink>
+          {/* <NavLink href="/uikit">UI Kit</NavLink> */}
+          {/* <NavLink href="/billing">Facturation</NavLink> */}
         </View>
 
         <View style={styles.right}>

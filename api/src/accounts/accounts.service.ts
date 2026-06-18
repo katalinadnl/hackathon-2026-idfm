@@ -20,7 +20,6 @@ export class AccountsService {
       include: { beneficiary: true },
       take: 10,
     });
-    console.log(accounts);
 
     return accounts.map((a) => ({
       id: a.id,

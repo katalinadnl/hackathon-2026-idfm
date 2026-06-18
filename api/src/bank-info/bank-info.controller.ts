@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { BankInfoService } from './bank-info.service';
 import { CreateBankInfoDto } from './dto/create-bank-info.dto';
 import { UpdateBankInfoDto } from './dto/update-bank-info.dto';
+import { GetMe } from 'src/auth/decorators/get-me.decorator';
+import type { JwtPayload } from 'src/auth/types';
 
 @Controller('bank-info')
 export class BankInfoController {
@@ -12,23 +22,22 @@ export class BankInfoController {
     return this.bankInfoService.create(createBankInfoDto);
   }
 
-  @Get()
-  findAll() {
-    return this.bankInfoService.findAll();
-  }
-
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.bankInfoService.findOne(+id);
+  findOne(@Param('id') id: string, @GetMe() user: JwtPayload) {
+    return this.bankInfoService.findOne(+id, user.id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBankInfoDto: UpdateBankInfoDto) {
-    return this.bankInfoService.update(+id, updateBankInfoDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateBankInfoDto: UpdateBankInfoDto,
+    @GetMe() user: JwtPayload,
+  ) {
+    return this.bankInfoService.update(+id, updateBankInfoDto, user.id);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.bankInfoService.remove(+id);
+  remove(@Param('id') id: string, @GetMe() user: JwtPayload) {
+    return this.bankInfoService.remove(+id, user.id);
   }
 }
