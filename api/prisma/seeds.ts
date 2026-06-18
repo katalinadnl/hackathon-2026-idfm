@@ -76,7 +76,11 @@ async function main() {
   ] = departments;
 
   // ── Beneficiaries (15 personnes) ─────────────────────────────────────────────
-  // Famille Moreau : Pierre (père, actif), Théo (fils 15 ans, mineur), Léa (fille 12 ans, mineur)
+  // email/phone n'existent plus sur Beneficiary (déplacés/retirés) : on utilise
+  // donc des id fixés explicitement comme critère d'upsert plutôt qu'un email.
+  //
+  // Famille Moreau : Pierre (père, actif), Théo (fils 19 ans, mineur au sens
+  // tarifaire scolaire), Léa (fille 12 ans, mineure)
   // Famille Moreau élargie : Monique (grand-mère de Théo/Léa, senior)
   //   → Pierre est référent de Théo, Léa et Monique
   //   → Monique (senior) paie elle-même son pass, mais c'est elle qui paie aussi celui de Pierre
@@ -85,13 +89,12 @@ async function main() {
   //          Olivier (actif, pas de pass), Sophie (active, pas de pass)
 
   const pierre = await prisma.beneficiary.upsert({
-    where: { email: 'pierre.moreau@email.fr' },
+    where: { id: 1 },
     update: {},
     create: {
+      id: 1,
       firstName: 'Pierre',
       lastName: 'Moreau',
-      email: 'pierre.moreau@email.fr',
-      phone: '0611111111',
       birthDate: new Date('1980-06-12'),
       socialSecurityNumber: '180061212345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -100,27 +103,25 @@ async function main() {
     },
   });
   const theo = await prisma.beneficiary.upsert({
-    where: { email: 'theo.moreau@email.fr' },
+    where: { id: 2 },
     update: {},
     create: {
+      id: 2,
       firstName: 'Théo',
       lastName: 'Moreau',
-      email: 'theo.moreau@email.fr',
-      phone: null,
-      birthDate: new Date('2011-04-30'),
+      birthDate: new Date('2007-04-30'),
       socialSecurityNumber: null,
       status: BeneficiaryStatus.MINOR,
       residenceDepartmentId: val94.id,
     },
   });
   const lea = await prisma.beneficiary.upsert({
-    where: { email: 'lea.moreau@email.fr' },
+    where: { id: 3 },
     update: {},
     create: {
+      id: 3,
       firstName: 'Léa',
       lastName: 'Moreau',
-      email: 'lea.moreau@email.fr',
-      phone: null,
       birthDate: new Date('2014-09-15'),
       socialSecurityNumber: null,
       status: BeneficiaryStatus.MINOR,
@@ -128,13 +129,12 @@ async function main() {
     },
   });
   const monique = await prisma.beneficiary.upsert({
-    where: { email: 'monique.moreau@email.fr' },
+    where: { id: 4 },
     update: {},
     create: {
+      id: 4,
       firstName: 'Monique',
       lastName: 'Moreau',
-      email: 'monique.moreau@email.fr',
-      phone: '0622222222',
       birthDate: new Date('1950-01-08'),
       socialSecurityNumber: '150011212345678',
       status: BeneficiaryStatus.SENIOR,
@@ -143,13 +143,12 @@ async function main() {
   });
 
   const alice = await prisma.beneficiary.upsert({
-    where: { email: 'alice.martin@email.fr' },
+    where: { id: 5 },
     update: {},
     create: {
+      id: 5,
       firstName: 'Alice',
       lastName: 'Martin',
-      email: 'alice.martin@email.fr',
-      phone: '0612345678',
       birthDate: new Date('1998-03-15'),
       socialSecurityNumber: '298031512345678',
       status: BeneficiaryStatus.STUDENT,
@@ -158,13 +157,12 @@ async function main() {
     },
   });
   const bernard = await prisma.beneficiary.upsert({
-    where: { email: 'bernard.dupont@email.fr' },
+    where: { id: 6 },
     update: {},
     create: {
+      id: 6,
       firstName: 'Bernard',
       lastName: 'Dupont',
-      email: 'bernard.dupont@email.fr',
-      phone: '0623456789',
       birthDate: new Date('1955-07-22'),
       socialSecurityNumber: '155072212345678',
       status: BeneficiaryStatus.SENIOR,
@@ -172,13 +170,12 @@ async function main() {
     },
   });
   const clara = await prisma.beneficiary.upsert({
-    where: { email: 'clara.petit@email.fr' },
+    where: { id: 7 },
     update: {},
     create: {
+      id: 7,
       firstName: 'Clara',
       lastName: 'Petit',
-      email: 'clara.petit@email.fr',
-      phone: '0634567890',
       birthDate: new Date('1990-11-05'),
       socialSecurityNumber: '290112312345678',
       status: BeneficiaryStatus.DISABLED,
@@ -187,13 +184,12 @@ async function main() {
     },
   });
   const emma = await prisma.beneficiary.upsert({
-    where: { email: 'emma.leroy@email.fr' },
+    where: { id: 8 },
     update: {},
     create: {
+      id: 8,
       firstName: 'Emma',
       lastName: 'Leroy',
-      email: 'emma.leroy@email.fr',
-      phone: '0645678901',
       birthDate: new Date('1985-09-18'),
       socialSecurityNumber: '285092312345678',
       status: BeneficiaryStatus.UNEMPLOYED,
@@ -201,13 +197,12 @@ async function main() {
     },
   });
   const hugo = await prisma.beneficiary.upsert({
-    where: { email: 'hugo.garcia@email.fr' },
+    where: { id: 9 },
     update: {},
     create: {
+      id: 9,
       firstName: 'Hugo',
       lastName: 'Garcia',
-      email: 'hugo.garcia@email.fr',
-      phone: '0656789012',
       birthDate: new Date('1992-02-28'),
       socialSecurityNumber: '192022812345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -216,13 +211,12 @@ async function main() {
     },
   });
   const fatima = await prisma.beneficiary.upsert({
-    where: { email: 'fatima.benali@email.fr' },
+    where: { id: 10 },
     update: {},
     create: {
+      id: 10,
       firstName: 'Fatima',
       lastName: 'Benali',
-      email: 'fatima.benali@email.fr',
-      phone: '0667890123',
       birthDate: new Date('1988-12-03'),
       socialSecurityNumber: '288121212345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -231,13 +225,12 @@ async function main() {
     },
   });
   const lucas = await prisma.beneficiary.upsert({
-    where: { email: 'lucas.roux@email.fr' },
+    where: { id: 11 },
     update: {},
     create: {
+      id: 11,
       firstName: 'Lucas',
       lastName: 'Roux',
-      email: 'lucas.roux@email.fr',
-      phone: '0678901234',
       birthDate: new Date('2001-08-20'),
       socialSecurityNumber: '201082012345678',
       status: BeneficiaryStatus.STUDENT,
@@ -246,13 +239,12 @@ async function main() {
     },
   });
   const nadia = await prisma.beneficiary.upsert({
-    where: { email: 'nadia.cohen@email.fr' },
+    where: { id: 12 },
     update: {},
     create: {
+      id: 12,
       firstName: 'Nadia',
       lastName: 'Cohen',
-      email: 'nadia.cohen@email.fr',
-      phone: '0689012345',
       birthDate: new Date('1978-05-14'),
       socialSecurityNumber: '278051412345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -261,13 +253,12 @@ async function main() {
     },
   });
   const olivier = await prisma.beneficiary.upsert({
-    where: { email: 'olivier.blanc@email.fr' },
+    where: { id: 13 },
     update: {},
     create: {
+      id: 13,
       firstName: 'Olivier',
       lastName: 'Blanc',
-      email: 'olivier.blanc@email.fr',
-      phone: '0690123456',
       birthDate: new Date('1995-11-30'),
       socialSecurityNumber: '195111212345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -275,13 +266,12 @@ async function main() {
     },
   });
   const sophie = await prisma.beneficiary.upsert({
-    where: { email: 'sophie.lambert@email.fr' },
+    where: { id: 14 },
     update: {},
     create: {
+      id: 14,
       firstName: 'Sophie',
       lastName: 'Lambert',
-      email: 'sophie.lambert@email.fr',
-      phone: '0601234567',
       birthDate: new Date('1999-07-07'),
       socialSecurityNumber: '299071212345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -289,13 +279,12 @@ async function main() {
     },
   });
   const youssef = await prisma.beneficiary.upsert({
-    where: { email: 'youssef.amrani@email.fr' },
+    where: { id: 15 },
     update: {},
     create: {
+      id: 15,
       firstName: 'Youssef',
       lastName: 'Amrani',
-      email: 'youssef.amrani@email.fr',
-      phone: '0612349876',
       birthDate: new Date('1975-03-25'),
       socialSecurityNumber: '175031212345678',
       status: BeneficiaryStatus.ACTIVE,
@@ -554,6 +543,8 @@ async function main() {
   await prisma.account.deleteMany();
 
   // ── Accounts (20 comptes) ────────────────────────────────────────────────────
+  // email reste le critère unique pour Account (il n'a pas bougé, seul
+  // Beneficiary a perdu ce champ).
   const passwordHash = await hash('Password123!', 10);
   const mk = (
     email: string,
@@ -813,7 +804,7 @@ async function main() {
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
       endDate: new Date('2026-12-31'),
-      transportProductId: 23,
+      // transportProductId: 23,
 
       status: 'active',
       paymentMode: PaymentMode.SEPA_MONTHLY,
@@ -832,7 +823,7 @@ async function main() {
       subscriptionType: 'Imagine R',
       startDate: new Date('2025-09-01'),
       endDate: new Date('2026-08-31'),
-      transportProductId: 29,
+      // transportProductId: 29,
       status: 'active',
       paymentMode: PaymentMode.SEPA_MONTHLY,
       annualAmount: 350.0,

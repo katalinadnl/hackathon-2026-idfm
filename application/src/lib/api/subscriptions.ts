@@ -1,4 +1,5 @@
 import { http } from "@/services/api";
+import { BankInfo } from "@/types/bankInfo";
 import { AccountInfo } from "@/types/subscription";
 
 export interface CreateSubscriptionPayload {
@@ -70,4 +71,20 @@ export function reportLostOrStolen(
 }
 export function cancelSubscription(subscriptionId: number) {
   return http.post(`/subscriptions/${subscriptionId}/cancel`);
+}
+export function getAvailableBankInfos(
+  subscriptionId: number,
+): Promise<BankInfo[]> {
+  return http.get(`/subscriptions/${subscriptionId}/available-bank-infos`);
+}
+
+export function changeBankInfo(subscriptionId: number, bankInfoId: number) {
+  return http.post(`/subscriptions/${subscriptionId}/change-bank-info`, {
+    bankInfoId,
+  });
+}
+export function linkAccount(subscriptionId: number, accountId: number) {
+  return http.post(`/subscriptions/${subscriptionId}/link-account`, {
+    accountId,
+  });
 }

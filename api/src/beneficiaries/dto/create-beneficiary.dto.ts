@@ -1,7 +1,6 @@
 import {
   IsBoolean,
   IsDateString,
-  IsEmail,
   IsEnum,
   IsInt,
   IsOptional,
@@ -16,13 +15,6 @@ export class CreateBeneficiaryDto {
 
   @IsString()
   lastName: string;
-
-  @IsEmail()
-  email: string;
-
-  @IsOptional()
-  @IsString()
-  phone?: string;
 
   @IsDateString()
   birthDate: string;

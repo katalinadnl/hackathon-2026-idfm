@@ -26,6 +26,8 @@ import { ReportLostOrStolenModal } from "@/components/subscription/CancelPass";
 import { useState } from "react";
 import { SubscriptionResponse } from "@/types/subscription";
 import { CancelSubscriptionModal } from "@/components/subscription/CancelSubscriptionModal";
+import { maskIbanDisplay } from "@/lib/bank-info-helpters";
+import { ChangeBankInfoModal } from "@/components/subscription/ChangeBankInfoModal";
 
 export default function SubscriptionDetailPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -33,7 +35,7 @@ export default function SubscriptionDetailPage() {
 
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
-
+  const [bankInfoModalVisible, setBankInfoModalVisible] = useState(false);
   const {
     data: subscription,
     loading,
@@ -123,7 +125,6 @@ export default function SubscriptionDetailPage() {
                   label="Nom"
                   value={`${subscription.beneficiary.firstName} ${subscription.beneficiary.lastName}`}
                 />
-                <InfoRow label="Email" value={subscription.beneficiary.email} />
                 <InfoRow
                   label="Département"
                   value={subscription.beneficiary.residenceDepartment.name}
@@ -143,9 +144,40 @@ export default function SubscriptionDetailPage() {
             referrer={subscription.referrer}
             payer={subscription.payer}
             subscriptionId={subscription.id}
-            onReferrerChanged={reload}
+            onReferrerChanged={() => reload()}
           />
-
+          <SectionTitle>Moyen de paiement</SectionTitle>
+          <Card style={s.bankInfoCard}>
+            <View style={s.bankInfoRow}>
+              <View style={s.bankInfoIcon}>
+                <Icon name="credit-card" size={18} color={DS.actionPrimary} />
+              </View>
+              <View style={s.bankInfoText}>
+                {subscription.bankInfo ? (
+                  <>
+                    <Text style={s.bankInfoLabel}>
+                      {subscription.bankInfo.label ??
+                        subscription.bankInfo.holderName}
+                    </Text>
+                    <Text style={s.bankInfoIban}>
+                      {maskIbanDisplay(subscription.bankInfo.iban)}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={s.bankInfoEmpty}>
+                    Aucun moyen de paiement configuré
+                  </Text>
+                )}
+              </View>
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={() => setBankInfoModalVisible(true)}
+              >
+                {subscription.bankInfo ? "Modifier" : "Ajouter"}
+              </Button>
+            </View>
+          </Card>
           <SectionTitle>Mes documents</SectionTitle>
           {subscription.documents.length === 0 ? (
             <Card>
@@ -215,6 +247,16 @@ export default function SubscriptionDetailPage() {
           router.replace("/dashboard");
         }}
       />
+      <ChangeBankInfoModal
+        visible={bankInfoModalVisible}
+        subscriptionId={subscription.id}
+        currentBankInfoId={subscription.bankInfo?.id ?? null}
+        onClose={() => setBankInfoModalVisible(false)}
+        onSuccess={() => {
+          setBankInfoModalVisible(false);
+          reload();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -261,4 +303,19 @@ const s = StyleSheet.create({
   topGridCard: { flex: 1 },
   docGrid: { flexDirection: "row", flexWrap: "wrap", gap: DS.space3 },
   actionsCard: { gap: DS.space3 },
+
+  bankInfoCard: { padding: DS.space4 },
+  bankInfoRow: { flexDirection: "row", alignItems: "center", gap: DS.space3 },
+  bankInfoIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: DS.radiusMd,
+    backgroundColor: DS.surfaceCard,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bankInfoText: { flex: 1, gap: 2 },
+  bankInfoLabel: { fontSize: 14, fontWeight: "600", color: DS.textStrong },
+  bankInfoIban: { fontSize: 13, color: DS.textMuted },
+  bankInfoEmpty: { fontSize: 13, color: DS.textMuted, fontStyle: "italic" },
 });

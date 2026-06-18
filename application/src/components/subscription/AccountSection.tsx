@@ -1,6 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
 
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
@@ -11,6 +10,7 @@ import { useState } from "react";
 import { ConfirmModal } from "../ui/ConfirmModal";
 import { unlinkReferrer } from "@/lib/api/subscriptions";
 import { AssignReferrerModal } from "./AssignReferrerModal";
+import { LinkAccountModal } from "./LinkAccountModal";
 function accountName(info: AccountInfo) {
   return info.beneficiary
     ? `${info.beneficiary.firstName} ${info.beneficiary.lastName}`
@@ -21,7 +21,6 @@ type AccountsSectionProps = {
   isOldEnough: boolean;
   account: { email: string } | null;
   referrer: AccountInfo | null;
-  payer: AccountInfo | null;
   subscriptionId: SubscriptionResponse["id"];
   onReferrerChanged: () => void;
 };
@@ -30,12 +29,12 @@ export function AccountsSection({
   isOldEnough,
   account,
   referrer,
-  payer,
   subscriptionId,
   onReferrerChanged,
 }: AccountsSectionProps) {
   const [unlinking, setUnlinking] = useState(false);
   const [assignModalVisible, setAssignModalVisible] = useState(false);
+  const [linkAccountModalVisible, setLinkAccountModalVisible] = useState(false);
   const [unlinkVisible, setUnlinkVisible] = useState(false);
 
   const handleConfirmUnlink = async () => {
@@ -67,10 +66,11 @@ export function AccountsSection({
               <>
                 <Text style={s.accountCardSub}>Aucun compte associé</Text>
                 <Button
-                  variant="secondary"
+                  variant="tertiary"
                   size="sm"
                   fullWidth
                   accessibilityLabel="Associer à un compte"
+                  onPress={() => setLinkAccountModalVisible(true)}
                 >
                   Associer un compte
                 </Button>
@@ -113,21 +113,6 @@ export function AccountsSection({
             </Button>
           )}
         </Card>
-
-        <Card style={s.accountCard}>
-          <View style={s.accountCardHeader}>
-            <Icon name="person" size={16} color={DS.actionPrimary} />
-            <Text style={s.accountCardTitle}>Payeur</Text>
-          </View>
-          {payer ? (
-            <>
-              <Text style={s.accountCardValue}>{accountName(payer)}</Text>
-              <Text style={s.accountCardSub}>{payer.email}</Text>
-            </>
-          ) : (
-            <Badge tone="neutral">Titulaire</Badge>
-          )}
-        </Card>
       </View>
       <ConfirmModal
         visible={unlinkVisible}
@@ -136,7 +121,10 @@ export function AccountsSection({
         confirmLabel="Dissocier"
         confirmVariant="danger"
         loading={unlinking}
-        onConfirm={handleConfirmUnlink}
+        onConfirm={() => {
+          handleConfirmUnlink();
+          onReferrerChanged();
+        }}
         onCancel={() => setUnlinkVisible(false)}
       />
 
@@ -144,6 +132,12 @@ export function AccountsSection({
         visible={assignModalVisible}
         subscriptionId={subscriptionId}
         onClose={() => setAssignModalVisible(false)}
+        onSuccess={onReferrerChanged}
+      />
+      <LinkAccountModal
+        visible={linkAccountModalVisible}
+        subscriptionId={subscriptionId}
+        onClose={() => setLinkAccountModalVisible(false)}
         onSuccess={onReferrerChanged}
       />
     </>

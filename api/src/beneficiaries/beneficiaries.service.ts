@@ -28,8 +28,6 @@ export class BeneficiariesService {
           data: {
             firstName: data.firstName,
             lastName: data.lastName,
-            email: data.email,
-            phone: data.phone,
             birthDate: new Date(data.birthDate),
             socialSecurityNumber: data.socialSecurityNumber,
             status: data.status,

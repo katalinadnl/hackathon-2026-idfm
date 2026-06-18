@@ -20,6 +20,8 @@ import { GetMe } from 'src/auth/decorators/get-me.decorator';
 import type { JwtPayload } from 'src/auth/types';
 import { LinkReferrerDto } from './dto/link-referrer.dto';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('subscriptions')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
@@ -58,8 +60,6 @@ export class SubscriptionsController {
   }
 
   @Post(':id/report-lost-or-stolen')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   reportLostOrStolen(
     @Param('id', ParseIntPipe) id: number,
     @Body() dto: ReportLostOrStolenDto,
@@ -74,8 +74,6 @@ export class SubscriptionsController {
   }
 
   @Post(':id/unlink-referrer')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   unlinkReferrer(
     @Param('id', ParseIntPipe) id: number,
     @GetMe() user: JwtPayload,
@@ -85,8 +83,6 @@ export class SubscriptionsController {
   }
 
   @Post(':id/assign-referrer')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   linkReferrer(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: LinkReferrerDto,
@@ -101,13 +97,37 @@ export class SubscriptionsController {
   }
 
   @Post(':id/cancel')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   cancelSubscription(
     @Param('id', ParseIntPipe) id: number,
     @GetMe() user: JwtPayload,
   ) {
     const requesterAccountId = user.id;
     return this.subscriptionsService.cancelSubscription(id, requesterAccountId);
+  }
+
+  @Get(':id/available-bank-infos')
+  getAvailableBankInfos(
+    @Param('id', ParseIntPipe) id: number,
+    @GetMe() user: JwtPayload,
+  ) {
+    const requesterAccountId = user.id;
+    return this.subscriptionsService.getAvailableBankInfos(
+      id,
+      requesterAccountId,
+    );
+  }
+
+  @Post(':id/change-bank-info')
+  changeBankInfo(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { bankInfoId: number },
+    @GetMe() user: JwtPayload,
+  ) {
+    const requesterAccountId = user!.id;
+    return this.subscriptionsService.changeBankInfo(
+      id,
+      requesterAccountId,
+      dto.bankInfoId,
+    );
   }
 }
