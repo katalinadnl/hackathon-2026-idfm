@@ -96,6 +96,7 @@ const SYMBOL_MAP: Record<
   mic: { ios: "mic", android: "mic", web: "mic" },
   "mic-off": { ios: "mic.slash", android: "mic_off", web: "mic_off" },
   volume: { ios: "speaker.wave.2", android: "volume_up", web: "volume_up" },
+  plus: { ios: "plus", android: "add", web: "add" },
 };
 
 type IconProps = {

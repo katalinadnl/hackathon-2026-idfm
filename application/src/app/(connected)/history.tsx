@@ -3,487 +3,221 @@ import { StyleSheet, Text, View } from "react-native";
 import { Icon } from "@/components/ui/Icon";
 import { DS } from "@/constants/theme";
 
-const HISTORY = [
+type EventType =
+  | "subscription_renewed"
+  | "subscription_changed"
+  | "subscription_cancelled"
+  | "payment_method_added"
+  | "payment_method_updated"
+  | "profile_updated"
+  | "account_created";
+
+const EVENT_CONFIG: Record<
+  EventType,
+  { icon: string; iconBg: string; iconColor: string; label: string }
+> = {
+  subscription_renewed: {
+    icon: "checkmark",
+    iconBg: DS.successTint,
+    iconColor: DS.success,
+    label: "Abonnement renouvelé",
+  },
+  subscription_changed: {
+    icon: "arrow-right",
+    iconBg: DS.infoTint,
+    iconColor: DS.actionPrimary,
+    label: "Abonnement modifié",
+  },
+  subscription_cancelled: {
+    icon: "x",
+    iconBg: DS.dangerTint,
+    iconColor: DS.danger,
+    label: "Abonnement résilié",
+  },
+  payment_method_added: {
+    icon: "creditcard",
+    iconBg: DS.infoTint,
+    iconColor: DS.actionPrimary,
+    label: "Moyen de paiement ajouté",
+  },
+  payment_method_updated: {
+    icon: "creditcard",
+    iconBg: DS.warningTint,
+    iconColor: DS.warning,
+    label: "Moyen de paiement mis à jour",
+  },
+  profile_updated: {
+    icon: "person",
+    iconBg: DS.grey200,
+    iconColor: DS.textMuted,
+    label: "Profil mis à jour",
+  },
+  account_created: {
+    icon: "star",
+    iconBg: DS.successTint,
+    iconColor: DS.success,
+    label: "Compte créé",
+  },
+};
+
+const HISTORY: {
+  id: string;
+  type: EventType;
+  date: string;
+  detail: string;
+}[] = [
   {
-    id: "H1",
-    date: "15 juin 2026",
-    type: "Validation",
-    desc: "Métro ligne 1 — Châtelet",
-    time: "08:04",
+    id: "E1",
+    type: "subscription_renewed",
+    date: "10 juin 2026",
+    detail: "Navigo Mensuel — Zones 1-2, 84,10 €",
   },
   {
-    id: "H2",
-    date: "15 juin 2026",
-    type: "Validation",
-    desc: "RER A — Gare de Lyon",
-    time: "08:27",
+    id: "E2",
+    type: "payment_method_updated",
+    date: "10 juin 2026",
+    detail: "Visa •••• 4242 définie comme carte principale",
   },
   {
-    id: "H3",
-    date: "14 juin 2026",
-    type: "Validation",
-    desc: "Métro ligne 14 — Saint-Lazare",
-    time: "18:12",
+    id: "E3",
+    type: "subscription_changed",
+    date: "3 mai 2026",
+    detail: "Navigo Annuel → Navigo Mensuel",
   },
   {
-    id: "H4",
-    date: "14 juin 2026",
-    type: "Validation",
-    desc: "Métro ligne 6 — Montparnasse",
-    time: "18:41",
+    id: "E4",
+    type: "payment_method_added",
+    date: "3 mai 2026",
+    detail: "Mastercard •••• 1337 ajoutée",
   },
   {
-    id: "H5",
-    date: "13 juin 2026",
-    type: "Recharge",
-    desc: "Navigo Easy — +10 tickets",
-    time: "12:05",
+    id: "E5",
+    type: "subscription_renewed",
+    date: "5 avr. 2026",
+    detail: "Navigo Annuel — Zones 1-5, 950,40 €",
+  },
+  {
+    id: "E6",
+    type: "profile_updated",
+    date: "18 janv. 2026",
+    detail: "Adresse e-mail modifiée",
+  },
+  {
+    id: "E7",
+    type: "account_created",
+    date: "12 janv. 2026",
+    detail: "Bienvenue sur IDF Mobilités",
   },
 ];
 
-function HistoryRow({ entry }: { entry: (typeof HISTORY)[0] }) {
-  const isRecharge = entry.type === "Recharge";
+function groupByMonth(
+  events: typeof HISTORY
+): { month: string; events: typeof HISTORY }[] {
+  const groups: { month: string; events: typeof HISTORY }[] = [];
+  let current: (typeof groups)[0] | null = null;
+
+  for (const event of events) {
+    const month = event.date.replace(/^\d+ /, "");
+    if (!current || current.month !== month) {
+      current = { month, events: [] };
+      groups.push(current);
+    }
+    current.events.push(event);
+  }
+
+  return groups;
+}
+
+function EventRow({ event }: { event: (typeof HISTORY)[0] }) {
+  const config = EVENT_CONFIG[event.type];
+  const a11yLabel = `${config.label} — ${event.detail}, le ${event.date}`;
+
   return (
-    <View style={styles.historyRow}>
+    // accessible={true} merges the subtree into one focus stop for VoiceOver/TalkBack.
+    // The explicit accessibilityLabel overrides child text concatenation.
+    <View
+      accessible={true}
+      accessibilityLabel={a11yLabel}
+      style={styles.eventRow}
+    >
+      {/* Decorative icon — hidden from the a11y tree */}
       <View
-        style={[styles.historyIcon, isRecharge && styles.historyIconRecharge]}
+        style={[styles.eventIcon, { backgroundColor: config.iconBg }]}
+        accessibilityElementsHidden={true}
+        importantForAccessibility="no-hide-descendants"
       >
-        <Icon
-          name={isRecharge ? "creditcard" : "arrow-right"}
-          size={16}
-          color={isRecharge ? DS.success : DS.actionPrimary}
-        />
+        <Icon name={config.icon} size={16} color={config.iconColor} />
       </View>
-      <View style={styles.historyInfo}>
-        <Text style={styles.historyDesc}>{entry.desc}</Text>
-        <Text style={styles.historyMeta}>
-          {entry.type} · {entry.date}
-        </Text>
+
+      {/* Visual text — already covered by the parent accessibilityLabel */}
+      <View style={styles.eventInfo} accessibilityElementsHidden={true}>
+        <Text style={styles.eventLabel}>{config.label}</Text>
+        <Text style={styles.eventDetail}>{event.detail}</Text>
       </View>
-      <Text style={styles.historyTime}>{entry.time}</Text>
+
+      <Text
+        style={styles.eventDate}
+        accessibilityElementsHidden={true}
+      >
+        {event.date.split(" ")[0]}
+      </Text>
     </View>
   );
 }
+
 export default function HistoryView() {
+  const groups = groupByMonth(HISTORY);
+
   return (
     <View style={styles.sectionContent}>
-      <Text style={styles.viewTitle}>Historique</Text>
+      <Text
+        style={styles.viewTitle}
+        accessibilityRole="header"
+      >
+        Historique
+      </Text>
       <Text style={styles.viewSubtitle}>
-        Vos dernières validations et recharges sur les 30 derniers jours.
+        Les actions effectuées sur votre compte.
       </Text>
 
-      <View style={styles.card}>
-        {HISTORY.map((entry, i) => (
-          <View key={entry.id}>
-            <HistoryRow entry={entry} />
-            {i < HISTORY.length - 1 && <View style={styles.divider} />}
+      {groups.map((group) => (
+        <View key={group.month} style={styles.group}>
+          {/* Month acts as a section heading for screen readers */}
+          <Text
+            style={styles.monthLabel}
+            accessibilityRole="header"
+          >
+            {group.month}
+          </Text>
+
+          <View
+            style={styles.card}
+            accessibilityRole="list"
+          >
+            {group.events.map((event, i) => (
+              <View key={event.id}>
+                <EventRow event={event} />
+                {i < group.events.length - 1 && (
+                  // Pure visual separator — hidden from the a11y tree
+                  <View
+                    style={styles.divider}
+                    accessibilityElementsHidden={true}
+                    importantForAccessibility="no-hide-descendants"
+                  />
+                )}
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
+        </View>
+      ))}
     </View>
   );
 }
+
 const styles = StyleSheet.create({
-  page: {
-    flex: 1,
-    backgroundColor: DS.surfacePage,
-  },
-  pageContent: {
-    flexGrow: 1,
-    paddingHorizontal: DS.space5,
-    paddingVertical: DS.space6,
-    paddingBottom: DS.space9,
-  },
-
-  layout: {
-    flexDirection: "column",
-    gap: DS.space4,
-  },
-  layoutDesktop: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: DS.space6,
-  },
-
-  sidebar: {
-    width: 228,
-    flexShrink: 0,
-    backgroundColor: DS.surfaceCard,
-    borderRadius: DS.radiusMd,
-    borderWidth: 1,
-    borderColor: DS.borderSubtle,
-    padding: DS.space3,
-    gap: 2,
-  },
-  sidebarTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: DS.textMuted,
-    letterSpacing: 0.8,
-    textTransform: "uppercase",
-    paddingHorizontal: DS.space3,
-    paddingTop: DS.space2,
-    paddingBottom: DS.space3,
-  },
-
-  navItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space3,
-    paddingHorizontal: DS.space3,
-    paddingVertical: 11,
-    borderRadius: DS.radiusSm,
-  },
-  navItemActive: {
-    backgroundColor: DS.surfaceSelected,
-  },
-  navItemPressed: {
-    backgroundColor: DS.grey200,
-  },
-  navLabel: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: DS.textStrong,
-    flex: 1,
-  },
-  navLabelActive: {
-    color: DS.actionPrimary,
-    fontWeight: "600",
-  },
-
-  horizNav: {
-    backgroundColor: DS.surfaceCard,
-    borderRadius: DS.radiusMd,
-    borderWidth: 1,
-    borderColor: DS.borderSubtle,
-  },
-  horizNavContent: {
-    paddingHorizontal: DS.space2,
-    paddingVertical: DS.space2,
-    gap: DS.space1,
-    flexDirection: "row",
-  },
-  navItemHoriz: {
-    flexDirection: "column",
-    alignItems: "center",
-    paddingHorizontal: DS.space3,
-    paddingVertical: DS.space2,
-    gap: DS.space1,
-    minWidth: 80,
-  },
-  navItemActiveHoriz: {
-    backgroundColor: DS.surfaceSelected,
-    borderRadius: DS.radiusSm,
-  },
-  navLabelHoriz: {
-    fontSize: 12,
-  },
-
-  main: {
-    flex: 1,
-    gap: DS.space5,
-  },
-  mainDesktop: {
-    gap: DS.space6,
-  },
-
-  greeting: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space4,
-  },
-  avatarBubble: {
-    width: 52,
-    height: 52,
-    borderRadius: DS.radiusPill,
-    backgroundColor: DS.actionPrimary,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: DS.white,
-    letterSpacing: 0.5,
-  },
-  greetingText: {
-    fontSize: 26,
-    fontWeight: "800",
-    color: DS.textStrong,
-    lineHeight: 32,
-  },
-  greetingSubtitle: {
-    fontSize: 15,
-    color: DS.textMuted,
-    marginTop: 2,
-  },
-
-  errorBanner: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space2,
-    backgroundColor: DS.warningTint,
-    borderRadius: DS.radiusSm,
-    padding: DS.space3,
-  },
-  errorText: {
-    fontSize: 14,
-    color: DS.warningText,
-    flex: 1,
-  },
-
-  loadingRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space3,
-    padding: DS.space5,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: DS.textMuted,
-  },
-
-  emptyText: {
-    fontSize: 14,
-    color: DS.textMuted,
-    padding: DS.space5,
-  },
-
-  sectionHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: DS.space2,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: DS.textStrong,
-  },
-  sectionAction: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: DS.textLink,
-  },
-
   sectionContent: {
     gap: DS.space4,
   },
-
-  card: {
-    backgroundColor: DS.surfaceCard,
-    borderRadius: DS.radiusMd,
-    borderWidth: 1,
-    borderColor: DS.borderSubtle,
-    overflow: "hidden",
-  },
-
-  divider: {
-    height: 1,
-    backgroundColor: DS.borderSubtle,
-    marginHorizontal: DS.space5,
-  },
-
-  // Active pass card (dark blue)
-  passCard: {
-    backgroundColor: "#1242A7",
-    borderRadius: DS.radiusMd,
-    padding: DS.space5,
-    gap: DS.space2,
-  },
-  passCardTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    gap: DS.space3,
-    marginBottom: DS.space2,
-  },
-  passCardMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space2,
-  },
-  passCardType: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: "rgba(255,255,255,0.75)",
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  passCardBtn: {
-    backgroundColor: DS.white,
-    borderColor: DS.white,
-  },
-  passZones: {
-    fontSize: 28,
-    fontWeight: "800",
-    color: DS.white,
-    lineHeight: 34,
-  },
-  passValidity: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.7)",
-  },
-  passCardFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space4,
-    marginTop: DS.space2,
-    paddingTop: DS.space3,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(255,255,255,0.15)",
-    flexWrap: "wrap",
-  },
-  passPrice: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: DS.white,
-  },
-  roleRow: {
-    flexDirection: "row",
-    gap: DS.space2,
-    flexWrap: "wrap",
-  },
-  roleChip: {
-    backgroundColor: "rgba(255,255,255,0.15)",
-    borderRadius: DS.radiusPill,
-    paddingHorizontal: DS.space2,
-    paddingVertical: 2,
-  },
-  roleChipText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "rgba(255,255,255,0.9)",
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-
-  // Pass row (white card)
-  passRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: DS.space4,
-  },
-  passRowLeft: {
-    flex: 1,
-    gap: 4,
-  },
-  passRowHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: DS.space2,
-    flexWrap: "wrap",
-  },
-  passRowType: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: DS.textMuted,
-    letterSpacing: 0.5,
-    textTransform: "uppercase",
-  },
-  passRowZones: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: DS.textStrong,
-  },
-  passRowValidity: {
-    fontSize: 13,
-    color: DS.textMuted,
-  },
-  roleRowSmall: {
-    flexDirection: "row",
-    gap: DS.space2,
-    marginTop: 2,
-  },
-  roleLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: DS.actionPrimary,
-    textTransform: "uppercase",
-    letterSpacing: 0.4,
-  },
-  passRowRight: {
-    alignItems: "flex-end",
-  },
-  passRowPrice: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: DS.textStrong,
-  },
-
-  // Payment table row
-  tableRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: DS.space5,
-    paddingVertical: DS.space4,
-    gap: DS.space3,
-    flexWrap: "wrap",
-  },
-  tableCell: {
-    fontSize: 14,
-    color: DS.textBody,
-  },
-  tableCellId: {
-    fontWeight: "600",
-    color: DS.textMuted,
-    width: 100,
-  },
-  tableCellDesc: {
-    flex: 1,
-    color: DS.textStrong,
-  },
-  tableCellDate: {
-    color: DS.textMuted,
-    width: 110,
-  },
-  tableCellAmount: {
-    fontWeight: "700",
-    color: DS.textStrong,
-    width: 72,
-    textAlign: "right",
-  },
-
-  // History rows
-  historyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: DS.space5,
-    paddingVertical: DS.space4,
-    gap: DS.space3,
-  },
-  historyIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: DS.radiusPill,
-    backgroundColor: DS.infoTint,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  historyIconRecharge: {
-    backgroundColor: DS.successTint,
-  },
-  historyInfo: {
-    flex: 1,
-    gap: 2,
-  },
-  historyDesc: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: DS.textStrong,
-  },
-  historyMeta: {
-    fontSize: 13,
-    color: DS.textMuted,
-  },
-  historyTime: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: DS.textMuted,
-  },
-
   viewTitle: {
     fontSize: 26,
     fontWeight: "800",
@@ -494,9 +228,65 @@ const styles = StyleSheet.create({
     color: DS.textMuted,
     marginTop: -DS.space2,
   },
-  billingNote: {
+
+  group: {
+    gap: DS.space2,
+  },
+  monthLabel: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: DS.textMuted,
+    textTransform: "uppercase",
+    letterSpacing: 0.6,
+    paddingHorizontal: DS.space1,
+  },
+
+  card: {
+    backgroundColor: DS.surfaceCard,
+    borderRadius: DS.radiusMd,
+    borderWidth: 1,
+    borderColor: DS.borderSubtle,
+    overflow: "hidden",
+  },
+  divider: {
+    height: 1,
+    backgroundColor: DS.borderSubtle,
+    marginHorizontal: DS.space5,
+  },
+
+  eventRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: DS.space5,
+    paddingVertical: DS.space4,
+    gap: DS.space3,
+    minHeight: DS.targetMin,
+  },
+  eventIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: DS.radiusPill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  eventInfo: {
+    flex: 1,
+    gap: 2,
+  },
+  eventLabel: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: DS.textStrong,
+  },
+  eventDetail: {
     fontSize: 13,
     color: DS.textMuted,
-    fontStyle: "italic",
+  },
+  eventDate: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: DS.textMuted,
+    minWidth: 24,
+    textAlign: "right",
   },
 });
