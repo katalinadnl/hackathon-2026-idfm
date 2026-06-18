@@ -18,6 +18,10 @@ export class CreateSubscriptionDto {
   @IsString()
   subscriptionType: string;
 
+  @IsOptional()
+  @IsInt()
+  transportProductId?: number;
+
   @IsDateString()
   startDate: string;
 

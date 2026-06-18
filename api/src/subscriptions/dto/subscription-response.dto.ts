@@ -32,6 +32,7 @@ export class SubscriptionResponseDto {
   id: number;
   navigoNumber: string;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: string;
   endDate: string;
   status: string;

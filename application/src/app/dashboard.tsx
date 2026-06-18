@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { Card } from "@/components/ui/Card";
 import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
@@ -328,20 +329,73 @@ function LoadingPlaceholder() {
   );
 }
 
+
+function NewSubscriptionCta({
+  onSelect,
+}: {
+  onSelect: (target: "self" | "other") => void;
+}) {
+  return (
+    <View style={styles.sectionContent}>
+      <SectionHeader title="Nouvel abonnement" />
+      <View style={styles.newSubGrid}>
+        <Card style={styles.newSubCard}>
+          <View style={styles.newSubIcon}>
+            <Icon name="person" size={22} color={DS.actionPrimary} />
+          </View>
+          <Text style={styles.newSubTitle}>Pour moi</Text>
+          <Text style={styles.newSubDesc}>
+            Souscrivez un nouveau pass Navigo à votre nom.
+          </Text>
+          <Button
+            variant="primary"
+            size="sm"
+            trailingIcon="arrow-right"
+            onPress={() => onSelect("self")}
+          >
+            Commencer
+          </Button>
+        </Card>
+
+        <Card style={styles.newSubCard}>
+          <View style={styles.newSubIcon}>
+            <Icon name="user-plus" size={22} color={DS.actionPrimary} />
+          </View>
+          <Text style={styles.newSubTitle}>Pour une autre personne</Text>
+          <Text style={styles.newSubDesc}>
+            Abonnez un proche — enfant, parent ou conjoint — en tant que
+            référent ou payeur.
+          </Text>
+          <Button
+            variant="secondary"
+            size="sm"
+            trailingIcon="arrow-right"
+            onPress={() => onSelect("other")}
+          >
+            Commencer
+          </Button>
+        </Card>
+      </View>
+    </View>
+  );
+}
 // ─── Section content renderers ─────────────────────────────────────────────────
 
 function DashboardHome({
   subscriptions,
   loading,
   onNav,
+  onNewSubscription,
 }: {
   subscriptions: ApiSubscription[];
   loading: boolean;
   onNav: (s: Section) => void;
+  onNewSubscription: (target: "self" | "other") => void;
 }) {
   const active =
     subscriptions.find((s) => s.status === "active") ?? subscriptions[0];
   const withPayments = subscriptions.filter((s) => s.latestPayment);
+  const showEmptyState = !loading && subscriptions.length === 0;
 
   return (
     <View style={styles.sectionContent}>
@@ -351,47 +405,53 @@ function DashboardHome({
         <ActivePassCard sub={active} />
       ) : null}
 
-      <SectionHeader
-        title="Vos abonnements"
-        action="Tout voir"
-        onAction={() => onNav("subscriptions")}
-      />
-      <View style={styles.card}>
-        {loading ? (
-          <LoadingPlaceholder />
-        ) : subscriptions.length === 0 ? (
-          <Text style={styles.emptyText}>Aucun abonnement trouvé.</Text>
-        ) : (
-          subscriptions.map((s, i) => (
-            <View key={s.id}>
-              <PassRow sub={s} />
-              {i < subscriptions.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))
-        )}
-      </View>
+      {showEmptyState ? (
+        <NewSubscriptionCta onSelect={onNewSubscription} />
+      ) : (
+        <>
+          <SectionHeader
+            title="Vos abonnements"
+            action="Tout voir"
+            onAction={() => onNav("subscriptions")}
+          />
+          <View style={styles.card}>
+            {loading ? (
+              <LoadingPlaceholder />
+            ) : (
+              subscriptions.map((s, i) => (
+                <View key={s.id}>
+                  <PassRow sub={s} />
+                  {i < subscriptions.length - 1 && (
+                    <View style={styles.divider} />
+                  )}
+                </View>
+              ))
+            )}
+          </View>
 
-      <SectionHeader
-        title="Dernières facturations"
-        action="Tout voir"
-        onAction={() => onNav("billing")}
-      />
-      <View style={styles.card}>
-        {loading ? (
-          <LoadingPlaceholder />
-        ) : withPayments.length === 0 ? (
-          <Text style={styles.emptyText}>Aucune facturation.</Text>
-        ) : (
-          withPayments.slice(0, 2).map((s, i) => (
-            <View key={s.id}>
-              <PaymentRow sub={s} />
-              {i < Math.min(withPayments.length, 2) - 1 && (
-                <View style={styles.divider} />
-              )}
-            </View>
-          ))
-        )}
-      </View>
+          <SectionHeader
+            title="Dernières facturations"
+            action="Tout voir"
+            onAction={() => onNav("billing")}
+          />
+          <View style={styles.card}>
+            {loading ? (
+              <LoadingPlaceholder />
+            ) : withPayments.length === 0 ? (
+              <Text style={styles.emptyText}>Aucune facturation.</Text>
+            ) : (
+              withPayments.slice(0, 2).map((s, i) => (
+                <View key={s.id}>
+                  <PaymentRow sub={s} />
+                  {i < Math.min(withPayments.length, 2) - 1 && (
+                    <View style={styles.divider} />
+                  )}
+                </View>
+              ))
+            )}
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -403,6 +463,8 @@ function SubscriptionsView({
   subscriptions: ApiSubscription[];
   loading: boolean;
 }) {
+  const router = useRouter();
+  
   return (
     <View style={styles.sectionContent}>
       <Text style={styles.viewTitle}>Vos abonnements</Text>
@@ -425,7 +487,12 @@ function SubscriptionsView({
         )}
       </View>
 
-      <Button variant="secondary" size="md" leadingIcon="ticket">
+      <Button
+        variant="secondary"
+        size="md"
+        leadingIcon="ticket"
+        onPress={() => router.push("/subscriptions/new")}
+      >
         Ajouter un abonnement
       </Button>
     </View>
@@ -495,9 +562,15 @@ export default function DashboardPage() {
   const { isDesktop } = usePageLayout();
   const [activeSection, setActiveSection] = useState<Section>("dashboard");
 
+  const router = useRouter();
   const { user } = useAuth();
   const { subscriptions, loading, error } = useSubscriptions(user?.id ?? 0);
   const accountName = user?.firstName ?? user?.email ?? "";
+  const goToNewSubscription = (target: "self" | "other") =>
+    router.push({
+      pathname: "/subscriptions/new",
+      params: { for: target },
+    } as any);
 
   return (
     <ScrollView style={styles.page} contentContainerStyle={styles.pageContent}>
@@ -570,6 +643,7 @@ export default function DashboardPage() {
               subscriptions={subscriptions}
               loading={loading}
               onNav={setActiveSection}
+              onNewSubscription={goToNewSubscription}
             />
           )}
           {activeSection === "subscriptions" && (
@@ -1006,5 +1080,34 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: DS.textMuted,
     fontStyle: "italic",
+  },
+
+  newSubGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: DS.space4,
+  },
+  newSubCard: {
+    flex: 1,
+    minWidth: 240,
+    gap: DS.space3,
+  },
+  newSubIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: DS.radiusMd,
+    backgroundColor: DS.surfaceSelected,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  newSubTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  newSubDesc: {
+    fontSize: 14,
+    color: DS.textMuted,
+    lineHeight: 20,
   },
 });

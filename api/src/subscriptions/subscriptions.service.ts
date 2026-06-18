@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
@@ -15,6 +19,7 @@ export interface SubscriptionWithRoles {
   id: number;
   navigoNumber: string;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: Date;
   endDate: Date;
   status: string;
@@ -28,8 +33,60 @@ export class SubscriptionsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createSubscriptionDto: CreateSubscriptionDto) {
+    const existing = await this.findExistingSubscriptionForPlan(
+      createSubscriptionDto.beneficiaryId,
+      createSubscriptionDto.subscriptionType,
+      createSubscriptionDto.transportProductId,
+    );
+
+    if (existing) {
+      const isCurrentlyActive =
+        existing.status === 'active' && existing.endDate >= new Date();
+
+      if (isCurrentlyActive) {
+        throw new ConflictException(
+          `Ce bénéficiaire a déjà un abonnement actif pour la formule "${createSubscriptionDto.subscriptionType}" (jusqu'au ${existing.endDate.toLocaleDateString('fr-FR')}). Choisissez une autre formule.`,
+        );
+      }
+      return this.prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          status: 'active',
+          startDate: createSubscriptionDto.startDate,
+          endDate: createSubscriptionDto.endDate,
+          referrerId: createSubscriptionDto.referrerId,
+          payerId: createSubscriptionDto.payerId,
+        },
+      });
+    }
+
     return this.prisma.subscription.create({
       data: createSubscriptionDto,
+    });
+  }
+
+  private async findExistingSubscriptionForPlan(
+    beneficiaryId: number,
+    subscriptionType: string,
+    transportProductId?: number,
+  ) {
+    const plan = transportProductId
+      ? await this.prisma.transportProduct.findUnique({
+          where: { id: transportProductId },
+          select: { id: true, isAnnualPlan: true },
+        })
+      : await this.prisma.transportProduct.findUnique({
+          where: { name: subscriptionType },
+          select: { id: true, isAnnualPlan: true },
+        });
+    if (!plan?.isAnnualPlan) return null;
+
+    return this.prisma.subscription.findFirst({
+      where: {
+        beneficiaryId,
+        OR: [{ transportProductId: plan.id }, { subscriptionType }],
+      },
+      orderBy: { endDate: 'desc' },
     });
   }
 
@@ -94,6 +151,7 @@ export class SubscriptionsService {
       id: subscription.id,
       navigoNumber: subscription.navigoNumber,
       subscriptionType: subscription.subscriptionType,
+      transportProductId: subscription.transportProductId,
       startDate: subscription.startDate.toISOString(),
       endDate: subscription.endDate.toISOString(),
       status: subscription.status,
@@ -152,6 +210,7 @@ export class SubscriptionsService {
       delivery: null,
     };
   }
+
   async findByAccount(accountId: number): Promise<SubscriptionWithRoles[]> {
     const subscriptions = await this.prisma.subscription.findMany({
       where: {
@@ -178,6 +237,7 @@ export class SubscriptionsService {
         id: sub.id,
         navigoNumber: sub.navigoNumber,
         subscriptionType: sub.subscriptionType,
+        transportProductId: sub.transportProductId,
         startDate: sub.startDate,
         endDate: sub.endDate,
         status: sub.status,

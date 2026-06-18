@@ -113,6 +113,7 @@ model Subscription {
   payerId          Int?
   navigoNumber     String   @unique
   subscriptionType String
+  transportProductId  Int?
   startDate        DateTime
   endDate          DateTime
   status           String   @default("active")
@@ -120,6 +121,7 @@ model Subscription {
   beneficiary Beneficiary @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
   referrer    Account?    @relation("SubscriptionReferrer", fields: [referrerId], references: [id])
   payer       Account?    @relation("SubscriptionPayer", fields: [payerId], references: [id])
+  transportProduct TransportProduct? @relation(fields: [transportProductId], references: [id])
 
   payments Payment[]
 }
@@ -133,4 +135,28 @@ model Payment {
   status         String   @default("succeeded")
 
   subscription Subscription @relation(fields: [subscriptionId], references: [id])
+}
+
+// Synchronisé depuis le jeu de données ouvert IDFM "titres-et-tarifs"
+// (https://data.iledefrance-mobilites.fr/explore/dataset/titres-et-tarifs/).
+model TransportProduct {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique 
+  description String? 
+  indication  String? 
+  period      String? 
+
+  priceLabel String 
+  priceCents Int? 
+
+  sellingArguments String[] 
+  subscriptionTag  String? 
+  portalUrl        String? 
+  rechargeUrl      String? 
+  imageUrl         String?
+
+  isAnnualPlan Boolean  @default(false)
+  syncedAt     DateTime @default(now()) @updatedAt
+
+  subscriptions Subscription[]
 }
