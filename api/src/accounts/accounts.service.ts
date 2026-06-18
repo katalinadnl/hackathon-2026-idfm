@@ -20,7 +20,7 @@ export class AccountsService {
       where: {
         email: { contains: query.trim(), mode: 'insensitive', not: user.email },
       },
-      include: { beneficiary: true },
+      include: { beneficiaries: true },
       take: 10,
     });
 
@@ -28,12 +28,10 @@ export class AccountsService {
       id: a.id,
       email: a.email,
       accountNumber: a.accountNumber,
-      beneficiary: a.beneficiary
-        ? {
-            firstName: a.beneficiary.firstName,
-            lastName: a.beneficiary.lastName,
-          }
-        : null,
+      beneficiaries: a.beneficiaries.map((beneficiary) => ({
+        firstName: beneficiary.firstName,
+        lastName: beneficiary.lastName,
+      })),
     }));
   }
 
@@ -66,7 +64,6 @@ export class AccountsService {
         email: normalizedEmail,
         passwordHash,
         accountNumber: await this.generateAccountNumber(),
-        beneficiaryId: beneficiaryId ?? null,
         mustChangePassword: true,
       },
     });

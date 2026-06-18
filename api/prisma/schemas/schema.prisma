@@ -26,9 +26,7 @@ model Account {
   createdAt          DateTime    @default(now())
   role               AccountRole @default(client)
   mustChangePassword Boolean     @default(false)
-
-  beneficiaryId Int?         @unique
-  beneficiary   Beneficiary? @relation(fields: [beneficiaryId], references: [id])
+ 
 
   // Stripe linkage — set for accounts that pay (payers become customers).
   stripeCustomerId        String? @unique
@@ -49,6 +47,8 @@ model Account {
   subscriptions Subscription[] @relation("SubscriptionCancelledBy")
 
   bankInfos BankInfo[]
+
+  beneficiaries Beneficiary[] @relation("Account")
 }
 
 model BankInfo {

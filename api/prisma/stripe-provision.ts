@@ -29,7 +29,7 @@ async function main() {
         some: { subscriptions: { some: {} } },
       },
     },
-    include: { beneficiary: true },
+    include: { beneficiaries: true },
   });
 
   console.log(`→ ${payers.length} compte(s) payeur(s) à provisionner`);
@@ -42,9 +42,7 @@ async function main() {
       continue;
     }
 
-    const name = account.beneficiary
-      ? `${account.beneficiary.firstName} ${account.beneficiary.lastName}`
-      : account.email.split('@')[0];
+    const name = account.email.split('@')[0];
 
     const customer = await stripe.customers.create({
       name,
