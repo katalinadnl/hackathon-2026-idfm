@@ -26,7 +26,6 @@ model Account {
   createdAt          DateTime    @default(now())
   role               AccountRole @default(client)
   mustChangePassword Boolean     @default(false)
- 
 
   // Stripe linkage — set for accounts that pay (payers become customers).
   stripeCustomerId        String? @unique
@@ -39,16 +38,20 @@ model Account {
   twoFactorExpiresAt DateTime?
 
   // Reset mot de passe
-  resetPasswordToken     String?   @unique
+  resetPasswordToken     String?        @unique
   resetPasswordExpiresAt DateTime?
-
-  referredSubscriptions Subscription[] @relation("SubscriptionReferrer")
-
-  subscriptions Subscription[] @relation("SubscriptionCancelledBy")
+  subscriptions          Subscription[] @relation("SubscriptionCancelledBy")
 
   bankInfos BankInfo[]
 
-  beneficiaries Beneficiary[] @relation("Account")
+  // 1 seul bénéficiaire "propre" par compte — la contrainte @unique vit côté
+  // Beneficiary.accountTitulaireId, ce champ ici est juste le côté inverse
+  // de la relation (pas de scalaire, donc pas besoin de @unique ici aussi).
+  beneficiaryTitulaire Beneficiary? @relation("AccountTitulaire")
+
+  // Une infinité de bénéficiaires référés, qui peuvent avoir (ou non) leur
+  // propre compte titulaire par ailleurs.
+  beneficiariesReferant Beneficiary[] @relation("AccountReferant")
 }
 
 model BankInfo {

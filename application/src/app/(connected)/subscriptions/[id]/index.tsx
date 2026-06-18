@@ -134,8 +134,8 @@ export default function SubscriptionDetailPage() {
 
           <AccountsSection
             isOldEnough={isOldEnough}
-            accountBeneficiary={subscription.beneficiary.account}
-            referrer={subscription.referrer}
+            accountBeneficiary={subscription.beneficiary.accountTitulaire}
+            referrer={subscription.beneficiary.accountReferrer}
             subscriptionId={subscription.id}
             onReferrerChanged={() => reload()}
           />
@@ -189,7 +189,10 @@ export default function SubscriptionDetailPage() {
           <PaymentHistoryCta
             payments={subscription.payments}
             onPress={() =>
-              router.push(`/subscriptions/${subscription.id}/payments` as any)
+              router.push({
+                pathname: "/billing",
+                params: { subscriptionId: String(subscription.id) },
+              })
             }
           />
           <Section title="Actions">

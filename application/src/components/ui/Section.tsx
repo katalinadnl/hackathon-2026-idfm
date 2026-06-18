@@ -8,11 +8,14 @@ type SectionTitleProps = {
   action?: ReactNode;
 };
 
-export function SectionTitle({ children }: SectionTitleProps) {
+export function SectionTitle({ children, action }: SectionTitleProps) {
   return (
-    <Text style={s.sectionTitle} accessibilityRole="header">
-      {children}
-    </Text>
+    <View style={s.sectionTitle}>
+      <Text style={s.title} accessibilityRole="header">
+        {children}
+      </Text>
+      {action}
+    </View>
   );
 }
 type Props = {
@@ -32,13 +35,19 @@ export function Section({ children, title, action }: Props) {
 const s = StyleSheet.create({
   section: { flex: 1 },
   sectionTitle: {
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "row",
+    marginBottom: DS.space2,
+    marginTop: DS.space2,
+    alignItems: "flex-end",
+  },
+  title: {
     fontSize: 12,
     fontWeight: "600",
     color: DS.textMuted,
     textTransform: "uppercase",
     letterSpacing: 0.8,
-    marginTop: DS.space2,
-    marginBottom: DS.space2,
     marginLeft: DS.space1,
   },
 });

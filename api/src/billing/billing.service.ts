@@ -25,6 +25,7 @@ import { PaymentMode } from '../generated/prisma/enums';
 import { StripeProvider } from './stripe/stripe.provider';
 import { InvoiceData } from './invoice-pdf.service';
 import { SubscriptionsService } from 'src/subscriptions/subscriptions.service';
+import { Payment, Subscription } from 'src/generated/prisma/client';
 
 const CREDITOR_NAME = 'Île-de-France Mobilités';
 const CREDITOR_ICS = 'FR93ZZZ123456';
@@ -39,28 +40,37 @@ export class BillingService {
 
   /**
    * Un compte "voit" un abonnement s'il en est le titulaire ou le référant.
-   * Le propriétaire du BankInfo (qui paie réellement) n'intervient plus dans
-   * cette visibilité — c'est une information affichée, pas une permission.
+   * Le rôle "payer" (propriétaire du BankInfo utilisé) est calculé en plus —
+   * il n'intervient pas dans la VISIBILITÉ (un payeur qui n'est ni titulaire
+   * ni référant ne doit pas voir cet abonnement), mais le reste du service
+   * (getTransactions, firstSepaSubId, isMine...) s'appuie dessus pour savoir
+   * qui paie réellement, donc il doit être calculé ici.
    */
   private async getVisibleSubscriptions(accountId: number) {
     const subs = await this.prisma.subscription.findMany({
       where: {
-        OR: [
-          { referrerId: accountId },
-          { beneficiary: { account: { id: accountId } } },
-        ],
+        beneficiary: {
+          OR: [
+            { accountReferantId: accountId },
+            { accountTitulaireId: accountId },
+          ],
+        },
       },
       include: {
-        beneficiary: { include: { account: true } },
+        beneficiary: true,
         passes: { where: { status: PassStatus.active }, take: 1 },
+        bankInfo: true,
       },
       orderBy: { startDate: 'desc' },
     });
 
     return subs.map((sub) => {
       const roles: BillingRole[] = [];
-      if (sub.beneficiary.account?.id === accountId) roles.push('holder');
-      if (sub.referrerId === accountId) roles.push('referrer');
+      if (sub.beneficiary.accountTitulaireId === accountId)
+        roles.push('holder');
+      if (sub.beneficiary.accountReferantId === accountId)
+        roles.push('referrer');
+      if (sub.bankInfo?.accountId === accountId) roles.push('payer');
       return { sub, roles, activePass: sub.passes[0] ?? null };
     });
   }
@@ -196,8 +206,7 @@ export class BillingService {
     const payerSubs = visible
       .filter((v) => v.roles.includes('payer'))
       .map((v) => v.sub);
-    const targetSubs = isAllPasses ? payerSubs : [targetSub].filter(Boolean);
-
+    const targetSubs = isAllPasses ? payerSubs : targetSub ? [targetSub] : [];
     const statusPayments = isAllPasses
       ? payments.filter((p) => payerSubIds.has(p.subscriptionId))
       : payments;
@@ -255,8 +264,8 @@ export class BillingService {
   }
 
   private computePaymentStatus(
-    subs: any[],
-    payments: any[],
+    subs: Subscription[],
+    payments: Payment[],
     totalOutstanding: number,
   ): {
     currentMonthStatus: CurrentMonthStatus;
@@ -286,7 +295,7 @@ export class BillingService {
         (p) =>
           p.status === 'failed' &&
           !payments.some(
-            (s: any) => s.status === 'succeeded' && s.amount === p.amount,
+            (s) => s.status === 'succeeded' && s.amount === p.amount,
           ),
       );
       return {
@@ -398,7 +407,7 @@ export class BillingService {
       include: {
         beneficiary: true,
         bankInfo: {
-          include: { account: { include: { beneficiaries: true } } },
+          include: { account: true },
         },
       },
     });

@@ -1,13 +1,5 @@
 import { useState } from "react";
-import {
-  ActivityIndicator,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
 import { MandateTab } from "@/components/billing/MandateTab";
 import { PassSelector } from "@/components/billing/PassSelector";
@@ -15,26 +7,28 @@ import { RibTab } from "@/components/billing/RibTab";
 import { SegmentedTabs } from "@/components/billing/SegmentedTabs";
 import { TransactionsTab } from "@/components/billing/TransactionsTab";
 import { Card } from "@/components/ui/Card";
-import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
 import { Badge } from "@/components/ui/Badge";
+import { useLocalSearchParams } from "expo-router";
 type TabKey = "transactions" | "mandate" | "rib";
-
-const TABS = [
-  { key: "transactions", label: "Historique" },
-  { key: "mandate", label: "Mandat SEPA" },
-  { key: "rib", label: "RIB" },
-];
 
 export default function BillingScreen() {
   const { user } = useAuth();
   const accountId = user?.id ?? null;
   const { data: passes, loading, error } = usePasses(accountId);
 
+  const { subscriptionId: subscriptionIdParam } = useLocalSearchParams<{
+    subscriptionId?: string;
+  }>();
+  const initialSubscriptionId = subscriptionIdParam
+    ? Number(subscriptionIdParam)
+    : null;
+
   const [selectedPassId, setSelectedPassId] = useState<number | null>(
-    passes?.length === 1 ? passes[0].subscriptionId : null,
+    initialSubscriptionId ??
+      (passes?.length === 1 ? passes[0].subscriptionId : null),
   );
   const [activeTab, setActiveTab] = useState<TabKey>("transactions");
   const hasMultiplePasses = (passes?.length ?? 0) > 1;

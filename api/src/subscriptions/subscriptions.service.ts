@@ -65,13 +65,18 @@ export class SubscriptionsService {
       // créer un doublon. On garde volontairement le même navigoNumber
       // (même "carte"/référence) — celui généré côté front pour cette
       // soumission est simplement ignoré dans ce cas.
+      //
+      // NOTE : referrerId a disparu de Subscription (le référent vit
+      // maintenant sur Beneficiary.accountReferantId). Si
+      // CreateSubscriptionDto porte encore un champ referrerId, il faut le
+      // retirer du DTO et, si besoin, gérer l'association du référent via
+      // assignReferrer() séparément plutôt qu'ici.
       return this.prisma.subscription.update({
         where: { id: existing.id },
         data: {
           status: 'active',
           startDate: createSubscriptionDto.startDate,
           endDate: createSubscriptionDto.endDate,
-          referrerId: createSubscriptionDto.referrerId,
           bankInfoId: createSubscriptionDto.bankInfoId,
         },
       });
@@ -107,12 +112,33 @@ export class SubscriptionsService {
     });
   }
 
-  async findAll(): Promise<SubscriptionResponse[]> {
+  async findAll(accountId: number): Promise<SubscriptionWithRoles[]> {
     const subscriptions = await this.prisma.subscription.findMany({
       include: this.includeClause(),
+      where: {
+        OR: [
+          { beneficiary: { accountReferantId: accountId } },
+          { beneficiary: { accountTitulaireId: accountId } },
+        ],
+      },
+      orderBy: { startDate: 'desc' },
     });
-
-    return subscriptions.map((s) => this.toResponseDto(s));
+    return subscriptions.map((s) => {
+      const roles: SubscriptionRole[] = [];
+      if (s.beneficiary.accountTitulaireId === accountId)
+        roles.push('titulaire');
+      if (s.beneficiary.accountReferantId === accountId)
+        roles.push('gestionnaire');
+      if (s.bankInfo.accountId === accountId) roles.push('payeur');
+      return {
+        ...this.toResponseDto(s),
+        roles,
+        startDate: s.startDate,
+        endDate: s.endDate,
+        latestPayment: s.payments[0] ?? null,
+        navigoNumber: s.passes[0]?.navigoNumber ?? null,
+      };
+    });
   }
 
   async findOne(id: number): Promise<SubscriptionResponse> {
@@ -171,11 +197,19 @@ export class SubscriptionsService {
     return subscriptionInclude;
   }
 
+  /**
+   * NOTE : suppose que subscriptionInclude (subscriptions.type.ts) charge
+   * désormais beneficiary.accountTitulaire et beneficiary.accountReferant
+   * au lieu de beneficiary.account et subscription.referrer, qui n'existent
+   * plus dans le nouveau schéma. À adapter dans ce fichier si pas déjà fait.
+   */
   private toResponseDto(
     subscription: SubscriptionWithRelations,
   ): SubscriptionResponse {
     const beneficiary = subscription.beneficiary;
-    const account = beneficiary.account;
+    const accountTitulaire = beneficiary.accountTitulaire;
+    const accountReferant = beneficiary.accountReferant;
+
     return {
       id: subscription.id,
       bankInfo: subscription.bankInfo,
@@ -204,7 +238,7 @@ export class SubscriptionsService {
       transportProductId: subscription.transportProductId,
       startDate: subscription.startDate.toISOString(),
       endDate: subscription.endDate.toISOString(),
-      clientNumber: account?.accountNumber ?? '',
+      clientNumber: accountTitulaire?.accountNumber ?? '',
       status: subscription.status,
       renewed: false,
       beneficiary: {
@@ -213,7 +247,8 @@ export class SubscriptionsService {
         lastName: beneficiary.lastName,
         birthDate: beneficiary.birthDate.toISOString(),
         residenceDepartment: { name: beneficiary.residenceDepartment.name },
-        account: beneficiary.account,
+        accountTitulaire: accountTitulaire,
+        accountReferrer: accountReferant,
         addresses: beneficiary.addresses.map((a) => ({
           id: a.id,
           type: a.type,
@@ -225,18 +260,6 @@ export class SubscriptionsService {
           country: a.country,
         })),
       },
-
-      // Le référent peut très bien n'avoir aucun Beneficiary propre (un
-      // parent qui ne gère que ses enfants) : son identité affichée repose
-      // uniquement sur les champs natifs d'Account, jamais sur un
-      // bénéficiaire dérivé.
-      referrer: subscription.referrer
-        ? {
-            id: subscription.referrer.id,
-            email: subscription.referrer.email,
-            accountNumber: subscription.referrer.accountNumber,
-          }
-        : null,
 
       payments: subscription.payments.map((p) => ({
         id: p.id,
@@ -250,46 +273,48 @@ export class SubscriptionsService {
     };
   }
 
-  async findByAccount(accountId: number): Promise<SubscriptionWithRoles[]> {
-    const subscriptions = await this.prisma.subscription.findMany({
-      where: {
-        OR: [
-          { referrerId: accountId },
-          { beneficiary: { account: { id: accountId } } },
-        ],
-      },
-      include: {
-        beneficiary: { include: { account: { select: { id: true } } } },
-        payments: { orderBy: { paidAt: 'desc' }, take: 1 },
-        passes: { where: { status: PassStatus.active }, take: 1 },
-        bankInfo: true,
-      },
-      orderBy: { startDate: 'desc' },
-    });
+  // async findByAccount(accountId: number): Promise<SubscriptionWithRoles[]> {
+  //   const subscriptions = await this.prisma.subscription.findMany({
+  //     where: {
+  //       OR: [
+  //         { beneficiary: { accountReferantId: accountId } },
+  //         { beneficiary: { accountTitulaireId: accountId } },
+  //       ],
+  //     },
+  //     include: {
+  //       beneficiary: true,
+  //       payments: { orderBy: { paidAt: 'desc' }, take: 1 },
+  //       passes: { where: { status: PassStatus.active }, take: 1 },
+  //       bankInfo: true,
+  //     },
+  //     orderBy: { startDate: 'desc' },
+  //   });
 
-    return subscriptions.map((sub) => {
-      const roles: SubscriptionRole[] = [];
-      if (sub.beneficiary.account?.id === accountId) roles.push('titulaire');
-      if (sub.referrerId === accountId) roles.push('gestionnaire');
-      if (sub.bankInfo.accountId === accountId) roles.push('payeur');
-      return {
-        id: sub.id,
-        navigoNumber: sub.passes[0]?.navigoNumber ?? null,
-        subscriptionType: sub.subscriptionType,
-        transportProductId: sub.transportProductId,
-        startDate: sub.startDate,
-        endDate: sub.endDate,
-        status: sub.status,
-        roles,
-        beneficiary: {
-          id: sub.beneficiary.id,
-          firstName: sub.beneficiary.firstName,
-          lastName: sub.beneficiary.lastName,
-        },
-        latestPayment: sub.payments[0] ?? null,
-      };
-    });
-  }
+  //   return subscriptions.map((sub) => {
+  //     const roles: SubscriptionRole[] = [];
+  //     if (sub.beneficiary.accountTitulaireId === accountId)
+  //       roles.push('titulaire');
+  //     if (sub.beneficiary.accountReferantId === accountId)
+  //       roles.push('gestionnaire');
+  //     if (sub.bankInfo.accountId === accountId) roles.push('payeur');
+  //     return {
+  //       id: sub.id,
+  //       navigoNumber: sub.passes[0]?.navigoNumber ?? null,
+  //       subscriptionType: sub.subscriptionType,
+  //       transportProductId: sub.transportProductId,
+  //       startDate: sub.startDate,
+  //       endDate: sub.endDate,
+  //       status: sub.status,
+  //       roles,
+  //       beneficiary: {
+  //         id: sub.beneficiary.id,
+  //         firstName: sub.beneficiary.firstName,
+  //         lastName: sub.beneficiary.lastName,
+  //       },
+  //       latestPayment: sub.payments[0] ?? null,
+  //     };
+  //   });
+  // }
 
   /**
    * Signale un pass perdu/volé/endommagé :
@@ -310,7 +335,6 @@ export class SubscriptionsService {
       include: {
         beneficiary: {
           include: {
-            account: true,
             addresses: true,
           },
         },
@@ -322,11 +346,12 @@ export class SubscriptionsService {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
 
-    const isBeneficiaryAccount =
-      subscription.beneficiary.account?.id === requesterAccountId;
-    const isReferrer = subscription.referrerId === requesterAccountId;
+    const isAccountTitulaire =
+      subscription.beneficiary.accountTitulaireId === requesterAccountId;
+    const isReferrer =
+      subscription.beneficiary.accountReferantId === requesterAccountId;
 
-    if (!isBeneficiaryAccount && !isReferrer) {
+    if (!isAccountTitulaire && !isReferrer) {
       throw new ForbiddenException(
         'Seul le titulaire ou le référant peut signaler ce pass.',
       );
@@ -456,43 +481,66 @@ export class SubscriptionsService {
   }
 
   /**
-   * Dissocie le référant d'un abonnement (referrerId -> null).
-   * Autorisé pour le référant actuel lui-même OU le titulaire (bénéficiaire).
+   * Dissocie le référant d'un BÉNÉFICIAIRE (accountReferantId -> null).
+   * Le référent est désormais porté par Beneficiary, pas par Subscription :
+   * cette opération affecte donc TOUS les abonnements de ce bénéficiaire en
+   * une fois, pas un seul. On garde subscriptionId en entrée (pour ne pas
+   * casser l'appel front existant) et on résout le beneficiaryId derrière.
+   *
+   * Autorisé pour le référant actuel lui-même OU le titulaire (accountTitulaire).
+   *
+   * Garde-fou : si le bénéficiaire n'a pas de compte titulaire propre,
+   * dissocier le référant rendrait TOUS ses abonnements inaccessibles — ni
+   * le titulaire (pas de compte), ni le référant (justement dissocié) ne
+   * pourraient plus les consulter ou les gérer. On refuse donc cette
+   * dissociation tant qu'aucun compte titulaire n'est associé.
    */
   async unlinkReferrer(subscriptionId: number, requesterAccountId: number) {
     const subscription = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { beneficiary: { include: { account: true } } },
+      include: { beneficiary: true },
     });
 
     if (!subscription) {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
 
-    const isBeneficiaryAccount =
-      subscription.beneficiary.account?.id === requesterAccountId;
-    const isCurrentReferrer = subscription.referrerId === requesterAccountId;
+    const beneficiary = subscription.beneficiary;
 
-    if (!isBeneficiaryAccount && !isCurrentReferrer) {
+    const isAccountTitulaire =
+      beneficiary.accountTitulaireId === requesterAccountId;
+    const isCurrentReferrer =
+      beneficiary.accountReferantId === requesterAccountId;
+
+    if (!isAccountTitulaire && !isCurrentReferrer) {
       throw new ForbiddenException(
         'Seul le titulaire ou le référant actuel peut dissocier ce compte.',
       );
     }
 
-    if (subscription.referrerId === null) {
+    if (beneficiary.accountReferantId === null) {
       throw new BadRequestException('Aucun référant à dissocier.');
     }
 
-    return this.prisma.subscription.update({
-      where: { id: subscriptionId },
-      data: { referrerId: null },
+    if (beneficiary.accountTitulaireId === null) {
+      throw new BadRequestException(
+        "Impossible de dissocier ce référant : le bénéficiaire n'a pas de compte titulaire propre. " +
+          'Associez un compte au bénéficiaire avant de pouvoir dissocier le référant, ' +
+          'sinon ses abonnements deviendraient inaccessibles.',
+      );
+    }
+
+    return this.prisma.beneficiary.update({
+      where: { id: beneficiary.id },
+      data: { accountReferantId: null },
     });
   }
 
   /**
-   * Associe un nouveau référant à l'abonnement. Autorisé pour le titulaire
-   * (bénéficiaire) ou le référant actuel (pour se remplacer lui-même).
-   * Refuse si un référant existe déjà — il faut d'abord le dissocier.
+   * Associe un nouveau référant au BÉNÉFICIAIRE titulaire de l'abonnement.
+   * Autorisé pour le titulaire (accountTitulaire) ou le référant actuel
+   * (pour se remplacer lui-même). Refuse si un référant existe déjà — il
+   * faut d'abord le dissocier.
    */
   async assignReferrer(
     subscriptionId: number,
@@ -501,24 +549,27 @@ export class SubscriptionsService {
   ) {
     const subscription = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { beneficiary: { include: { account: true } } },
+      include: { beneficiary: true },
     });
 
     if (!subscription) {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
 
-    const isBeneficiaryAccount =
-      subscription.beneficiary.account?.id === requesterAccountId;
-    const isCurrentReferrer = subscription.referrerId === requesterAccountId;
+    const beneficiary = subscription.beneficiary;
 
-    if (!isBeneficiaryAccount && !isCurrentReferrer) {
+    const isAccountTitulaire =
+      beneficiary.accountTitulaireId === requesterAccountId;
+    const isCurrentReferrer =
+      beneficiary.accountReferantId === requesterAccountId;
+
+    if (!isAccountTitulaire && !isCurrentReferrer) {
       throw new ForbiddenException(
         'Seul le titulaire ou le référant actuel peut modifier ce champ.',
       );
     }
 
-    if (subscription.referrerId !== null) {
+    if (beneficiary.accountReferantId !== null) {
       throw new BadRequestException(
         "Un référant est déjà associé. Dissociez-le avant d'en ajouter un nouveau.",
       );
@@ -532,9 +583,9 @@ export class SubscriptionsService {
       throw new NotFoundException('Compte introuvable.');
     }
 
-    return this.prisma.subscription.update({
-      where: { id: subscriptionId },
-      data: { referrerId: newReferrerAccountId },
+    return this.prisma.beneficiary.update({
+      where: { id: beneficiary.id },
+      data: { accountReferantId: newReferrerAccountId },
     });
   }
 
@@ -555,7 +606,7 @@ export class SubscriptionsService {
     const subscription = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
       include: {
-        beneficiary: { include: { account: true } },
+        beneficiary: true,
         passes: { where: { status: PassStatus.active } },
       },
     });
@@ -564,11 +615,12 @@ export class SubscriptionsService {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
 
-    const isBeneficiaryAccount =
-      subscription.beneficiary.account?.id === requesterAccountId;
-    const isReferrer = subscription.referrerId === requesterAccountId;
+    const isAccountTitulaire =
+      subscription.beneficiary.accountTitulaireId === requesterAccountId;
+    const isReferrer =
+      subscription.beneficiary.accountReferantId === requesterAccountId;
 
-    if (!isBeneficiaryAccount && !isReferrer) {
+    if (!isAccountTitulaire && !isReferrer) {
       throw new ForbiddenException(
         'Seul le titulaire ou le référant peut résilier cet abonnement.',
       );
@@ -630,16 +682,17 @@ export class SubscriptionsService {
   ) {
     const subscription = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { beneficiary: { include: { account: true } } },
+      include: { beneficiary: true },
     });
 
     if (!subscription) {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
 
-    const holderAccountId = subscription.beneficiary.account?.id ?? null;
+    const holderAccountId = subscription.beneficiary.accountTitulaireId;
     const isHolder = holderAccountId === requesterAccountId;
-    const isReferrer = subscription.referrerId === requesterAccountId;
+    const isReferrer =
+      subscription.beneficiary.accountReferantId === requesterAccountId;
 
     if (!isHolder && !isReferrer) {
       throw new ForbiddenException(
@@ -689,17 +742,17 @@ export class SubscriptionsService {
   }
 
   /**
-   * Associe un compte au TITULAIRE d'un abonnement (Beneficiary.accountId) :
-   * - si un Account existe déjà avec cet email, on le lie directement — un
-   *   même compte peut désormais gérer plusieurs bénéficiaires (ex: un
-   *   parent qui inscrit plusieurs enfants sous son propre compte), donc
-   *   retrouver un compte "déjà pris" par un autre bénéficiaire n'est plus
-   *   une erreur comme c'était le cas sous l'ancienne relation 1-1
+   * Associe un compte au TITULAIRE d'un bénéficiaire
+   * (Beneficiary.accountTitulaireId) :
+   * - si un Account existe déjà avec cet email, on le lie directement —
+   *   mais attention, accountTitulaireId est @unique : ce compte existant
+   *   ne doit pas déjà être titulaire d'un AUTRE bénéficiaire, sinon Prisma
+   *   renverra une violation de contrainte unique (P2002) à la mise à jour
    * - sinon, on délègue la création à AccountService (mot de passe temporaire,
    *   mustChangePassword=true), puis on lie ce nouveau compte au bénéficiaire,
    *   puis on envoie l'email avec ce mot de passe
    *
-   * Autorisé pour le référant de l'abonnement uniquement.
+   * Autorisé pour le référant du bénéficiaire uniquement.
    */
   async linkOrCreateAccountForBeneficiary(
     subscriptionId: number,
@@ -708,19 +761,20 @@ export class SubscriptionsService {
   ) {
     const subscription = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
-      include: { beneficiary: { include: { account: true } } },
+      include: { beneficiary: true },
     });
 
     if (!subscription) {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
-    if (subscription.beneficiary.account) {
+    if (subscription.beneficiary.accountTitulaireId) {
       throw new BadRequestException(
         'Ce bénéficiaire a déjà un compte associé.',
       );
     }
 
-    const isReferrer = subscription.referrerId === requesterAccountId;
+    const isReferrer =
+      subscription.beneficiary.accountReferantId === requesterAccountId;
 
     if (!isReferrer) {
       throw new ForbiddenException('Seul le référant peut associer ce compte.');
@@ -734,10 +788,24 @@ export class SubscriptionsService {
     });
 
     if (existing) {
-      return this.prisma.beneficiary.update({
-        where: { id: beneficiaryId },
-        data: { accountId: existing.id },
-      });
+      try {
+        return await this.prisma.beneficiary.update({
+          where: { id: beneficiaryId },
+          data: { accountTitulaireId: existing.id },
+        });
+      } catch (error: unknown) {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'code' in error &&
+          error.code === 'P2002'
+        ) {
+          throw new ConflictException(
+            'Ce compte est déjà titulaire d’un autre bénéficiaire.',
+          );
+        }
+        throw error;
+      }
     }
 
     const { account, temporaryPassword } =
@@ -745,7 +813,7 @@ export class SubscriptionsService {
 
     await this.prisma.beneficiary.update({
       where: { id: beneficiaryId },
-      data: { accountId: account.id },
+      data: { accountTitulaireId: account.id },
     });
 
     await this.mailService.sendAccountCreatedEmail(normalizedEmail, {

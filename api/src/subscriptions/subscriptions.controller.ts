@@ -37,8 +37,8 @@ export class SubscriptionsController {
   }
 
   @Get()
-  findAll() {
-    return this.subscriptionsService.findAll();
+  findAll(@GetMe() user: JwtPayload) {
+    return this.subscriptionsService.findAll(user.id);
   }
 
   @Get(':id')
@@ -123,7 +123,7 @@ export class SubscriptionsController {
     @Body() dto: { bankInfoId: number },
     @GetMe() user: JwtPayload,
   ) {
-    const requesterAccountId = user!.id;
+    const requesterAccountId = user.id;
     return this.subscriptionsService.changeBankInfo(
       id,
       requesterAccountId,
@@ -137,7 +137,7 @@ export class SubscriptionsController {
     @Body() dto: { email: string },
     @GetMe() user: JwtPayload,
   ) {
-    const requesterAccountId = user!.id;
+    const requesterAccountId = user.id;
     return this.subscriptionsService.linkOrCreateAccountForBeneficiary(
       id,
       requesterAccountId,

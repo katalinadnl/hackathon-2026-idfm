@@ -16,9 +16,7 @@ export default function SubscriptionsView() {
     data: subscriptions,
     loading,
     error,
-  } = useFetch<ApiSubscription[]>(
-    user ? `/accounts/${user.id}/subscriptions` : null,
-  );
+  } = useFetch<ApiSubscription[]>(user ? `/subscriptions` : null);
   if (!user || !subscriptions) return null;
 
   return (

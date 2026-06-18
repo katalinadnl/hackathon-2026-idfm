@@ -60,7 +60,6 @@ export class AdminBillingService {
             OR: [
               { firstName: { contains: filters.search, mode: 'insensitive' } },
               { lastName: { contains: filters.search, mode: 'insensitive' } },
-              { email: { contains: filters.search, mode: 'insensitive' } },
             ],
           },
         },
@@ -73,7 +72,6 @@ export class AdminBillingService {
         include: {
           beneficiary: true,
           bankInfo: { include: { account: true } },
-          referrer: { select: { id: true, email: true, accountNumber: true } },
           passes: { include: { delivery: true } },
           _count: { select: { payments: true } },
         },
@@ -99,9 +97,6 @@ export class AdminBillingService {
             name: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
           },
           bankInfo: sub.bankInfo,
-          referrer: sub.referrer
-            ? { id: sub.referrer.id, email: sub.referrer.email }
-            : null,
           paymentCount: sub._count.payments,
         };
       }),
@@ -117,9 +112,8 @@ export class AdminBillingService {
       include: {
         beneficiary: true,
         bankInfo: {
-          include: { account: { include: { beneficiaries: true } } },
+          include: { account: true },
         },
-        referrer: { include: { beneficiaries: true } },
         payments: { orderBy: { paidAt: 'desc' } },
         passes: { include: { delivery: true } },
       },
@@ -278,14 +272,15 @@ export class AdminBillingService {
   async getAccountMandate(accountId: number) {
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
-      include: { beneficiaries: true },
+      include: { beneficiariesReferant: true, beneficiaryTitulaire: true },
     });
     if (!account) throw new NotFoundException(`Account ${accountId} not found`);
 
     return {
       accountId: account.id,
       email: account.email,
-      beneficiary: account.beneficiaries,
+      beneficiariesReferant: account.beneficiariesReferant,
+      beneficiaryTitulaire: account.beneficiaryTitulaire,
       stripeCustomerId: account.stripeCustomerId,
       stripePaymentMethodId: account.stripePaymentMethodId,
       stripeMandateId: account.stripeMandateId,

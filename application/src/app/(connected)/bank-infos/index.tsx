@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
-import { SectionTitle, Section } from "@/components/ui/Section";
+import { Section } from "@/components/ui/Section";
 import { DS, MaxContentWidth } from "@/constants/theme";
 import { useFetch } from "@/hooks/useFetch";
 import { BankInfo } from "@/types/bankInfo";
@@ -65,7 +65,7 @@ export default function BankInfosListPage() {
             title="Mes moyens de paiement"
             action={
               <Button
-                variant="primary"
+                variant="secondary"
                 size="sm"
                 leadingIcon="plus"
                 onPress={() => router.push("/bank-infos/new" as any)}

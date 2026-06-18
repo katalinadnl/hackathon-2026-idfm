@@ -20,7 +20,7 @@ export class AccountsService {
       where: {
         email: { contains: query.trim(), mode: 'insensitive', not: user.email },
       },
-      include: { beneficiaries: true },
+      include: { beneficiariesReferant: true, beneficiaryTitulaire: true },
       take: 10,
     });
 
@@ -28,10 +28,6 @@ export class AccountsService {
       id: a.id,
       email: a.email,
       accountNumber: a.accountNumber,
-      beneficiaries: a.beneficiaries.map((beneficiary) => ({
-        firstName: beneficiary.firstName,
-        lastName: beneficiary.lastName,
-      })),
     }));
   }
 
@@ -45,7 +41,6 @@ export class AccountsService {
    */
   async createWithTemporaryPassword(
     email: string,
-    beneficiaryId?: number,
   ): Promise<{ account: Account; temporaryPassword: string }> {
     const normalizedEmail = email.trim().toLowerCase();
 

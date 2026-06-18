@@ -23,13 +23,17 @@ import { useSubscriptions } from "@/hooks/use-subscriptions";
 import type { ApiSubscription } from "@/hooks/use-subscriptions";
 
 import { useTariffs } from "@/hooks/useTariffs";
-import { beneficiariesApi } from "@/lib/api/beneficiaries";
+import {
+  beneficiariesApi,
+  Beneficiary,
+  BeneficiaryStatus,
+} from "@/lib/api/beneficiaries";
 import type { Tariff, TariffReduction } from "@/lib/api/tariffs";
 import { recommendTariff } from "@/lib/recommendTariff";
 import { ApiError } from "@/services/api";
-import type { BeneficiaryStatus } from "@/types/beneficiary";
 import { statusVerificationsApi } from "@/lib/api/statusVerification";
 import { subscriptionsApi } from "@/lib/api/subscriptions";
+import { useFetch } from "@/hooks/useFetch";
 
 // ─── Types & static data (alignés sur schema.prisma) ───────────────────────
 
@@ -73,20 +77,6 @@ const MOCK_SCAN_BIRTHDATE = "14/03/1995";
 const SIMULATED_BIRTHDATE_FC = "22/11/1989";
 const SIMULATED_RESIDENCE_CODE = "75";
 const SIMULATED_WORK_CODE = "92";
-
-function guessNameFromEmail(email: string): {
-  firstName: string;
-  lastName: string;
-} {
-  const local = (email.split("@")[0] ?? "").replace(/\d+$/, "");
-  const parts = local.split(/[._-]+/).filter(Boolean);
-  const cap = (v: string) =>
-    v.charAt(0).toUpperCase() + v.slice(1).toLowerCase();
-  return {
-    firstName: parts[0] ? cap(parts[0]) : "",
-    lastName: parts[1] ? cap(parts[1]) : "",
-  };
-}
 
 function pickRandomStatus(): BeneficiaryStatus {
   const idx = Math.floor(Math.random() * STATUS_OPTIONS.length);
@@ -244,6 +234,8 @@ export default function NewSubscriptionPage() {
     error: tariffsError,
     reload: reloadTariffs,
   } = useTariffs();
+  const { data: beneficiaries, loading: myBeneficiariesLoading } =
+    useFetch<Beneficiary[]>("/beneficiaries");
 
   const { subscriptions: mySubscriptions } = useSubscriptions(user?.id ?? null);
 
@@ -271,8 +263,12 @@ export default function NewSubscriptionPage() {
   const initialTarget: Target | null =
     params.for === "self" || params.for === "other" ? params.for : null;
 
+  const myBeneficiary = useMemo(
+    () => beneficiaries?.find((b) => b.accountTitulaireId === user?.id) ?? null,
+    [beneficiaries, user?.id],
+  );
   const hasIdentity = Boolean(
-    user?.firstName?.trim() && user?.lastName?.trim(),
+    myBeneficiary || (user?.firstName?.trim() && user?.lastName?.trim()),
   );
 
   const [target, setTarget] = useState<Target | null>(initialTarget);
@@ -330,10 +326,7 @@ export default function NewSubscriptionPage() {
   const [lastName, setLastName] = useState(() =>
     initialTarget === "self" ? (user?.lastName ?? "") : "",
   );
-  const [email, setEmail] = useState(() =>
-    initialTarget === "self" ? (user?.email ?? "") : "",
-  );
-  const [phone, setPhone] = useState("");
+
   const [ssn, setSsn] = useState("");
   const [residenceDept, setResidenceDept] = useState<string | null>(null);
   const [workDept, setWorkDept] = useState<string | null>(null);
@@ -345,7 +338,9 @@ export default function NewSubscriptionPage() {
   const [startDate, setStartDate] = useState(todayFr);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-
+  const [existingBeneficiaryId, setExistingBeneficiaryId] = useState<
+    number | null
+  >(null);
   const selectedPlan = useMemo(
     () => tariffs.find((t) => t.id === planId) ?? null,
     [planId, tariffs],
@@ -376,27 +371,61 @@ export default function NewSubscriptionPage() {
     setStep(visibleSteps[idx - 1]);
   }
 
+  function applyBeneficiaryData(b: Beneficiary) {
+    setFirstName(b.firstName);
+    setLastName(b.lastName);
+    setBirthDate(formatFrDate(new Date(b.birthDate)));
+    setSsn(b.socialSecurityNumber ?? "");
+    setStatus(b.status);
+    setResidenceDept(
+      departments.find((d) => d.id === b.residenceDepartmentId)?.code ?? null,
+    );
+    setWorkDept(
+      departments.find((d) => d.id === b.workStudyDepartmentId)?.code ?? null,
+    );
+    setExistingBeneficiaryId(b.id);
+    setScanState("done");
+  }
+  function selectExistingBeneficiary(b: Beneficiary) {
+    setFirstName(b.firstName);
+    setLastName(b.lastName);
+    setBirthDate(formatFrDate(new Date(b.birthDate)));
+    setSsn(b.socialSecurityNumber ?? "");
+    setStatus(b.status);
+    setResidenceDept(
+      departments.find((d) => d.id === b.residenceDepartmentId)?.code ?? null,
+    );
+    setWorkDept(
+      departments.find((d) => d.id === b.workStudyDepartmentId)?.code ?? null,
+    );
+    setScanState("done");
+    goNext();
+  }
   function selectTarget(t: Target) {
     setTarget(t);
 
-    if (t === "self" && hasIdentity) {
-      setEmail(user?.email ?? "");
-      setFirstName(user?.firstName ?? "");
-      setLastName(user?.lastName ?? "");
-      setBirthDate(SIMULATED_BIRTHDATE_FC);
-      simulateGovernmentLookup(SIMULATED_BIRTHDATE_FC);
-      setStep("profile");
-      return;
+    if (t === "self") {
+      if (myBeneficiary) {
+        applyBeneficiaryData(myBeneficiary);
+        setStep("profile");
+        return;
+      }
+      if (hasIdentity) {
+        setFirstName(user?.firstName ?? "");
+        setLastName(user?.lastName ?? "");
+        setBirthDate(SIMULATED_BIRTHDATE_FC);
+        simulateGovernmentLookup(SIMULATED_BIRTHDATE_FC);
+        setStep("profile");
+        return;
+      }
     }
 
-    setEmail(t === "self" ? (user?.email ?? "") : "");
     setFirstName("");
     setLastName("");
     setBirthDate("");
     setScanState("idle");
     setStep("scan");
   }
-
   function simulateGovernmentLookup(birth: string) {
     let residenceCode = SIMULATED_RESIDENCE_CODE;
     let workCode: string | null = SIMULATED_WORK_CODE;
@@ -428,13 +457,10 @@ export default function NewSubscriptionPage() {
   function runScanSimulation() {
     setScanState("scanning");
     setTimeout(() => {
-      const guessed =
-        target === "self" && user?.email
-          ? guessNameFromEmail(user.email)
-          : { firstName: "", lastName: "" };
+      const guessed = { firstName: "", lastName: "" };
       const result = {
-        firstName: guessed.firstName || FALLBACK_SCAN_NAME.firstName,
-        lastName: guessed.lastName || FALLBACK_SCAN_NAME.lastName,
+        firstName: FALLBACK_SCAN_NAME.firstName || guessed.firstName,
+        lastName: FALLBACK_SCAN_NAME.lastName || guessed.lastName,
         birthDate: MOCK_SCAN_BIRTHDATE,
       };
       setFirstName(result.firstName);
@@ -464,21 +490,22 @@ export default function NewSubscriptionPage() {
   }
 
   useEffect(() => {
-    if (initialTarget === "self" && hasIdentity) {
+    if (initialTarget !== "self") return;
+    if (myBeneficiary) {
+      applyBeneficiaryData(myBeneficiary);
+      return;
+    }
+    if (hasIdentity) {
       setBirthDate(SIMULATED_BIRTHDATE_FC);
       simulateGovernmentLookup(SIMULATED_BIRTHDATE_FC);
     }
-  }, []);
+  }, [initialTarget, myBeneficiary, hasIdentity]);
 
   function validateProfile(): boolean {
     const next: Record<string, string> = {};
     if (!firstName.trim()) next.firstName = "Le prénom est requis.";
     if (!lastName.trim()) next.lastName = "Le nom est requis.";
-    if (!email.trim()) {
-      next.email = "L'email est requis.";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      next.email = "L'adresse email semble invalide.";
-    }
+
     if (!birthDate.trim()) {
       next.birthDate = "La date de naissance est requise.";
     } else if (!parseFrDate(birthDate)) {
@@ -597,14 +624,14 @@ export default function NewSubscriptionPage() {
     try {
       let beneficiaryId: number;
 
-      if (target === "self" && user?.beneficiaryId) {
+      if (existingBeneficiaryId) {
+        beneficiaryId = existingBeneficiaryId;
+      } else if (target === "self" && user?.beneficiaryId) {
         beneficiaryId = user.beneficiaryId;
       } else {
         const beneficiary = await beneficiariesApi.create({
           firstName,
           lastName,
-          email,
-          phone: phone.trim() || undefined,
           birthDate: birthDateObj.toISOString(),
           socialSecurityNumber: ssn.trim() || undefined,
           status,
@@ -614,7 +641,7 @@ export default function NewSubscriptionPage() {
         });
         beneficiaryId = beneficiary.id;
       }
-      // TODO : create
+
       await subscriptionsApi.create({
         beneficiaryId,
         referrerId: user?.id,
@@ -742,90 +769,137 @@ export default function NewSubscriptionPage() {
           )}
 
           {step === "scan" && (
-            <View style={s.section}>
-              <SectionTitle>Vérification d&apos;identité</SectionTitle>
-              <Text style={s.sectionLead}>
-                {target === "self"
-                  ? "Votre compte ne contient pas encore d'identité vérifiée. Scannez votre carte d'identité ou votre passeport pour pré-remplir vos informations (simulation : aucun document réel n'est analysé)."
-                  : "Scannez ou importez la carte d'identité ou le passeport de cette personne pour pré-remplir ses informations (simulation : aucun document réel n'est analysé)."}
-              </Text>
-
-              <Card style={s.scanCard}>
-                <View
-                  style={[s.scanIcon, scanState === "done" && s.scanIconDone]}
-                >
-                  <Icon
-                    name={scanState === "done" ? "check" : "creditcard"}
-                    size={26}
-                    color={scanState === "done" ? DS.white : DS.actionPrimary}
-                  />
-                </View>
-
-                {scanState === "idle" && (
-                  <>
-                    <Text style={s.scanText}>
-                      Aucun document scanné pour le moment.
+            <>
+              {target === "other" &&
+                scanState === "idle" &&
+                beneficiaries &&
+                beneficiaries.filter((b) => b.accountTitulaireId !== user?.id)
+                  .length > 0 && (
+                  <View style={s.existingBeneficiaryBlock}>
+                    <Text style={s.fieldLabel}>
+                      Ou choisissez un bénéficiaire déjà lié à votre compte
                     </Text>
-                    <View style={s.scanActionsRow}>
-                      <Button leadingIcon="camera" onPress={runScanSimulation}>
-                        {target === "self"
-                          ? "Scanner ma pièce d'identité"
-                          : "Scanner sa pièce d'identité"}
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        leadingIcon="upload"
-                        onPress={pickDocument}
-                      >
-                        Importer un fichier
-                      </Button>
+                    <View style={s.chipsRow}>
+                      {beneficiaries
+                        .filter((b) => b.accountTitulaireId !== user?.id)
+                        .map((b) => (
+                          <Card
+                            key={b.id}
+                            onPress={() => selectExistingBeneficiary(b)}
+                            interactive
+                            style={s.chip}
+                          >
+                            <Text style={s.chipLabel}>
+                              {b.firstName} {b.lastName}
+                            </Text>
+                          </Card>
+                        ))}
                     </View>
-                    <Pressable onPress={skipScan} style={s.skipScanLink}>
-                      <Text style={s.skipScanLinkText}>
-                        {target === "self"
-                          ? "Je ne souhaite pas transmettre de document — renseigner mes informations moi-même"
-                          : "Pas de document disponible — renseigner ses informations manuellement"}
-                      </Text>
-                    </Pressable>
-                  </>
-                )}
-
-                {scanState === "scanning" && (
-                  <View style={s.inlineLoading}>
-                    <ActivityIndicator color={DS.actionPrimary} />
                     <Text style={s.noteText}>
-                      Analyse du document en cours…
+                      Ou continuez ci-dessous pour ajouter une nouvelle
+                      personne.
                     </Text>
                   </View>
                 )}
 
-                {scanState === "done" && (
-                  <>
-                    <Text style={s.scanText}>
-                      Informations extraites avec succès.
+              {target === "other" &&
+                scanState === "idle" &&
+                myBeneficiariesLoading && (
+                  <View style={s.inlineLoading}>
+                    <ActivityIndicator color={DS.actionPrimary} />
+                    <Text style={s.noteText}>
+                      Chargement de vos bénéficiaires…
                     </Text>
-                    <View style={s.recapCard}>
-                      <RecapRow label="Prénom" value={firstName} />
-                      <RecapRow label="Nom" value={lastName} />
-                      <RecapRow label="Naissance" value={birthDate} last />
-                    </View>
-                  </>
+                  </View>
                 )}
-              </Card>
+              <View style={s.section}>
+                <SectionTitle>Vérification d&apos;identité</SectionTitle>
+                <Text style={s.sectionLead}>
+                  {target === "self"
+                    ? "Votre compte ne contient pas encore d'identité vérifiée. Scannez votre carte d'identité ou votre passeport pour pré-remplir vos informations (simulation : aucun document réel n'est analysé)."
+                    : "Scannez ou importez la carte d'identité ou le passeport de cette personne pour pré-remplir ses informations (simulation : aucun document réel n'est analysé)."}
+                </Text>
 
-              {scanState === "done" ? (
-                <StepActions onBack={goBack} onContinue={continueFromScan} />
-              ) : (
-                <Button
-                  variant="secondary"
-                  leadingIcon="arrow-left"
-                  disabled={scanState === "scanning"}
-                  onPress={goBack}
-                >
-                  Précédent
-                </Button>
-              )}
-            </View>
+                <Card style={s.scanCard}>
+                  <View
+                    style={[s.scanIcon, scanState === "done" && s.scanIconDone]}
+                  >
+                    <Icon
+                      name={scanState === "done" ? "check" : "creditcard"}
+                      size={26}
+                      color={scanState === "done" ? DS.white : DS.actionPrimary}
+                    />
+                  </View>
+
+                  {scanState === "idle" && (
+                    <>
+                      <Text style={s.scanText}>
+                        Aucun document scanné pour le moment.
+                      </Text>
+                      <View style={s.scanActionsRow}>
+                        <Button
+                          leadingIcon="camera"
+                          onPress={runScanSimulation}
+                        >
+                          {target === "self"
+                            ? "Scanner ma pièce d'identité"
+                            : "Scanner sa pièce d'identité"}
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          leadingIcon="upload"
+                          onPress={pickDocument}
+                        >
+                          Importer un fichier
+                        </Button>
+                      </View>
+                      <Pressable onPress={skipScan} style={s.skipScanLink}>
+                        <Text style={s.skipScanLinkText}>
+                          {target === "self"
+                            ? "Je ne souhaite pas transmettre de document — renseigner mes informations moi-même"
+                            : "Pas de document disponible — renseigner ses informations manuellement"}
+                        </Text>
+                      </Pressable>
+                    </>
+                  )}
+
+                  {scanState === "scanning" && (
+                    <View style={s.inlineLoading}>
+                      <ActivityIndicator color={DS.actionPrimary} />
+                      <Text style={s.noteText}>
+                        Analyse du document en cours…
+                      </Text>
+                    </View>
+                  )}
+
+                  {scanState === "done" && (
+                    <>
+                      <Text style={s.scanText}>
+                        Informations extraites avec succès.
+                      </Text>
+                      <View style={s.recapCard}>
+                        <RecapRow label="Prénom" value={firstName} />
+                        <RecapRow label="Nom" value={lastName} />
+                        <RecapRow label="Naissance" value={birthDate} last />
+                      </View>
+                    </>
+                  )}
+                </Card>
+
+                {scanState === "done" ? (
+                  <StepActions onBack={goBack} onContinue={continueFromScan} />
+                ) : (
+                  <Button
+                    variant="secondary"
+                    leadingIcon="arrow-left"
+                    disabled={scanState === "scanning"}
+                    onPress={goBack}
+                  >
+                    Précédent
+                  </Button>
+                )}
+              </View>
+            </>
           )}
 
           {step === "profile" && (
@@ -834,9 +908,9 @@ export default function NewSubscriptionPage() {
 
               {target === "self" && hasIdentity && (
                 <Text style={s.noteText}>
-                  Prénom, nom, email et date de naissance sont pré-remplis
-                  depuis votre compte (simulation France Connect). Vous pouvez
-                  les modifier si besoin.
+                  Prénom, nom, et date de naissance sont pré-remplis depuis
+                  votre compte (simulation France Connect). Vous pouvez les
+                  modifier si besoin.
                 </Text>
               )}
 
@@ -869,23 +943,6 @@ export default function NewSubscriptionPage() {
                   />
                 </View>
               </View>
-
-              <Input
-                label="Email"
-                value={email}
-                onChangeText={setEmail}
-                error={errors.email}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-
-              <Input
-                label="Téléphone (optionnel)"
-                placeholder="06 12 34 56 78"
-                value={phone}
-                onChangeText={setPhone}
-                keyboardType="phone-pad"
-              />
 
               <Input
                 label="Date de naissance"
@@ -938,22 +995,16 @@ export default function NewSubscriptionPage() {
                       {departments.map((d) => {
                         const selected = residenceDept === d.code;
                         return (
-                          <Pressable
+                          <Button
                             key={d.code}
                             onPress={() => setResidenceDept(d.code)}
-                            accessibilityRole="button"
-                            accessibilityState={{ selected }}
-                            style={[s.chip, selected && s.chipSelected]}
+                            variant={selected ? "primary" : "secondary"}
+                            size="sm"
                           >
-                            <Text
-                              style={[
-                                s.chipLabel,
-                                selected && s.chipLabelSelected,
-                              ]}
-                            >
+                            <Text>
                               {d.code} – {d.name}
                             </Text>
-                          </Pressable>
+                          </Button>
                         );
                       })}
                     </View>
@@ -970,24 +1021,18 @@ export default function NewSubscriptionPage() {
                       {departments.map((d) => {
                         const selected = workDept === d.code;
                         return (
-                          <Pressable
+                          <Button
                             key={d.code}
+                            size="sm"
                             onPress={() =>
                               setWorkDept(selected ? null : d.code)
                             }
-                            accessibilityRole="button"
-                            accessibilityState={{ selected }}
-                            style={[s.chip, selected && s.chipSelected]}
+                            variant={selected ? "primary" : "secondary"}
                           >
-                            <Text
-                              style={[
-                                s.chipLabel,
-                                selected && s.chipLabelSelected,
-                              ]}
-                            >
+                            <Text>
                               {d.code} – {d.name}
                             </Text>
-                          </Pressable>
+                          </Button>
                         );
                       })}
                     </View>
@@ -1014,19 +1059,14 @@ export default function NewSubscriptionPage() {
                   {STATUS_OPTIONS.map((opt) => {
                     const selected = status === opt.value;
                     return (
-                      <Pressable
+                      <Button
                         key={opt.value}
                         onPress={() => setStatus(opt.value)}
-                        accessibilityRole="button"
-                        accessibilityState={{ selected }}
-                        style={[s.chip, selected && s.chipSelected]}
+                        variant={selected ? "primary" : "secondary"}
+                        size="sm"
                       >
-                        <Text
-                          style={[s.chipLabel, selected && s.chipLabelSelected]}
-                        >
-                          {opt.label}
-                        </Text>
-                      </Pressable>
+                        <Text>{opt.label}</Text>
+                      </Button>
                     );
                   })}
                 </View>
@@ -1364,8 +1404,6 @@ export default function NewSubscriptionPage() {
 
               <Card style={s.recapCard}>
                 <RecapRow label="Titulaire" value={beneficiaryLabel} />
-                <RecapRow label="Email" value={email || "—"} />
-                {!!phone && <RecapRow label="Téléphone" value={phone} />}
                 <RecapRow label="Statut" value={statusLabel ?? "—"} />
                 <RecapRow
                   label="Résidence"
@@ -1626,12 +1664,12 @@ const s = StyleSheet.create({
     gap: DS.space2,
   },
   chip: {
-    paddingHorizontal: DS.space4,
-    paddingVertical: DS.space2,
-    borderRadius: DS.radiusPill,
-    borderWidth: 1.5,
-    borderColor: DS.borderDefault,
-    backgroundColor: DS.surfaceCard,
+    // paddingHorizontal: DS.space4,
+    // paddingVertical: DS.space2,
+    // borderRadius: DS.radiusPill,
+    // borderWidth: 1.5,
+    // borderColor: DS.borderDefault,
+    // backgroundColor: DS.surfaceCard,
   },
   chipSelected: {
     borderColor: DS.actionPrimary,
@@ -1791,5 +1829,12 @@ const s = StyleSheet.create({
     color: DS.textMuted,
     textAlign: "center",
     marginBottom: DS.space4,
+  },
+  existingBeneficiaryBlock: {
+    gap: DS.space2,
+    paddingBottom: DS.space3,
+    borderBottomWidth: 1,
+    borderBottomColor: DS.borderSubtle,
+    width: "100%",
   },
 });

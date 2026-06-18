@@ -431,9 +431,7 @@ export default function DashboardHome() {
     data: subscriptions,
     loading,
     error,
-  } = useFetch<ApiSubscription[]>(
-    user ? `/accounts/${user.id}/subscriptions` : null,
-  );
+  } = useFetch<ApiSubscription[]>(user ? `/subscriptions` : null);
   const goToNewSubscription = (target: "self" | "other") =>
     router.push({
       pathname: "/subscriptions/new",
@@ -489,7 +487,7 @@ export default function DashboardHome() {
         <SectionHeader
           title="Vos abonnements"
           action="Tout voir"
-          onAction={() => {}}
+          onAction={() => router.push("/(connected)/subscriptions")}
         />
         <View>
           {loading ? (
@@ -511,7 +509,7 @@ export default function DashboardHome() {
         <SectionHeader
           title="Dernières facturations"
           action="Tout voir"
-          onAction={() => {}}
+          onAction={() => router.push("/(connected)/billing")}
         />
         <View style={styles.card}>
           {loading ? (

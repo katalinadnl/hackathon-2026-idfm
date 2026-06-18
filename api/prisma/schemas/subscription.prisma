@@ -10,7 +10,6 @@ model Subscription {
   reference String @unique @default(cuid())
 
   beneficiaryId    Int
-  referrerId       Int?
   subscriptionType String
   startDate        DateTime
   endDate          DateTime
@@ -23,12 +22,11 @@ model Subscription {
   cancellationEffectiveAt DateTime? // date à laquelle status passera à "cancelled"
   cancelledById           Int? // qui a fait la demande (titulaire ou référant)
   bankInfoId              Int
-  transportProductId  Int?
+  transportProductId      Int?
 
-  beneficiary Beneficiary @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
-  referrer    Account?    @relation("SubscriptionReferrer", fields: [referrerId], references: [id])
-  cancelledBy Account?    @relation("SubscriptionCancelledBy", fields: [cancelledById], references: [id])
-  bankInfo    BankInfo    @relation("BankInfo", fields: [bankInfoId], references: [id])
+  beneficiary      Beneficiary       @relation("SubscriptionHolder", fields: [beneficiaryId], references: [id])
+  cancelledBy      Account?          @relation("SubscriptionCancelledBy", fields: [cancelledById], references: [id])
+  bankInfo         BankInfo          @relation("BankInfo", fields: [bankInfoId], references: [id])
   transportProduct TransportProduct? @relation(fields: [transportProductId], references: [id])
 
   paymentMode   PaymentMode @default(SEPA_MONTHLY)
@@ -83,35 +81,31 @@ model StatusVerification {
   apiReference String?
   apiQueriedAt DateTime?
 
-  validFrom  DateTime?
-  validUntil DateTime?
-  createdAt  DateTime  @default(now())
-   tariffReductionId Int?
+  validFrom         DateTime?
+  validUntil        DateTime?
+  createdAt         DateTime         @default(now())
+  tariffReductionId Int?
   tariffReduction   TariffReduction? @relation(fields: [tariffReductionId], references: [id])
-
-
 
   beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
 }
-
-
 
 // Synchronisé depuis le jeu de données ouvert IDFM "titres-et-tarifs"
 // (https://data.iledefrance-mobilites.fr/explore/dataset/titres-et-tarifs/).
 model TransportProduct {
   id          Int     @id @default(autoincrement())
-  name        String  @unique 
-  description String? 
-  indication  String? 
-  period      String? 
+  name        String  @unique
+  description String?
+  indication  String?
+  period      String?
 
-  priceLabel String 
-  priceCents Int? 
+  priceLabel String
+  priceCents Int?
 
-  sellingArguments String[] 
-  subscriptionTag  String? 
-  portalUrl        String? 
-  rechargeUrl      String? 
+  sellingArguments String[]
+  subscriptionTag  String?
+  portalUrl        String?
+  rechargeUrl      String?
   imageUrl         String?
 
   isAnnualPlan Boolean  @default(false)
@@ -123,9 +117,9 @@ model TransportProduct {
 
 model TariffReduction {
   id          Int     @id @default(autoincrement())
-  name        String  @unique 
+  name        String  @unique
   description String?
-  indication  String? 
+  indication  String?
 
   reductionPercent Int?
   isFree           Boolean  @default(false)

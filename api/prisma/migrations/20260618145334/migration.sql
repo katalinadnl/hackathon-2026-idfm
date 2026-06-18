@@ -62,7 +62,8 @@ CREATE TABLE "Beneficiary" (
     "birthDate" TIMESTAMP(3) NOT NULL,
     "socialSecurityNumber" TEXT,
     "status" "BeneficiaryStatus" NOT NULL DEFAULT 'ACTIVE',
-    "accountId" INTEGER,
+    "accountTitulaireId" INTEGER,
+    "accountReferantId" INTEGER,
     "residenceDepartmentId" INTEGER NOT NULL,
     "workStudyDepartmentId" INTEGER,
 
@@ -144,7 +145,6 @@ CREATE TABLE "Subscription" (
     "id" SERIAL NOT NULL,
     "reference" TEXT NOT NULL,
     "beneficiaryId" INTEGER NOT NULL,
-    "referrerId" INTEGER,
     "subscriptionType" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "endDate" TIMESTAMP(3) NOT NULL,
@@ -235,6 +235,9 @@ CREATE UNIQUE INDEX "Department_code_key" ON "Department"("code");
 CREATE UNIQUE INDEX "Beneficiary_socialSecurityNumber_key" ON "Beneficiary"("socialSecurityNumber");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Beneficiary_accountTitulaireId_key" ON "Beneficiary"("accountTitulaireId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Pass_navigoNumber_key" ON "Pass"("navigoNumber");
 
 -- CreateIndex
@@ -268,13 +271,16 @@ CREATE UNIQUE INDEX "TariffReduction_name_key" ON "TariffReduction"("name");
 ALTER TABLE "Address" ADD CONSTRAINT "Address_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_accountTitulaireId_fkey" FOREIGN KEY ("accountTitulaireId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_accountReferantId_fkey" FOREIGN KEY ("accountReferantId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_residenceDepartmentId_fkey" FOREIGN KEY ("residenceDepartmentId") REFERENCES "Department"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_workStudyDepartmentId_fkey" FOREIGN KEY ("workStudyDepartmentId") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Pass" ADD CONSTRAINT "Pass_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -293,9 +299,6 @@ ALTER TABLE "BankInfo" ADD CONSTRAINT "BankInfo_accountId_fkey" FOREIGN KEY ("ac
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_referrerId_fkey" FOREIGN KEY ("referrerId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_cancelledById_fkey" FOREIGN KEY ("cancelledById") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;

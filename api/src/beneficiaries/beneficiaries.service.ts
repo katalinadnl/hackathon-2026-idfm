@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
+import { Beneficiary } from 'src/generated/prisma/client';
 
 @Injectable()
 export class BeneficiariesService {
@@ -20,7 +21,8 @@ export class BeneficiariesService {
           status: data.status,
           residenceDepartmentId: data.residenceDepartmentId,
           workStudyDepartmentId: data.workStudyDepartmentId,
-          accountId: linkToMe ? requestingAccountId : undefined,
+          accountTitulaireId: linkToMe ? requestingAccountId : undefined,
+          accountReferantId: !linkToMe ? requestingAccountId : undefined,
         },
       });
     } catch (error: unknown) {
@@ -36,5 +38,19 @@ export class BeneficiariesService {
       }
       throw error;
     }
+  }
+
+  async findByAccount(accountId: number): Promise<Beneficiary[]> {
+    const beneficiaries = await this.prisma.beneficiary.findMany({
+      where: {
+        OR: [
+          { accountReferantId: accountId },
+          { accountTitulaireId: accountId },
+        ],
+      },
+      include: {},
+    });
+
+    return beneficiaries;
   }
 }

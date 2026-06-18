@@ -33,9 +33,7 @@ export function useSubscriptions(accountId: number | null) {
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(
-          `${API_URL}/accounts/${accountId}/subscriptions`,
-        );
+        const res = await fetch(`${API_URL}/subscriptions`);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as ApiSubscription[];
         if (!cancelled) setSubscriptions(data);

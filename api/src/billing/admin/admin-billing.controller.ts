@@ -18,7 +18,7 @@ import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('Admin / Billing')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('admin' as any)
+@Roles('admin')
 @Controller('admin/billing')
 export class AdminBillingController {
   constructor(private readonly admin: AdminBillingService) {}
@@ -81,10 +81,7 @@ export class AdminBillingController {
   @Get('payments/unpaid')
   @ApiQuery({ name: 'page', required: false })
   @ApiQuery({ name: 'limit', required: false })
-  listUnpaid(
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
+  listUnpaid(@Query('page') page?: string, @Query('limit') limit?: string) {
     return this.admin.listUnpaidPayments({
       page: page ? Number(page) : 1,
       limit: limit ? Number(limit) : 20,
@@ -108,10 +105,7 @@ export class AdminBillingController {
   }
 
   @Patch('accounts/:accountId/mandate')
-  updateMandate(
-    @Param('accountId', ParseIntPipe) accountId: number,
-    @Body() body: { action: 'revoke' },
-  ) {
+  updateMandate(@Param('accountId', ParseIntPipe) accountId: number) {
     return this.admin.revokeMandate(accountId);
   }
 
