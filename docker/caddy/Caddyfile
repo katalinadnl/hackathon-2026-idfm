@@ -1,0 +1,15 @@
+app.{$DOMAIN} {
+	reverse_proxy app:80
+}
+
+api.{$DOMAIN} {
+	reverse_proxy api:3000
+}
+
+stats.{$DOMAIN} {
+	reverse_proxy umami:3000
+}
+
+cms.{$DOMAIN} {
+	reverse_proxy directus:8055
+}
