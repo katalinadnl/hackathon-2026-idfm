@@ -139,8 +139,6 @@ services:
   # ── Désactiver les services dev-only en prod ──────────────────────────────────
   nginx:
     profiles: ["dev"]
-  mailhog:
-    profiles: ["dev"]
   adminer:
     profiles: ["dev"]
 
