@@ -22,6 +22,7 @@ services:
     image: mailhog/mailhog:latest
     restart: unless-stopped
     networks:
+      - public
       - internal
 
   # ── API NestJS ────────────────────────────────────────────────────────────────
