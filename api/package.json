@@ -22,6 +22,7 @@
     "prisma:generate": "npx prisma generate",
     "prisma:migrate": "npx prisma migrate dev",
     "prisma:fixture": "tsx prisma/seeds.ts",
+    "prisma:sync-tariffs": "tsx prisma/sync-tariffs.ts",
     "stripe:provision": "tsx prisma/stripe-provision.ts"
   },
   "dependencies": {

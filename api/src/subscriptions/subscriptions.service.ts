@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -13,7 +14,10 @@ import {
 } from './subscriptions.type';
 import { ReportLostOrStolenDto } from './dto/report-lost-or-stolen.dto';
 import { AddressType, PassStatus } from 'src/generated/prisma/enums';
+import { MailService } from 'src/mail/mail.service';
+import { AccountsService } from 'src/accounts/accounts.service';
 import { Pass, SubscriptionResponse } from './dto/subscription-response.dto';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 
@@ -21,6 +25,7 @@ export interface SubscriptionWithRoles {
   id: number;
   navigoNumber: string | null;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: Date;
   endDate: Date;
   status: string;
@@ -31,7 +36,75 @@ export interface SubscriptionWithRoles {
 
 @Injectable()
 export class SubscriptionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+    private readonly accountService: AccountsService,
+  ) {}
+  // TODO : verify bank info id
+  async create(createSubscriptionDto: CreateSubscriptionDto) {
+    const existing = await this.findExistingSubscriptionForPlan(
+      createSubscriptionDto.beneficiaryId,
+      createSubscriptionDto.subscriptionType,
+      createSubscriptionDto.transportProductId,
+    );
+
+    if (existing) {
+      const isCurrentlyActive =
+        existing.status === 'active' && existing.endDate >= new Date();
+
+      if (isCurrentlyActive) {
+        throw new ConflictException(
+          `Ce bénéficiaire a déjà un abonnement actif pour la formule "${createSubscriptionDto.subscriptionType}" (jusqu'au ${existing.endDate.toLocaleDateString('fr-FR')}). Choisissez une autre formule.`,
+        );
+      }
+
+      // Abonnement existant pour cette même formule, mais inactif ou
+      // expiré : on le réactive avec les nouvelles dates plutôt que de
+      // créer un doublon. On garde volontairement le même navigoNumber
+      // (même "carte"/référence) — celui généré côté front pour cette
+      // soumission est simplement ignoré dans ce cas.
+      return this.prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          status: 'active',
+          startDate: createSubscriptionDto.startDate,
+          endDate: createSubscriptionDto.endDate,
+          referrerId: createSubscriptionDto.referrerId,
+          bankInfoId: createSubscriptionDto.bankInfoId,
+        },
+      });
+    }
+
+    return this.prisma.subscription.create({
+      data: createSubscriptionDto,
+    });
+  }
+
+  private async findExistingSubscriptionForPlan(
+    beneficiaryId: number,
+    subscriptionType: string,
+    transportProductId?: number,
+  ) {
+    const plan = transportProductId
+      ? await this.prisma.transportProduct.findUnique({
+          where: { id: transportProductId },
+          select: { id: true, isAnnualPlan: true },
+        })
+      : await this.prisma.transportProduct.findUnique({
+          where: { name: subscriptionType },
+          select: { id: true, isAnnualPlan: true },
+        });
+    if (!plan?.isAnnualPlan) return null;
+
+    return this.prisma.subscription.findFirst({
+      where: {
+        beneficiaryId,
+        OR: [{ transportProductId: plan.id }, { subscriptionType }],
+      },
+      orderBy: { endDate: 'desc' },
+    });
+  }
 
   async findAll(): Promise<SubscriptionResponse[]> {
     const subscriptions = await this.prisma.subscription.findMany({
@@ -67,6 +140,19 @@ export class SubscriptionsService {
     await this.ensureExists(id);
 
     return this.prisma.subscription.delete({ where: { id } });
+  }
+
+  async renew(id: number, startDateInput: string) {
+    await this.ensureExists(id);
+
+    const startDate = new Date(startDateInput);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 12);
+
+    return this.prisma.subscription.update({
+      where: { id },
+      data: { status: 'active', startDate, endDate },
+    });
   }
 
   private async ensureExists(id: number) {
@@ -115,6 +201,7 @@ export class SubscriptionsService {
         };
       }),
       subscriptionType: subscription.subscriptionType,
+      transportProductId: subscription.transportProductId,
       startDate: subscription.startDate.toISOString(),
       endDate: subscription.endDate.toISOString(),
       clientNumber: account?.accountNumber ?? '',
@@ -124,7 +211,6 @@ export class SubscriptionsService {
         id: beneficiary.id,
         firstName: beneficiary.firstName,
         lastName: beneficiary.lastName,
-        email: beneficiary.email,
         birthDate: beneficiary.birthDate.toISOString(),
         residenceDepartment: { name: beneficiary.residenceDepartment.name },
         addresses: beneficiary.addresses.map((a) => ({
@@ -192,6 +278,7 @@ export class SubscriptionsService {
         id: sub.id,
         navigoNumber: sub.passes[0]?.navigoNumber ?? null,
         subscriptionType: sub.subscriptionType,
+        transportProductId: sub.transportProductId,
         startDate: sub.startDate,
         endDate: sub.endDate,
         status: sub.status,
@@ -532,5 +619,147 @@ export class SubscriptionsService {
 
   getActivePass<T extends { status: string }>(passes: T[]): T | null {
     return passes.find((p) => p.status === PassStatus.active) ?? null;
+  }
+
+  /**
+   * Retourne les BankInfo que le demandeur peut choisir pour cet abonnement :
+   * - le titulaire ne voit que ses propres BankInfo
+   * - le référant voit les siens ET ceux du titulaire (il gère pour lui)
+   */
+  async getAvailableBankInfos(
+    subscriptionId: number,
+    requesterAccountId: number,
+  ) {
+    console.log(subscriptionId);
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { beneficiary: { include: { account: true } } },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
+    }
+
+    const holderAccountId = subscription.beneficiary.account?.id ?? null;
+    const isHolder = holderAccountId === requesterAccountId;
+    const isReferrer = subscription.referrerId === requesterAccountId;
+
+    if (!isHolder && !isReferrer) {
+      throw new ForbiddenException(
+        'Seul le titulaire ou le référant peut consulter les moyens de paiement.',
+      );
+    }
+
+    const accountIds =
+      isReferrer && holderAccountId
+        ? [requesterAccountId, holderAccountId]
+        : [requesterAccountId];
+
+    return this.prisma.bankInfo.findMany({
+      where: { accountId: { in: accountIds } },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  /**
+   * Change le BankInfo utilisé pour les prélèvements de cet abonnement.
+   * Le bankInfoId choisi doit appartenir à un compte autorisé (titulaire ou
+   * référant) — réutilise getAvailableBankInfos pour cette vérification, afin
+   * que la liste affichée au front et la règle appliquée côté serveur ne
+   * puissent jamais diverger.
+   */
+  async changeBankInfo(
+    subscriptionId: number,
+    requesterAccountId: number,
+    bankInfoId: number,
+  ) {
+    const allowed = await this.getAvailableBankInfos(
+      subscriptionId,
+      requesterAccountId,
+    );
+
+    const target = allowed.find((b) => b.id === bankInfoId);
+    if (!target) {
+      throw new BadRequestException(
+        "Cet IBAN n'est pas disponible pour cet abonnement.",
+      );
+    }
+
+    return this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { bankInfoId: target.id },
+    });
+  }
+
+  /**
+   * Associe un compte au TITULAIRE d'un abonnement (Beneficiary.account) :
+   * - si un Account existe déjà avec cet email, on le lie directement
+   * - sinon, on délègue la création à AccountService (mot de passe temporaire,
+   *   mustChangePassword=true), puis on envoie l'email avec ce mot de passe
+   *
+   * Autorisé pour le référant de l'abonnement, ou pour le titulaire lui-même
+   * s'il agit déjà via un compte propre.
+   */
+  async linkOrCreateAccountForBeneficiary(
+    subscriptionId: number,
+    requesterAccountId: number,
+    email: string,
+  ) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { beneficiary: { include: { account: true } } },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
+    }
+
+    const isReferrer = subscription.referrerId === requesterAccountId;
+    const isBeneficiaryAccount =
+      subscription.beneficiary.account?.id === requesterAccountId;
+
+    if (!isReferrer && !isBeneficiaryAccount) {
+      throw new ForbiddenException(
+        'Seul le référant ou le titulaire peut associer ce compte.',
+      );
+    }
+
+    if (subscription.beneficiary.account) {
+      throw new BadRequestException(
+        'Ce bénéficiaire a déjà un compte associé.',
+      );
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const beneficiaryId = subscription.beneficiary.id;
+
+    const existing = await this.prisma.account.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (existing) {
+      if (existing.beneficiaryId !== null) {
+        throw new BadRequestException(
+          'Ce compte est déjà associé à un autre bénéficiaire.',
+        );
+      }
+
+      return this.prisma.account.update({
+        where: { id: existing.id },
+        data: { beneficiaryId },
+      });
+    }
+
+    const { account, temporaryPassword } =
+      await this.accountService.createWithTemporaryPassword(
+        normalizedEmail,
+        beneficiaryId,
+      );
+
+    await this.mailService.sendAccountCreatedEmail(normalizedEmail, {
+      temporaryPassword,
+    });
+
+    return account;
   }
 }

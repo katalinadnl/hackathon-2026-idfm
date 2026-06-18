@@ -36,4 +36,17 @@ export class MailService {
     });
     this.logger.log(`Password reset email sent to ${to}`);
   }
+  async sendAccountCreatedEmail(
+    to: string,
+    { temporaryPassword }: { temporaryPassword: string },
+  ): Promise<void> {
+    await this.transporter.sendMail({
+      from: process.env.MAIL_FROM ?? 'noreply@idfm.fr',
+      to,
+      subject: 'Votre compte IDFM Navigo a été créé',
+      text: `Un compte a été créé pour vous sur IDFM Navigo.\n\nIdentifiant : ${to}\nMot de passe temporaire : ${temporaryPassword}\n\nPour des raisons de sécurité, vous devrez changer ce mot de passe dès votre première connexion.`,
+      html: `<p>Un compte a été créé pour vous sur IDFM Navigo.</p><p>Identifiant : <strong>${to}</strong><br/>Mot de passe temporaire : <strong>${temporaryPassword}</strong></p><p>Pour des raisons de sécurité, vous devrez changer ce mot de passe dès votre première connexion.</p>`,
+    });
+    this.logger.log(`Account created email sent to ${to}`);
+  }
 }

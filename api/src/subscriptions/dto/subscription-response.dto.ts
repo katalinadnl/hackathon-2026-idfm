@@ -78,6 +78,7 @@ export type SubscriptionStatus =
 export type SubscriptionResponse = {
   id: number;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: string;
   endDate: string;
   status: SubscriptionStatus;
@@ -88,7 +89,6 @@ export type SubscriptionResponse = {
     id: number;
     firstName: string;
     lastName: string;
-    email: string;
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];

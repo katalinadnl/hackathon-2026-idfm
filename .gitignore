@@ -2,4 +2,4 @@
 .env.prod
 .idea
 .DS_Store
-./generated
+**/generated/

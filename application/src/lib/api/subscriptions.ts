@@ -1,5 +1,35 @@
 import { http } from "@/services/api";
+import { BankInfo } from "@/types/bankInfo";
 import { AccountInfo } from "@/types/subscription";
+
+export interface CreateSubscriptionPayload {
+  beneficiaryId: number;
+  referrerId?: number;
+  navigoNumber: string;
+  subscriptionType: string;
+  transportProductId?: number;
+  startDate: string; // ISO
+  endDate: string; // ISO
+  status?: string;
+}
+
+export interface Subscription {
+  id: number;
+  navigoNumber: string;
+  subscriptionType: string;
+  transportProductId: number | null;
+  startDate: string;
+  endDate: string;
+  status: string;
+}
+
+export const subscriptionsApi = {
+  create: (payload: CreateSubscriptionPayload) =>
+    http.post<Subscription>("/subscriptions", payload),
+
+  renew: (id: number, startDate: string) =>
+    http.post<Subscription>(`/subscriptions/${id}/renew`, { startDate }),
+};
 
 export type ReportReason = "lost" | "stolen" | "damaged";
 
@@ -41,4 +71,15 @@ export function reportLostOrStolen(
 }
 export function cancelSubscription(subscriptionId: number) {
   return http.post(`/subscriptions/${subscriptionId}/cancel`);
+}
+export function getAvailableBankInfos(
+  subscriptionId: number,
+): Promise<BankInfo[]> {
+  return http.get(`/subscriptions/${subscriptionId}/available-bank-infos`);
+}
+
+export function changeBankInfo(subscriptionId: number, bankInfoId: number) {
+  return http.post(`/subscriptions/${subscriptionId}/change-bank-info`, {
+    bankInfoId,
+  });
 }

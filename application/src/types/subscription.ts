@@ -1,3 +1,5 @@
+import { BankInfo } from "./bankInfo";
+
 export type AddressType = "home" | "delivery" | "billing";
 
 export type Address = {
@@ -69,6 +71,7 @@ export type SubscriptionStatus =
 export type SubscriptionResponse = {
   id: number;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: string;
   endDate: string;
   status: SubscriptionStatus;
@@ -79,12 +82,11 @@ export type SubscriptionResponse = {
     id: number;
     firstName: string;
     lastName: string;
-    email: string;
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];
   };
-
+  bankInfo: BankInfo;
   account: { email: string } | null;
   referrer: AccountInfo | null;
   payer: AccountInfo | null;

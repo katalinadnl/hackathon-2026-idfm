@@ -4,6 +4,7 @@ export type AuthUser = {
   id: number;
   email: string;
   accountNumber: string;
+  beneficiaryId: number | null;
   firstName: string | null;
   lastName: string | null;
 };
