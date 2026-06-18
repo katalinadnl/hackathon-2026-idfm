@@ -116,7 +116,8 @@ export const StatusVerificationScalarFieldEnum = {
   apiQueriedAt: 'apiQueriedAt',
   validFrom: 'validFrom',
   validUntil: 'validUntil',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  tariffReductionId: 'tariffReductionId'
 } as const
 
 export type StatusVerificationScalarFieldEnum = (typeof StatusVerificationScalarFieldEnum)[keyof typeof StatusVerificationScalarFieldEnum]

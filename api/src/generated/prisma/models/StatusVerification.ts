@@ -29,11 +29,13 @@ export type AggregateStatusVerification = {
 export type StatusVerificationAvgAggregateOutputType = {
   id: number | null
   beneficiaryId: number | null
+  tariffReductionId: number | null
 }
 
 export type StatusVerificationSumAggregateOutputType = {
   id: number | null
   beneficiaryId: number | null
+  tariffReductionId: number | null
 }
 
 export type StatusVerificationMinAggregateOutputType = {
@@ -50,6 +52,7 @@ export type StatusVerificationMinAggregateOutputType = {
   validFrom: Date | null
   validUntil: Date | null
   createdAt: Date | null
+  tariffReductionId: number | null
 }
 
 export type StatusVerificationMaxAggregateOutputType = {
@@ -66,6 +69,7 @@ export type StatusVerificationMaxAggregateOutputType = {
   validFrom: Date | null
   validUntil: Date | null
   createdAt: Date | null
+  tariffReductionId: number | null
 }
 
 export type StatusVerificationCountAggregateOutputType = {
@@ -82,6 +86,7 @@ export type StatusVerificationCountAggregateOutputType = {
   validFrom: number
   validUntil: number
   createdAt: number
+  tariffReductionId: number
   _all: number
 }
 
@@ -89,11 +94,13 @@ export type StatusVerificationCountAggregateOutputType = {
 export type StatusVerificationAvgAggregateInputType = {
   id?: true
   beneficiaryId?: true
+  tariffReductionId?: true
 }
 
 export type StatusVerificationSumAggregateInputType = {
   id?: true
   beneficiaryId?: true
+  tariffReductionId?: true
 }
 
 export type StatusVerificationMinAggregateInputType = {
@@ -110,6 +117,7 @@ export type StatusVerificationMinAggregateInputType = {
   validFrom?: true
   validUntil?: true
   createdAt?: true
+  tariffReductionId?: true
 }
 
 export type StatusVerificationMaxAggregateInputType = {
@@ -126,6 +134,7 @@ export type StatusVerificationMaxAggregateInputType = {
   validFrom?: true
   validUntil?: true
   createdAt?: true
+  tariffReductionId?: true
 }
 
 export type StatusVerificationCountAggregateInputType = {
@@ -142,6 +151,7 @@ export type StatusVerificationCountAggregateInputType = {
   validFrom?: true
   validUntil?: true
   createdAt?: true
+  tariffReductionId?: true
   _all?: true
 }
 
@@ -245,6 +255,7 @@ export type StatusVerificationGroupByOutputType = {
   validFrom: Date | null
   validUntil: Date | null
   createdAt: Date
+  tariffReductionId: number | null
   _count: StatusVerificationCountAggregateOutputType | null
   _avg: StatusVerificationAvgAggregateOutputType | null
   _sum: StatusVerificationSumAggregateOutputType | null
@@ -284,7 +295,9 @@ export type StatusVerificationWhereInput = {
   validFrom?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   validUntil?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StatusVerification"> | Date | string
+  tariffReductionId?: Prisma.IntNullableFilter<"StatusVerification"> | number | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
+  tariffReduction?: Prisma.XOR<Prisma.TariffReductionNullableScalarRelationFilter, Prisma.TariffReductionWhereInput> | null
 }
 
 export type StatusVerificationOrderByWithRelationInput = {
@@ -301,7 +314,9 @@ export type StatusVerificationOrderByWithRelationInput = {
   validFrom?: Prisma.SortOrderInput | Prisma.SortOrder
   validUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrderInput | Prisma.SortOrder
   beneficiary?: Prisma.BeneficiaryOrderByWithRelationInput
+  tariffReduction?: Prisma.TariffReductionOrderByWithRelationInput
 }
 
 export type StatusVerificationWhereUniqueInput = Prisma.AtLeast<{
@@ -321,7 +336,9 @@ export type StatusVerificationWhereUniqueInput = Prisma.AtLeast<{
   validFrom?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   validUntil?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StatusVerification"> | Date | string
+  tariffReductionId?: Prisma.IntNullableFilter<"StatusVerification"> | number | null
   beneficiary?: Prisma.XOR<Prisma.BeneficiaryScalarRelationFilter, Prisma.BeneficiaryWhereInput>
+  tariffReduction?: Prisma.XOR<Prisma.TariffReductionNullableScalarRelationFilter, Prisma.TariffReductionWhereInput> | null
 }, "id">
 
 export type StatusVerificationOrderByWithAggregationInput = {
@@ -338,6 +355,7 @@ export type StatusVerificationOrderByWithAggregationInput = {
   validFrom?: Prisma.SortOrderInput | Prisma.SortOrder
   validUntil?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.StatusVerificationCountOrderByAggregateInput
   _avg?: Prisma.StatusVerificationAvgOrderByAggregateInput
   _max?: Prisma.StatusVerificationMaxOrderByAggregateInput
@@ -362,6 +380,7 @@ export type StatusVerificationScalarWhereWithAggregatesInput = {
   validFrom?: Prisma.DateTimeNullableWithAggregatesFilter<"StatusVerification"> | Date | string | null
   validUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"StatusVerification"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"StatusVerification"> | Date | string
+  tariffReductionId?: Prisma.IntNullableWithAggregatesFilter<"StatusVerification"> | number | null
 }
 
 export type StatusVerificationCreateInput = {
@@ -377,6 +396,7 @@ export type StatusVerificationCreateInput = {
   validUntil?: Date | string | null
   createdAt?: Date | string
   beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutStatusVerificationsInput
+  tariffReduction?: Prisma.TariffReductionCreateNestedOneWithoutStatusVerificationsInput
 }
 
 export type StatusVerificationUncheckedCreateInput = {
@@ -393,6 +413,7 @@ export type StatusVerificationUncheckedCreateInput = {
   validFrom?: Date | string | null
   validUntil?: Date | string | null
   createdAt?: Date | string
+  tariffReductionId?: number | null
 }
 
 export type StatusVerificationUpdateInput = {
@@ -408,6 +429,7 @@ export type StatusVerificationUpdateInput = {
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput
+  tariffReduction?: Prisma.TariffReductionUpdateOneWithoutStatusVerificationsNestedInput
 }
 
 export type StatusVerificationUncheckedUpdateInput = {
@@ -424,6 +446,7 @@ export type StatusVerificationUncheckedUpdateInput = {
   validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffReductionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type StatusVerificationCreateManyInput = {
@@ -440,6 +463,7 @@ export type StatusVerificationCreateManyInput = {
   validFrom?: Date | string | null
   validUntil?: Date | string | null
   createdAt?: Date | string
+  tariffReductionId?: number | null
 }
 
 export type StatusVerificationUpdateManyMutationInput = {
@@ -470,6 +494,7 @@ export type StatusVerificationUncheckedUpdateManyInput = {
   validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffReductionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type StatusVerificationListRelationFilter = {
@@ -496,11 +521,13 @@ export type StatusVerificationCountOrderByAggregateInput = {
   validFrom?: Prisma.SortOrder
   validUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrder
 }
 
 export type StatusVerificationAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrder
 }
 
 export type StatusVerificationMaxOrderByAggregateInput = {
@@ -517,6 +544,7 @@ export type StatusVerificationMaxOrderByAggregateInput = {
   validFrom?: Prisma.SortOrder
   validUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrder
 }
 
 export type StatusVerificationMinOrderByAggregateInput = {
@@ -533,11 +561,13 @@ export type StatusVerificationMinOrderByAggregateInput = {
   validFrom?: Prisma.SortOrder
   validUntil?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrder
 }
 
 export type StatusVerificationSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
+  tariffReductionId?: Prisma.SortOrder
 }
 
 export type StatusVerificationCreateNestedManyWithoutBeneficiaryInput = {
@@ -594,6 +624,48 @@ export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
 
+export type StatusVerificationCreateNestedManyWithoutTariffReductionInput = {
+  create?: Prisma.XOR<Prisma.StatusVerificationCreateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput> | Prisma.StatusVerificationCreateWithoutTariffReductionInput[] | Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput[]
+  connectOrCreate?: Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput | Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput[]
+  createMany?: Prisma.StatusVerificationCreateManyTariffReductionInputEnvelope
+  connect?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+}
+
+export type StatusVerificationUncheckedCreateNestedManyWithoutTariffReductionInput = {
+  create?: Prisma.XOR<Prisma.StatusVerificationCreateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput> | Prisma.StatusVerificationCreateWithoutTariffReductionInput[] | Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput[]
+  connectOrCreate?: Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput | Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput[]
+  createMany?: Prisma.StatusVerificationCreateManyTariffReductionInputEnvelope
+  connect?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+}
+
+export type StatusVerificationUpdateManyWithoutTariffReductionNestedInput = {
+  create?: Prisma.XOR<Prisma.StatusVerificationCreateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput> | Prisma.StatusVerificationCreateWithoutTariffReductionInput[] | Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput[]
+  connectOrCreate?: Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput | Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput[]
+  upsert?: Prisma.StatusVerificationUpsertWithWhereUniqueWithoutTariffReductionInput | Prisma.StatusVerificationUpsertWithWhereUniqueWithoutTariffReductionInput[]
+  createMany?: Prisma.StatusVerificationCreateManyTariffReductionInputEnvelope
+  set?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  disconnect?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  delete?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  connect?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  update?: Prisma.StatusVerificationUpdateWithWhereUniqueWithoutTariffReductionInput | Prisma.StatusVerificationUpdateWithWhereUniqueWithoutTariffReductionInput[]
+  updateMany?: Prisma.StatusVerificationUpdateManyWithWhereWithoutTariffReductionInput | Prisma.StatusVerificationUpdateManyWithWhereWithoutTariffReductionInput[]
+  deleteMany?: Prisma.StatusVerificationScalarWhereInput | Prisma.StatusVerificationScalarWhereInput[]
+}
+
+export type StatusVerificationUncheckedUpdateManyWithoutTariffReductionNestedInput = {
+  create?: Prisma.XOR<Prisma.StatusVerificationCreateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput> | Prisma.StatusVerificationCreateWithoutTariffReductionInput[] | Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput[]
+  connectOrCreate?: Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput | Prisma.StatusVerificationCreateOrConnectWithoutTariffReductionInput[]
+  upsert?: Prisma.StatusVerificationUpsertWithWhereUniqueWithoutTariffReductionInput | Prisma.StatusVerificationUpsertWithWhereUniqueWithoutTariffReductionInput[]
+  createMany?: Prisma.StatusVerificationCreateManyTariffReductionInputEnvelope
+  set?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  disconnect?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  delete?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  connect?: Prisma.StatusVerificationWhereUniqueInput | Prisma.StatusVerificationWhereUniqueInput[]
+  update?: Prisma.StatusVerificationUpdateWithWhereUniqueWithoutTariffReductionInput | Prisma.StatusVerificationUpdateWithWhereUniqueWithoutTariffReductionInput[]
+  updateMany?: Prisma.StatusVerificationUpdateManyWithWhereWithoutTariffReductionInput | Prisma.StatusVerificationUpdateManyWithWhereWithoutTariffReductionInput[]
+  deleteMany?: Prisma.StatusVerificationScalarWhereInput | Prisma.StatusVerificationScalarWhereInput[]
+}
+
 export type StatusVerificationCreateWithoutBeneficiaryInput = {
   status: $Enums.BeneficiaryStatus
   source: $Enums.VerificationSource
@@ -606,6 +678,7 @@ export type StatusVerificationCreateWithoutBeneficiaryInput = {
   validFrom?: Date | string | null
   validUntil?: Date | string | null
   createdAt?: Date | string
+  tariffReduction?: Prisma.TariffReductionCreateNestedOneWithoutStatusVerificationsInput
 }
 
 export type StatusVerificationUncheckedCreateWithoutBeneficiaryInput = {
@@ -621,6 +694,7 @@ export type StatusVerificationUncheckedCreateWithoutBeneficiaryInput = {
   validFrom?: Date | string | null
   validUntil?: Date | string | null
   createdAt?: Date | string
+  tariffReductionId?: number | null
 }
 
 export type StatusVerificationCreateOrConnectWithoutBeneficiaryInput = {
@@ -666,6 +740,64 @@ export type StatusVerificationScalarWhereInput = {
   validFrom?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   validUntil?: Prisma.DateTimeNullableFilter<"StatusVerification"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"StatusVerification"> | Date | string
+  tariffReductionId?: Prisma.IntNullableFilter<"StatusVerification"> | number | null
+}
+
+export type StatusVerificationCreateWithoutTariffReductionInput = {
+  status: $Enums.BeneficiaryStatus
+  source: $Enums.VerificationSource
+  verified?: boolean
+  documentUrl?: string | null
+  expirationDate?: Date | string | null
+  apiName?: string | null
+  apiReference?: string | null
+  apiQueriedAt?: Date | string | null
+  validFrom?: Date | string | null
+  validUntil?: Date | string | null
+  createdAt?: Date | string
+  beneficiary: Prisma.BeneficiaryCreateNestedOneWithoutStatusVerificationsInput
+}
+
+export type StatusVerificationUncheckedCreateWithoutTariffReductionInput = {
+  id?: number
+  beneficiaryId: number
+  status: $Enums.BeneficiaryStatus
+  source: $Enums.VerificationSource
+  verified?: boolean
+  documentUrl?: string | null
+  expirationDate?: Date | string | null
+  apiName?: string | null
+  apiReference?: string | null
+  apiQueriedAt?: Date | string | null
+  validFrom?: Date | string | null
+  validUntil?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type StatusVerificationCreateOrConnectWithoutTariffReductionInput = {
+  where: Prisma.StatusVerificationWhereUniqueInput
+  create: Prisma.XOR<Prisma.StatusVerificationCreateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput>
+}
+
+export type StatusVerificationCreateManyTariffReductionInputEnvelope = {
+  data: Prisma.StatusVerificationCreateManyTariffReductionInput | Prisma.StatusVerificationCreateManyTariffReductionInput[]
+  skipDuplicates?: boolean
+}
+
+export type StatusVerificationUpsertWithWhereUniqueWithoutTariffReductionInput = {
+  where: Prisma.StatusVerificationWhereUniqueInput
+  update: Prisma.XOR<Prisma.StatusVerificationUpdateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedUpdateWithoutTariffReductionInput>
+  create: Prisma.XOR<Prisma.StatusVerificationCreateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedCreateWithoutTariffReductionInput>
+}
+
+export type StatusVerificationUpdateWithWhereUniqueWithoutTariffReductionInput = {
+  where: Prisma.StatusVerificationWhereUniqueInput
+  data: Prisma.XOR<Prisma.StatusVerificationUpdateWithoutTariffReductionInput, Prisma.StatusVerificationUncheckedUpdateWithoutTariffReductionInput>
+}
+
+export type StatusVerificationUpdateManyWithWhereWithoutTariffReductionInput = {
+  where: Prisma.StatusVerificationScalarWhereInput
+  data: Prisma.XOR<Prisma.StatusVerificationUpdateManyMutationInput, Prisma.StatusVerificationUncheckedUpdateManyWithoutTariffReductionInput>
 }
 
 export type StatusVerificationCreateManyBeneficiaryInput = {
@@ -681,6 +813,7 @@ export type StatusVerificationCreateManyBeneficiaryInput = {
   validFrom?: Date | string | null
   validUntil?: Date | string | null
   createdAt?: Date | string
+  tariffReductionId?: number | null
 }
 
 export type StatusVerificationUpdateWithoutBeneficiaryInput = {
@@ -695,6 +828,7 @@ export type StatusVerificationUpdateWithoutBeneficiaryInput = {
   validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffReduction?: Prisma.TariffReductionUpdateOneWithoutStatusVerificationsNestedInput
 }
 
 export type StatusVerificationUncheckedUpdateWithoutBeneficiaryInput = {
@@ -710,10 +844,75 @@ export type StatusVerificationUncheckedUpdateWithoutBeneficiaryInput = {
   validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffReductionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 export type StatusVerificationUncheckedUpdateManyWithoutBeneficiaryInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  source?: Prisma.EnumVerificationSourceFieldUpdateOperationsInput | $Enums.VerificationSource
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  documentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expirationDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  apiName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiQueriedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tariffReductionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type StatusVerificationCreateManyTariffReductionInput = {
+  id?: number
+  beneficiaryId: number
+  status: $Enums.BeneficiaryStatus
+  source: $Enums.VerificationSource
+  verified?: boolean
+  documentUrl?: string | null
+  expirationDate?: Date | string | null
+  apiName?: string | null
+  apiReference?: string | null
+  apiQueriedAt?: Date | string | null
+  validFrom?: Date | string | null
+  validUntil?: Date | string | null
+  createdAt?: Date | string
+}
+
+export type StatusVerificationUpdateWithoutTariffReductionInput = {
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  source?: Prisma.EnumVerificationSourceFieldUpdateOperationsInput | $Enums.VerificationSource
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  documentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expirationDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  apiName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiQueriedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  beneficiary?: Prisma.BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput
+}
+
+export type StatusVerificationUncheckedUpdateWithoutTariffReductionInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
+  source?: Prisma.EnumVerificationSourceFieldUpdateOperationsInput | $Enums.VerificationSource
+  verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  documentUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  expirationDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  apiName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiReference?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  apiQueriedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  validFrom?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  validUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type StatusVerificationUncheckedUpdateManyWithoutTariffReductionInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  beneficiaryId?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
   source?: Prisma.EnumVerificationSourceFieldUpdateOperationsInput | $Enums.VerificationSource
   verified?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -743,7 +942,9 @@ export type StatusVerificationSelect<ExtArgs extends runtime.Types.Extensions.In
   validFrom?: boolean
   validUntil?: boolean
   createdAt?: boolean
+  tariffReductionId?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
+  tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
 }, ExtArgs["result"]["statusVerification"]>
 
 export type StatusVerificationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -760,7 +961,9 @@ export type StatusVerificationSelectCreateManyAndReturn<ExtArgs extends runtime.
   validFrom?: boolean
   validUntil?: boolean
   createdAt?: boolean
+  tariffReductionId?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
+  tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
 }, ExtArgs["result"]["statusVerification"]>
 
 export type StatusVerificationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -777,7 +980,9 @@ export type StatusVerificationSelectUpdateManyAndReturn<ExtArgs extends runtime.
   validFrom?: boolean
   validUntil?: boolean
   createdAt?: boolean
+  tariffReductionId?: boolean
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
+  tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
 }, ExtArgs["result"]["statusVerification"]>
 
 export type StatusVerificationSelectScalar = {
@@ -794,23 +999,28 @@ export type StatusVerificationSelectScalar = {
   validFrom?: boolean
   validUntil?: boolean
   createdAt?: boolean
+  tariffReductionId?: boolean
 }
 
-export type StatusVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "beneficiaryId" | "status" | "source" | "verified" | "documentUrl" | "expirationDate" | "apiName" | "apiReference" | "apiQueriedAt" | "validFrom" | "validUntil" | "createdAt", ExtArgs["result"]["statusVerification"]>
+export type StatusVerificationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "beneficiaryId" | "status" | "source" | "verified" | "documentUrl" | "expirationDate" | "apiName" | "apiReference" | "apiQueriedAt" | "validFrom" | "validUntil" | "createdAt" | "tariffReductionId", ExtArgs["result"]["statusVerification"]>
 export type StatusVerificationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
+  tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
 }
 export type StatusVerificationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
+  tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
 }
 export type StatusVerificationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.BeneficiaryDefaultArgs<ExtArgs>
+  tariffReduction?: boolean | Prisma.StatusVerification$tariffReductionArgs<ExtArgs>
 }
 
 export type $StatusVerificationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "StatusVerification"
   objects: {
     beneficiary: Prisma.$BeneficiaryPayload<ExtArgs>
+    tariffReduction: Prisma.$TariffReductionPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -826,6 +1036,7 @@ export type $StatusVerificationPayload<ExtArgs extends runtime.Types.Extensions.
     validFrom: Date | null
     validUntil: Date | null
     createdAt: Date
+    tariffReductionId: number | null
   }, ExtArgs["result"]["statusVerification"]>
   composites: {}
 }
@@ -1221,6 +1432,7 @@ readonly fields: StatusVerificationFieldRefs;
 export interface Prisma__StatusVerificationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   beneficiary<T extends Prisma.BeneficiaryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BeneficiaryDefaultArgs<ExtArgs>>): Prisma.Prisma__BeneficiaryClient<runtime.Types.Result.GetResult<Prisma.$BeneficiaryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  tariffReduction<T extends Prisma.StatusVerification$tariffReductionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.StatusVerification$tariffReductionArgs<ExtArgs>>): Prisma.Prisma__TariffReductionClient<runtime.Types.Result.GetResult<Prisma.$TariffReductionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1263,6 +1475,7 @@ export interface StatusVerificationFieldRefs {
   readonly validFrom: Prisma.FieldRef<"StatusVerification", 'DateTime'>
   readonly validUntil: Prisma.FieldRef<"StatusVerification", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"StatusVerification", 'DateTime'>
+  readonly tariffReductionId: Prisma.FieldRef<"StatusVerification", 'Int'>
 }
     
 
@@ -1661,6 +1874,25 @@ export type StatusVerificationDeleteManyArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many StatusVerifications to delete.
    */
   limit?: number
+}
+
+/**
+ * StatusVerification.tariffReduction
+ */
+export type StatusVerification$tariffReductionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TariffReduction
+   */
+  select?: Prisma.TariffReductionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TariffReduction
+   */
+  omit?: Prisma.TariffReductionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TariffReductionInclude<ExtArgs> | null
+  where?: Prisma.TariffReductionWhereInput
 }
 
 /**

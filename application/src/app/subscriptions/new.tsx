@@ -25,10 +25,11 @@ import type { ApiSubscription } from "@/hooks/use-subscriptions";
 import { useTariffs } from "@/hooks/useTariffs";
 import { beneficiariesApi } from "@/lib/api/beneficiaries";
 import { subscriptionsApi } from "@/lib/api/subscriptions";
-import type { Tariff } from "@/lib/api/tariffs";
+import type { Tariff, TariffReduction } from "@/lib/api/tariffs";
 import { recommendTariff } from "@/lib/recommendTariff";
 import { ApiError } from "@/services/api";
 import type { BeneficiaryStatus } from "@/types/beneficiary";
+import { statusVerificationsApi } from "@/lib/api/statusVerification";
 
 // ─── Types & static data (alignés sur schema.prisma) ───────────────────────
 
@@ -39,6 +40,7 @@ type Step =
   | "profile"
   | "address"
   | "status"
+  | "reduction-proof"
   | "plan"
   | "review"
   | "success";
@@ -49,6 +51,7 @@ const STEP_FLOW: Step[] = [
   "profile",
   "address",
   "status",
+  "reduction-proof",
   "plan",
   "review",
   "success",
@@ -109,6 +112,32 @@ const PLAN_DURATION_MONTHS = 12;
 function formatTariffPrice(tariff: Tariff): string {
   if (!tariff.period) return tariff.priceLabel;
   return `${tariff.priceLabel} / ${tariff.period.replace(/^par\s+/, "")}`;
+}
+
+function computeDiscountedPriceCents(
+  tariff: Tariff,
+  reduction: TariffReduction | null,
+): number | null {
+  if (!reduction || tariff.priceCents === null) return null;
+  if (reduction.isFree) return 0;
+  if (reduction.reductionPercent !== null) {
+    return Math.round(tariff.priceCents * (1 - reduction.reductionPercent / 100));
+  }
+  return null;
+}
+
+function formatPriceCents(cents: number): string {
+  return `${(cents / 100).toFixed(2).replace(".", ",")} €`;
+}
+
+function formatTariffPriceWithReduction(
+  tariff: Tariff,
+  reduction: TariffReduction | null,
+): string {
+  const discounted = computeDiscountedPriceCents(tariff, reduction);
+  if (discounted === null || !tariff.period) return formatTariffPrice(tariff);
+  const periodLabel = tariff.period.replace(/^par\s+/, "");
+  return `${formatPriceCents(discounted)} / ${periodLabel}`;
 }
 
 function todayFr(): string {
@@ -244,20 +273,49 @@ export default function NewSubscriptionPage() {
   const [target, setTarget] = useState<Target | null>(initialTarget);
   const showScan = target !== null && !(target === "self" && hasIdentity);
 
+  const [status, setStatus] = useState<BeneficiaryStatus | null>(null);
+  const [birthDate, setBirthDate] = useState("");
+
+  const heldTariffIds = useMemo(
+    () =>
+      target === "self" ? new Set(heldLongPlans.keys()) : new Set<number>(),
+    [target, heldLongPlans],
+  );
+
+  const recommendation = useMemo(
+    () =>
+      recommendTariff(tariffs, status, parseFrDate(birthDate), heldTariffIds),
+    [tariffs, status, birthDate, heldTariffIds],
+  );
+
+  const showReductionProof = recommendation.reduction !== null;
+
   const visibleSteps = useMemo<Step[]>(
     () =>
       STEP_FLOW.filter((st) => {
         if (st === "target") return !initialTarget;
         if (st === "scan") return showScan;
+        if (st === "reduction-proof") return showReductionProof;
         return true;
       }),
-    [initialTarget, showScan],
+    [initialTarget, showScan, showReductionProof],
   );
 
   const [step, setStep] = useState<Step>(visibleSteps[0]);
 
   const [scanState, setScanState] = useState<"idle" | "scanning" | "done">(
     "idle",
+  );
+
+  // ── Reduction proof fields ──
+  const [proofState, setProofState] = useState<"idle" | "uploading" | "done">(
+    "idle",
+  );
+  const [proofSource, setProofSource] = useState<
+    "MANUAL_DOCUMENT" | "DECLARATIVE" | null
+  >(null);
+  const [proofDocumentName, setProofDocumentName] = useState<string | null>(
+    null,
   );
 
   // ── Beneficiary fields ──
@@ -271,9 +329,7 @@ export default function NewSubscriptionPage() {
     initialTarget === "self" ? user?.email ?? "" : "",
   );
   const [phone, setPhone] = useState("");
-  const [birthDate, setBirthDate] = useState("");
   const [ssn, setSsn] = useState("");
-  const [status, setStatus] = useState<BeneficiaryStatus | null>(null);
   const [residenceDept, setResidenceDept] = useState<string | null>(null);
   const [workDept, setWorkDept] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -288,18 +344,6 @@ export default function NewSubscriptionPage() {
   const selectedPlan = useMemo(
     () => tariffs.find((t) => t.id === planId) ?? null,
     [planId, tariffs],
-  );
-
-  const heldTariffIds = useMemo(
-    () =>
-      target === "self" ? new Set(heldLongPlans.keys()) : new Set<number>(),
-    [target, heldLongPlans],
-  );
-
-  const recommendation = useMemo(
-    () =>
-      recommendTariff(tariffs, status, parseFrDate(birthDate), heldTariffIds),
-    [tariffs, status, birthDate, heldTariffIds],
   );
 
   useEffect(() => {
@@ -488,6 +532,32 @@ export default function NewSubscriptionPage() {
     goNext();
   }
 
+  async function pickReductionProof() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+      });
+      if (result.canceled) return;
+      setProofState("uploading");
+      setTimeout(() => {
+        setProofSource("MANUAL_DOCUMENT");
+        setProofDocumentName(result.assets[0]?.name ?? "justificatif.pdf");
+        setProofState("done");
+      }, 600);
+    } catch {
+      
+    }
+  }
+
+  function skipReductionProof() {
+    setProofSource("DECLARATIVE");
+    goNext();
+  }
+
+  function continueFromReductionProof() {
+    goNext();
+  }
+
   function continueFromPlan() {
     if (!validatePlan()) return;
     goNext();
@@ -555,6 +625,24 @@ export default function NewSubscriptionPage() {
         startDate: startDateObjForSubmit.toISOString(),
         endDate: endDateObjForSubmit.toISOString(),
       });
+
+      if (
+        recommendation.reduction &&
+        proofSource &&
+        selectedPlan.id === recommendation.recommended?.id
+      ) {
+        await statusVerificationsApi.create({
+          beneficiaryId,
+          status,
+          source: proofSource,
+          tariffReductionId: recommendation.reduction.id,
+          documentUrl:
+            proofSource === "MANUAL_DOCUMENT"
+              ? proofDocumentName ?? undefined
+              : undefined,
+          verified: proofSource === "MANUAL_DOCUMENT",
+        });
+      }
 
       setStep("success");
     } catch (err) {
@@ -993,6 +1081,96 @@ export default function NewSubscriptionPage() {
             </View>
           )}
 
+          {step === "reduction-proof" && recommendation.reduction && (
+            <View style={s.section}>
+              <SectionTitle>Justificatif de réduction</SectionTitle>
+              <Text style={s.sectionLead}>
+                Votre statut vous donne potentiellement accès à{" "}
+                {recommendation.reduction.isFree
+                  ? "la gratuité"
+                  : recommendation.reduction.reductionPercent
+                    ? `une réduction de ${recommendation.reduction.reductionPercent} %`
+                    : "une réduction"}{" "}
+                sur {recommendation.recommended?.name} (
+                {recommendation.reduction.name}). Vous pouvez transmettre un
+                justificatif maintenant pour accélérer la vérification, ou
+                continuer sans et le déclarer sur l&apos;honneur (simulation :
+                aucun document réel n&apos;est analysé).
+              </Text>
+
+              <Card style={s.scanCard}>
+                <View
+                  style={[
+                    s.scanIcon,
+                    proofState === "done" && s.scanIconDone,
+                  ]}
+                >
+                  <Icon
+                    name={proofState === "done" ? "check" : "upload"}
+                    size={26}
+                    color={proofState === "done" ? DS.white : DS.actionPrimary}
+                  />
+                </View>
+
+                {proofState === "idle" && (
+                  <>
+                    <Text style={s.scanText}>
+                      Aucun justificatif transmis pour le moment.
+                    </Text>
+                    <View style={s.scanActionsRow}>
+                      <Button
+                        leadingIcon="upload"
+                        onPress={pickReductionProof}
+                      >
+                        Importer un justificatif
+                      </Button>
+                    </View>
+                    <Pressable
+                      onPress={skipReductionProof}
+                      style={s.skipScanLink}
+                    >
+                      <Text style={s.skipScanLinkText}>
+                        Continuer sans justificatif — je déclare mon
+                        éligibilité sur l&apos;honneur
+                      </Text>
+                    </Pressable>
+                  </>
+                )}
+
+                {proofState === "uploading" && (
+                  <View style={s.inlineLoading}>
+                    <ActivityIndicator color={DS.actionPrimary} />
+                    <Text style={s.noteText}>
+                      Analyse du justificatif en cours…
+                    </Text>
+                  </View>
+                )}
+
+                {proofState === "done" && (
+                  <Text style={s.scanText}>
+                    Justificatif transmis : {proofDocumentName}
+                  </Text>
+                )}
+              </Card>
+
+              {proofState === "done" ? (
+                <StepActions
+                  onBack={goBack}
+                  onContinue={continueFromReductionProof}
+                />
+              ) : (
+                <Button
+                  variant="secondary"
+                  leadingIcon="arrow-left"
+                  disabled={proofState === "uploading"}
+                  onPress={goBack}
+                >
+                  Précédent
+                </Button>
+              )}
+            </View>
+          )}
+
           {step === "plan" && (
             <View style={s.section}>
               <SectionTitle>Formule</SectionTitle>
@@ -1088,20 +1266,50 @@ export default function NewSubscriptionPage() {
                               ),
                             )}
                           </View>
-                          <Text style={s.planPrice}>
-                            {formatTariffPrice(recommendation.recommended)}
-                          </Text>
+                          <View style={s.planPriceCol}>
+                            {proofSource && recommendation.reduction ? (
+                              <>
+                                <Text style={s.planPriceStrike}>
+                                  {formatTariffPrice(
+                                    recommendation.recommended,
+                                  )}
+                                </Text>
+                                <Text style={s.planPrice}>
+                                  {formatTariffPriceWithReduction(
+                                    recommendation.recommended,
+                                    recommendation.reduction,
+                                  )}
+                                </Text>
+                              </>
+                            ) : (
+                              <Text style={s.planPrice}>
+                                {formatTariffPrice(recommendation.recommended)}
+                              </Text>
+                            )}
+                          </View>
                         </View>
                       </Card>
                     </Pressable>
 
-                    {!!recommendation.advisory && (
+                    {recommendation.reduction && proofSource ? (
                       <View style={s.infoBanner}>
-                        <Icon name="info" size={16} color={DS.infoText} />
+                        <Icon name="check" size={16} color={DS.infoText} />
                         <Text style={s.infoBannerText}>
-                          {recommendation.advisory}
+                          Réduction appliquée : {recommendation.reduction.name}
+                          {proofSource === "MANUAL_DOCUMENT"
+                            ? ` — justificatif transmis (${proofDocumentName ?? "document"}).`
+                            : " — déclarée sur l'honneur, sans justificatif transmis."}
                         </Text>
                       </View>
+                    ) : (
+                      !!recommendation.advisory && (
+                        <View style={s.infoBanner}>
+                          <Icon name="info" size={16} color={DS.infoText} />
+                          <Text style={s.infoBannerText}>
+                            {recommendation.advisory}
+                          </Text>
+                        </View>
+                      )
                     )}
                   </View>
                 )}
@@ -1265,7 +1473,6 @@ export default function NewSubscriptionPage() {
             </View>
           )}
 
-            {/* TODO: Add paiement */}
           {step === "success" && (
             <View style={s.successWrap}>
               <View style={s.successIcon}>
@@ -1278,9 +1485,6 @@ export default function NewSubscriptionPage() {
               </Text>
               <Button fullWidth onPress={() => router.replace("/dashboard")}>
                 Retour à mon espace
-              </Button>
-              <Button fullWidth>
-                Paiement
               </Button>
             </View>
           )}
@@ -1422,7 +1626,7 @@ const s = StyleSheet.create({
     color: DS.textMuted,
     textAlign: "center",
   },
-scanActionsRow: {
+  scanActionsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
@@ -1442,6 +1646,7 @@ scanActionsRow: {
     alignSelf: "flex-start",
     marginTop: DS.space2,
   },
+
   formRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -1560,6 +1765,15 @@ scanActionsRow: {
     fontSize: 14,
     fontWeight: "700",
     color: DS.textStrong,
+  },
+  planPriceCol: {
+    alignItems: "flex-end",
+    gap: 2,
+  },
+  planPriceStrike: {
+    fontSize: 12,
+    color: DS.textMuted,
+    textDecorationLine: "line-through",
   },
 
   recapCard: { gap: 0 },

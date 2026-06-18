@@ -253,6 +253,7 @@ export type TariffReductionWhereInput = {
   syncedAt?: Prisma.DateTimeFilter<"TariffReduction"> | Date | string
   baseProductId?: Prisma.IntNullableFilter<"TariffReduction"> | number | null
   baseProduct?: Prisma.XOR<Prisma.TransportProductNullableScalarRelationFilter, Prisma.TransportProductWhereInput> | null
+  statusVerifications?: Prisma.StatusVerificationListRelationFilter
 }
 
 export type TariffReductionOrderByWithRelationInput = {
@@ -266,6 +267,7 @@ export type TariffReductionOrderByWithRelationInput = {
   syncedAt?: Prisma.SortOrder
   baseProductId?: Prisma.SortOrderInput | Prisma.SortOrder
   baseProduct?: Prisma.TransportProductOrderByWithRelationInput
+  statusVerifications?: Prisma.StatusVerificationOrderByRelationAggregateInput
 }
 
 export type TariffReductionWhereUniqueInput = Prisma.AtLeast<{
@@ -282,6 +284,7 @@ export type TariffReductionWhereUniqueInput = Prisma.AtLeast<{
   syncedAt?: Prisma.DateTimeFilter<"TariffReduction"> | Date | string
   baseProductId?: Prisma.IntNullableFilter<"TariffReduction"> | number | null
   baseProduct?: Prisma.XOR<Prisma.TransportProductNullableScalarRelationFilter, Prisma.TransportProductWhereInput> | null
+  statusVerifications?: Prisma.StatusVerificationListRelationFilter
 }, "id" | "name">
 
 export type TariffReductionOrderByWithAggregationInput = {
@@ -325,6 +328,7 @@ export type TariffReductionCreateInput = {
   sellingArguments?: Prisma.TariffReductionCreatesellingArgumentsInput | string[]
   syncedAt?: Date | string
   baseProduct?: Prisma.TransportProductCreateNestedOneWithoutReductionsInput
+  statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutTariffReductionInput
 }
 
 export type TariffReductionUncheckedCreateInput = {
@@ -337,6 +341,7 @@ export type TariffReductionUncheckedCreateInput = {
   sellingArguments?: Prisma.TariffReductionCreatesellingArgumentsInput | string[]
   syncedAt?: Date | string
   baseProductId?: number | null
+  statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutTariffReductionInput
 }
 
 export type TariffReductionUpdateInput = {
@@ -348,6 +353,7 @@ export type TariffReductionUpdateInput = {
   sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   baseProduct?: Prisma.TransportProductUpdateOneWithoutReductionsNestedInput
+  statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutTariffReductionNestedInput
 }
 
 export type TariffReductionUncheckedUpdateInput = {
@@ -360,6 +366,7 @@ export type TariffReductionUncheckedUpdateInput = {
   sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   baseProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutTariffReductionNestedInput
 }
 
 export type TariffReductionCreateManyInput = {
@@ -394,6 +401,11 @@ export type TariffReductionUncheckedUpdateManyInput = {
   sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   baseProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
+export type TariffReductionNullableScalarRelationFilter = {
+  is?: Prisma.TariffReductionWhereInput | null
+  isNot?: Prisma.TariffReductionWhereInput | null
 }
 
 export type TariffReductionListRelationFilter = {
@@ -452,6 +464,22 @@ export type TariffReductionSumOrderByAggregateInput = {
   baseProductId?: Prisma.SortOrder
 }
 
+export type TariffReductionCreateNestedOneWithoutStatusVerificationsInput = {
+  create?: Prisma.XOR<Prisma.TariffReductionCreateWithoutStatusVerificationsInput, Prisma.TariffReductionUncheckedCreateWithoutStatusVerificationsInput>
+  connectOrCreate?: Prisma.TariffReductionCreateOrConnectWithoutStatusVerificationsInput
+  connect?: Prisma.TariffReductionWhereUniqueInput
+}
+
+export type TariffReductionUpdateOneWithoutStatusVerificationsNestedInput = {
+  create?: Prisma.XOR<Prisma.TariffReductionCreateWithoutStatusVerificationsInput, Prisma.TariffReductionUncheckedCreateWithoutStatusVerificationsInput>
+  connectOrCreate?: Prisma.TariffReductionCreateOrConnectWithoutStatusVerificationsInput
+  upsert?: Prisma.TariffReductionUpsertWithoutStatusVerificationsInput
+  disconnect?: Prisma.TariffReductionWhereInput | boolean
+  delete?: Prisma.TariffReductionWhereInput | boolean
+  connect?: Prisma.TariffReductionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TariffReductionUpdateToOneWithWhereWithoutStatusVerificationsInput, Prisma.TariffReductionUpdateWithoutStatusVerificationsInput>, Prisma.TariffReductionUncheckedUpdateWithoutStatusVerificationsInput>
+}
+
 export type TariffReductionCreateNestedManyWithoutBaseProductInput = {
   create?: Prisma.XOR<Prisma.TariffReductionCreateWithoutBaseProductInput, Prisma.TariffReductionUncheckedCreateWithoutBaseProductInput> | Prisma.TariffReductionCreateWithoutBaseProductInput[] | Prisma.TariffReductionUncheckedCreateWithoutBaseProductInput[]
   connectOrCreate?: Prisma.TariffReductionCreateOrConnectWithoutBaseProductInput | Prisma.TariffReductionCreateOrConnectWithoutBaseProductInput[]
@@ -503,6 +531,68 @@ export type TariffReductionUpdatesellingArgumentsInput = {
   push?: string | string[]
 }
 
+export type TariffReductionCreateWithoutStatusVerificationsInput = {
+  name: string
+  description?: string | null
+  indication?: string | null
+  reductionPercent?: number | null
+  isFree?: boolean
+  sellingArguments?: Prisma.TariffReductionCreatesellingArgumentsInput | string[]
+  syncedAt?: Date | string
+  baseProduct?: Prisma.TransportProductCreateNestedOneWithoutReductionsInput
+}
+
+export type TariffReductionUncheckedCreateWithoutStatusVerificationsInput = {
+  id?: number
+  name: string
+  description?: string | null
+  indication?: string | null
+  reductionPercent?: number | null
+  isFree?: boolean
+  sellingArguments?: Prisma.TariffReductionCreatesellingArgumentsInput | string[]
+  syncedAt?: Date | string
+  baseProductId?: number | null
+}
+
+export type TariffReductionCreateOrConnectWithoutStatusVerificationsInput = {
+  where: Prisma.TariffReductionWhereUniqueInput
+  create: Prisma.XOR<Prisma.TariffReductionCreateWithoutStatusVerificationsInput, Prisma.TariffReductionUncheckedCreateWithoutStatusVerificationsInput>
+}
+
+export type TariffReductionUpsertWithoutStatusVerificationsInput = {
+  update: Prisma.XOR<Prisma.TariffReductionUpdateWithoutStatusVerificationsInput, Prisma.TariffReductionUncheckedUpdateWithoutStatusVerificationsInput>
+  create: Prisma.XOR<Prisma.TariffReductionCreateWithoutStatusVerificationsInput, Prisma.TariffReductionUncheckedCreateWithoutStatusVerificationsInput>
+  where?: Prisma.TariffReductionWhereInput
+}
+
+export type TariffReductionUpdateToOneWithWhereWithoutStatusVerificationsInput = {
+  where?: Prisma.TariffReductionWhereInput
+  data: Prisma.XOR<Prisma.TariffReductionUpdateWithoutStatusVerificationsInput, Prisma.TariffReductionUncheckedUpdateWithoutStatusVerificationsInput>
+}
+
+export type TariffReductionUpdateWithoutStatusVerificationsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  indication?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reductionPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
+  syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  baseProduct?: Prisma.TransportProductUpdateOneWithoutReductionsNestedInput
+}
+
+export type TariffReductionUncheckedUpdateWithoutStatusVerificationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  indication?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  reductionPercent?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
+  syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  baseProductId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+}
+
 export type TariffReductionCreateWithoutBaseProductInput = {
   name: string
   description?: string | null
@@ -511,6 +601,7 @@ export type TariffReductionCreateWithoutBaseProductInput = {
   isFree?: boolean
   sellingArguments?: Prisma.TariffReductionCreatesellingArgumentsInput | string[]
   syncedAt?: Date | string
+  statusVerifications?: Prisma.StatusVerificationCreateNestedManyWithoutTariffReductionInput
 }
 
 export type TariffReductionUncheckedCreateWithoutBaseProductInput = {
@@ -522,6 +613,7 @@ export type TariffReductionUncheckedCreateWithoutBaseProductInput = {
   isFree?: boolean
   sellingArguments?: Prisma.TariffReductionCreatesellingArgumentsInput | string[]
   syncedAt?: Date | string
+  statusVerifications?: Prisma.StatusVerificationUncheckedCreateNestedManyWithoutTariffReductionInput
 }
 
 export type TariffReductionCreateOrConnectWithoutBaseProductInput = {
@@ -584,6 +676,7 @@ export type TariffReductionUpdateWithoutBaseProductInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  statusVerifications?: Prisma.StatusVerificationUpdateManyWithoutTariffReductionNestedInput
 }
 
 export type TariffReductionUncheckedUpdateWithoutBaseProductInput = {
@@ -595,6 +688,7 @@ export type TariffReductionUncheckedUpdateWithoutBaseProductInput = {
   isFree?: Prisma.BoolFieldUpdateOperationsInput | boolean
   sellingArguments?: Prisma.TariffReductionUpdatesellingArgumentsInput | string[]
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  statusVerifications?: Prisma.StatusVerificationUncheckedUpdateManyWithoutTariffReductionNestedInput
 }
 
 export type TariffReductionUncheckedUpdateManyWithoutBaseProductInput = {
@@ -609,6 +703,35 @@ export type TariffReductionUncheckedUpdateManyWithoutBaseProductInput = {
 }
 
 
+/**
+ * Count Type TariffReductionCountOutputType
+ */
+
+export type TariffReductionCountOutputType = {
+  statusVerifications: number
+}
+
+export type TariffReductionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  statusVerifications?: boolean | TariffReductionCountOutputTypeCountStatusVerificationsArgs
+}
+
+/**
+ * TariffReductionCountOutputType without action
+ */
+export type TariffReductionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TariffReductionCountOutputType
+   */
+  select?: Prisma.TariffReductionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * TariffReductionCountOutputType without action
+ */
+export type TariffReductionCountOutputTypeCountStatusVerificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.StatusVerificationWhereInput
+}
+
 
 export type TariffReductionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -621,6 +744,8 @@ export type TariffReductionSelect<ExtArgs extends runtime.Types.Extensions.Inter
   syncedAt?: boolean
   baseProductId?: boolean
   baseProduct?: boolean | Prisma.TariffReduction$baseProductArgs<ExtArgs>
+  statusVerifications?: boolean | Prisma.TariffReduction$statusVerificationsArgs<ExtArgs>
+  _count?: boolean | Prisma.TariffReductionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tariffReduction"]>
 
 export type TariffReductionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -664,6 +789,8 @@ export type TariffReductionSelectScalar = {
 export type TariffReductionOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "indication" | "reductionPercent" | "isFree" | "sellingArguments" | "syncedAt" | "baseProductId", ExtArgs["result"]["tariffReduction"]>
 export type TariffReductionInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   baseProduct?: boolean | Prisma.TariffReduction$baseProductArgs<ExtArgs>
+  statusVerifications?: boolean | Prisma.TariffReduction$statusVerificationsArgs<ExtArgs>
+  _count?: boolean | Prisma.TariffReductionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TariffReductionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   baseProduct?: boolean | Prisma.TariffReduction$baseProductArgs<ExtArgs>
@@ -676,6 +803,7 @@ export type $TariffReductionPayload<ExtArgs extends runtime.Types.Extensions.Int
   name: "TariffReduction"
   objects: {
     baseProduct: Prisma.$TransportProductPayload<ExtArgs> | null
+    statusVerifications: Prisma.$StatusVerificationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1082,6 +1210,7 @@ readonly fields: TariffReductionFieldRefs;
 export interface Prisma__TariffReductionClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   baseProduct<T extends Prisma.TariffReduction$baseProductArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TariffReduction$baseProductArgs<ExtArgs>>): Prisma.Prisma__TransportProductClient<runtime.Types.Result.GetResult<Prisma.$TransportProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  statusVerifications<T extends Prisma.TariffReduction$statusVerificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TariffReduction$statusVerificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StatusVerificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1537,6 +1666,30 @@ export type TariffReduction$baseProductArgs<ExtArgs extends runtime.Types.Extens
    */
   include?: Prisma.TransportProductInclude<ExtArgs> | null
   where?: Prisma.TransportProductWhereInput
+}
+
+/**
+ * TariffReduction.statusVerifications
+ */
+export type TariffReduction$statusVerificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the StatusVerification
+   */
+  select?: Prisma.StatusVerificationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the StatusVerification
+   */
+  omit?: Prisma.StatusVerificationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.StatusVerificationInclude<ExtArgs> | null
+  where?: Prisma.StatusVerificationWhereInput
+  orderBy?: Prisma.StatusVerificationOrderByWithRelationInput | Prisma.StatusVerificationOrderByWithRelationInput[]
+  cursor?: Prisma.StatusVerificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.StatusVerificationScalarFieldEnum | Prisma.StatusVerificationScalarFieldEnum[]
 }
 
 /**

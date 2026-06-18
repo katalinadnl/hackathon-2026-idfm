@@ -78,6 +78,9 @@ model StatusVerification {
   createdAt  DateTime  @default(now())
 
   beneficiary Beneficiary @relation(fields: [beneficiaryId], references: [id])
+
+  tariffReductionId Int?
+  tariffReduction   TariffReduction? @relation(fields: [tariffReductionId], references: [id])
 }
 
 enum AccountRole {
@@ -175,4 +178,6 @@ model TariffReduction {
 
   baseProductId Int?
   baseProduct   TransportProduct? @relation(fields: [baseProductId], references: [id])
+
+  statusVerifications StatusVerification[]
 }

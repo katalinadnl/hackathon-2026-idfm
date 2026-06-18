@@ -5,6 +5,7 @@ export interface TariffRecommendation {
   recommended: Tariff | null;
   reason: string | null;
   advisory: string | null;
+  reduction: TariffReduction | null;
 }
 
 function computeAge(birthDate: Date | null): number | null {
@@ -85,7 +86,12 @@ export function recommendTariff(
     if (age !== null && age < 11) {
       const junior = findAvailableByName(tariffs, "imagine r junior", held);
       if (junior) {
-        return { recommended: junior, reason: "Moins de 11 ans", advisory: null };
+        return {
+          recommended: junior,
+          reason: "Moins de 11 ans",
+          advisory: null,
+          reduction: null,
+        };
       }
     }
     const scolaire = findAvailableByName(tariffs, "imagine r scolaire", held);
@@ -94,6 +100,7 @@ export function recommendTariff(
         recommended: scolaire,
         reason: "Élève du primaire, du secondaire ou apprenti",
         advisory: null,
+        reduction: null,
       };
     }
   }
@@ -103,7 +110,12 @@ export function recommendTariff(
       findAvailableByName(tariffs, "imagine r étudiant", held) ??
       findAvailableByName(tariffs, "imagine r etudiant", held);
     if (etudiant) {
-      return { recommended: etudiant, reason: "Étudiant", advisory: null };
+      return {
+        recommended: etudiant,
+        reason: "Étudiant",
+        advisory: null,
+        reduction: null,
+      };
     }
   }
 
@@ -116,6 +128,7 @@ export function recommendTariff(
         reduction,
         "En tant que senior (62 ans et plus), vous pourriez bénéficier d'une réduction sous condition (Forfait Navigo Annuel Tarification Senior) — à vérifier auprès d'Île-de-France Mobilités.",
       ),
+      reduction,
     };
   }
 
@@ -130,6 +143,7 @@ export function recommendTariff(
         reduction,
         "Selon votre situation, vous pourriez bénéficier d'une gratuité ou d'une réduction de 50 % (Forfait Améthyste ou réduction handicap), sous conditions — à vérifier auprès d'Île-de-France Mobilités.",
       ),
+      reduction,
     };
   }
 
@@ -142,6 +156,7 @@ export function recommendTariff(
         reduction,
         "Selon votre quotient familial, vous pourriez bénéficier d'une réduction Solidarité Transport (jusqu'à la gratuité), sous conditions — à vérifier auprès d'Île-de-France Mobilités.",
       ),
+      reduction,
     };
   }
 
@@ -150,6 +165,7 @@ export function recommendTariff(
       recommended: navigoAnnuel,
       reason: "Recommandation par défaut",
       advisory: null,
+      reduction: null,
     };
   }
 
@@ -160,5 +176,6 @@ export function recommendTariff(
       ? "Vous avez déjà la formule habituellement recommandée pour votre profil : voici une autre formule disponible."
       : null,
     advisory: null,
+    reduction: null,
   };
 }
