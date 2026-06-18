@@ -143,7 +143,7 @@ export default function SubscriptionDetailPage() {
             <Card style={s.bankInfoCard}>
               <View style={s.bankInfoRow}>
                 <View style={s.bankInfoIcon}>
-                  <Icon name="credit-card" size={18} color={DS.actionPrimary} />
+                  <Icon name="creditcard" size={18} color={DS.actionPrimary} />
                 </View>
                 <View style={s.bankInfoText}>
                   {subscription.bankInfo ? (

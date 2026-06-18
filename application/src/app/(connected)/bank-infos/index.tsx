@@ -95,7 +95,7 @@ export default function BankInfosListPage() {
                       <View style={s.bankCardHeader}>
                         <View style={s.bankCardIcon}>
                           <Icon
-                            name="credit-card"
+                            name="creditcard"
                             size={18}
                             color={DS.actionPrimary}
                           />

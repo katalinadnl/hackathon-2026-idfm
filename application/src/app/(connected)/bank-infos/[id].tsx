@@ -175,7 +175,7 @@ export default function BankInfoDetailPage() {
 
           <Card style={s.card}>
             <View style={s.ibanRow}>
-              <Icon name="credit-card" size={20} color={DS.actionPrimary} />
+              <Icon name="creditcard" size={20} color={DS.actionPrimary} />
               <Text style={s.ibanText}>{formatIbanDisplay(bankInfo.iban)}</Text>
             </View>
 
