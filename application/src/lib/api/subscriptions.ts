@@ -83,3 +83,8 @@ export function changeBankInfo(subscriptionId: number, bankInfoId: number) {
     bankInfoId,
   });
 }
+export function linkAccount(subscriptionId: number, accountId: number) {
+  return http.post(`/subscriptions/${subscriptionId}/link-account`, {
+    accountId,
+  });
+}
