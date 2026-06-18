@@ -22,6 +22,7 @@ import {
 import { useTariffs } from "@/hooks/useTariffs";
 import { Tariff, TariffReduction } from "@/lib/api/tariffs";
 import { ApiSubscription, SubscriptionRole } from "@/hooks/use-subscriptions";
+import { GradientPassCard } from "@/components/ui/GradientPassCard";
 
 function NewSubscriptionCta({
   onSelect,
@@ -264,59 +265,58 @@ function AdvisorWidget() {
 }
 function ActivePassCard({ sub }: { sub: ApiSubscription }) {
   const router = useRouter();
-  const gradientStyle =
-    Platform.OS === "web"
-      ? ({
-          backgroundImage:
-            "linear-gradient(135deg, #1972D2 0%, #1242A7 50%, #0B1F5E 100%)",
-        } as any)
-      : {};
   const expiring = isExpiringSoon(sub.endDate);
 
   return (
-    <View style={[styles.passCard, gradientStyle]}>
-      <View style={styles.passCardTop}>
-        <View style={styles.passCardMeta}>
-          <Icon name="ticket" size={18} color="rgba(255,255,255,0.7)" />
-          <Text style={styles.passCardType}>{sub.subscriptionType}</Text>
-          <Badge tone={STATUS_TONE[sub.status]} dot>
-            {STATUS_LABEL[sub.status]}
-          </Badge>
+    <GradientPassCard
+      header={
+        <View style={styles.passCardTop}>
+          <View style={styles.passCardMeta}>
+            <Icon name="ticket" size={18} color="rgba(255,255,255,0.7)" />
+            <Text style={styles.passCardType}>{sub.subscriptionType}</Text>
+            <Badge tone={STATUS_TONE[sub.status]} dot>
+              {STATUS_LABEL[sub.status]}
+            </Badge>
+          </View>
+          <Button
+            variant="secondary"
+            size="sm"
+            trailingIcon="arrow-right"
+            style={styles.passCardBtn}
+            onPress={() => router.push(`/subscriptions/${sub.id}`)}
+          >
+            Gérer
+          </Button>
         </View>
-        <Button
-          variant="secondary"
-          size="sm"
-          trailingIcon="arrow-right"
-          style={styles.passCardBtn}
-          onPress={() => router.push(`/subscriptions/${sub.id}`)}
-        >
-          Gérer
-        </Button>
-      </View>
-
-      <Text style={styles.passZones}>
-        {sub.beneficiary.firstName} {sub.beneficiary.lastName}
-      </Text>
-      <Text style={styles.passValidity}>
-        Valable jusqu&apos;au {formatDate(sub.endDate)}
-        {expiring ? " · Renouvellement disponible" : ""}
-      </Text>
-
-      <View style={styles.passCardFooter}>
-        {sub.latestPayment && (
-          <Text style={styles.passPrice}>
-            {formatAmount(sub.latestPayment.amount)}/mois
+      }
+      content={
+        <>
+          <Text style={styles.passZones}>
+            {sub.beneficiary.firstName} {sub.beneficiary.lastName}
           </Text>
-        )}
-        <View style={styles.roleRow}>
-          {sub.roles.map((r) => (
-            <View key={r} style={styles.roleChip}>
-              <Text style={styles.roleChipText}>{ROLE_LABELS[r]}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-    </View>
+          <Text style={styles.passValidity}>
+            Valable jusqu&apos;au {formatDate(sub.endDate)}
+            {expiring ? " · Renouvellement disponible" : ""}
+          </Text>
+        </>
+      }
+      footer={
+        <>
+          {sub.latestPayment && (
+            <Text style={styles.passPrice}>
+              {formatAmount(sub.latestPayment.amount)}/mois
+            </Text>
+          )}
+          <View style={styles.roleRow}>
+            {sub.roles.map((r) => (
+              <View key={r} style={styles.roleChip}>
+                <Text style={styles.roleChipText}>{ROLE_LABELS[r]}</Text>
+              </View>
+            ))}
+          </View>
+        </>
+      }
+    />
   );
 }
 
@@ -431,9 +431,7 @@ export default function DashboardHome() {
     data: subscriptions,
     loading,
     error,
-  } = useFetch<ApiSubscription[]>(
-    user ? `/accounts/${user.id}/subscriptions` : null,
-  );
+  } = useFetch<ApiSubscription[]>(user ? `/subscriptions` : null);
   const goToNewSubscription = (target: "self" | "other") =>
     router.push({
       pathname: "/subscriptions/new",

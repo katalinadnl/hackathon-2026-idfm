@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { GetMe } from 'src/auth/decorators/get-me.decorator';
@@ -21,5 +21,10 @@ export class BeneficiariesController {
   })
   create(@GetMe() user: JwtPayload, @Body() dto: CreateBeneficiaryDto) {
     return this.beneficiariesService.create(dto, user.id);
+  }
+
+  @Get()
+  findAll(@GetMe() user: JwtPayload) {
+    return this.beneficiariesService.findByAccount(user.id);
   }
 }

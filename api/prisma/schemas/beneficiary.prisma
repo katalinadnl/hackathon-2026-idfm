@@ -48,7 +48,20 @@ model Beneficiary {
   birthDate            DateTime
   socialSecurityNumber String?           @unique
   status               BeneficiaryStatus @default(ACTIVE)
-  accountId Int?
+  // Titulaire : 1 compte ne peut posséder qu'1 seul bénéficiaire en propre
+  // (le @unique porte ici, côté FK — c'est lui qui plafonne à 1, pas un
+  // @unique côté Account). Optionnel : un bénéficiaire peut n'avoir aucun
+  // compte titulaire (ex: mineur géré uniquement via le référent).
+  accountTitulaireId   Int?              @unique
+  accountTitulaire     Account?          @relation("AccountTitulaire", fields: [accountTitulaireId], references: [id])
+
+  // Référent : indépendant du titulaire. Optionnel — un bénéficiaire peut
+  // n'avoir aucun référent (cas du titulaire qui gère lui-même), ou être
+  // référé par un compte alors qu'il a (ou pas) son propre compte titulaire
+  // par ailleurs. Pas de @unique ici : un compte référent peut gérer une
+  // infinité de bénéficiaires référés.
+  accountReferantId Int?
+  accountReferant   Account? @relation("AccountReferant", fields: [accountReferantId], references: [id])
 
   residenceDepartmentId Int
   workStudyDepartmentId Int?
@@ -57,7 +70,6 @@ model Beneficiary {
   workStudyDepartment Department? @relation("WorkStudyDepartment", fields: [workStudyDepartmentId], references: [id])
 
   statusVerifications StatusVerification[]
-  account             Account? @relation("Account", fields: [accountId], references: [id])
   subscriptions       Subscription[]       @relation("SubscriptionHolder")
 
   addresses Address[]

@@ -43,7 +43,6 @@ export class AuthService {
   private async toAuthUser(accountId: number): Promise<AuthUser> {
     const account = await this.prisma.account.findUniqueOrThrow({
       where: { id: accountId },
-      include: { beneficiaries: true },
     });
     return {
       id: account.id,

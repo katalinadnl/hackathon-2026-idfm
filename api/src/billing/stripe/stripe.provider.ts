@@ -216,7 +216,6 @@ export class StripeProvider {
   ): Promise<{ url: string; sessionId: string } | null> {
     const payer = await this.prisma.account.findUnique({
       where: { id: payerId },
-      include: { beneficiaries: true },
     });
     if (!payer) return null;
 

@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { SectionTitle } from "@/components/ui/Section";
 import { DS, MaxContentWidth } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { createBankInfo, deleteBankInfo } from "@/lib/api/bank-info";

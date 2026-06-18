@@ -2,7 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Section } from "@/components/ui/Section";
 import { DS } from "@/constants/theme";
 import { Payment } from "@/types/subscription";
 
@@ -30,8 +30,7 @@ export function PaymentHistoryCta({
   const last = payments[0];
 
   return (
-    <>
-      <SectionTitle>Historique de paiement</SectionTitle>
+    <Section title="Historique de paiement">
       <Card
         interactive
         onPress={onPress}
@@ -50,7 +49,7 @@ export function PaymentHistoryCta({
           <Icon name="chevron-right" size={18} color={DS.borderDefault} />
         </View>
       </Card>
-    </>
+    </Section>
   );
 }
 

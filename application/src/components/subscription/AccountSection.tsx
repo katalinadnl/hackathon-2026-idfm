@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { DS } from "@/constants/theme";
-import { SectionTitle } from "../ui/SectionTitle";
+import { SectionTitle, Section } from "../ui/Section";
 import { AccountInfo, SubscriptionResponse } from "@/types/subscription";
 import { useState } from "react";
 import { ConfirmModal } from "../ui/ConfirmModal";
 import { unlinkReferrer } from "@/lib/api/subscriptions";
 import { AssignReferrerModal } from "./AssignReferrerModal";
 import { LinkAccountModal } from "./LinkAccountModal";
+
 function accountName(info: AccountInfo) {
   return info.beneficiary
     ? `${info.beneficiary.firstName} ${info.beneficiary.lastName}`
@@ -36,12 +37,29 @@ export function AccountsSection({
   const [assignModalVisible, setAssignModalVisible] = useState(false);
   const [linkAccountModalVisible, setLinkAccountModalVisible] = useState(false);
   const [unlinkVisible, setUnlinkVisible] = useState(false);
+  const [orphanWarningVisible, setOrphanWarningVisible] = useState(false);
 
+  // Si le bénéficiaire n'a pas de compte propre, dissocier le référant
+  // rendrait l'abonnement inaccessible : ni le titulaire (pas de compte),
+  // ni le référant (justement dissocié) ne pourraient plus le gérer.
+  const wouldOrphanSubscription = !accountBeneficiary;
+
+  const handlePressUnlink = () => {
+    if (wouldOrphanSubscription) {
+      setOrphanWarningVisible(true);
+      return;
+    }
+    setUnlinkVisible(true);
+  };
+
+  // Corrigé : on n'appelle onReferrerChanged() qu'une fois la dissociation
+  // confirmée côté serveur, plus en parallèle de l'appel async.
   const handleConfirmUnlink = async () => {
     setUnlinking(true);
     try {
       await unlinkReferrer(subscriptionId);
       setUnlinkVisible(false);
+      onReferrerChanged();
     } catch {
       // On laisse la modale ouverte pour que l'utilisateur puisse réessayer ;
       // un message d'erreur inline serait préférable à terme.
@@ -51,8 +69,7 @@ export function AccountsSection({
   };
 
   return (
-    <>
-      <SectionTitle>Comptes associés</SectionTitle>
+    <Section title="Comptes associés">
       <View style={s.accountGrid}>
         <Card style={s.accountCard}>
           <View style={s.accountCardHeader}>
@@ -94,7 +111,7 @@ export function AccountsSection({
                 size="sm"
                 variant="tertiary"
                 fullWidth
-                onPress={() => setUnlinkVisible(true)}
+                onPress={handlePressUnlink}
                 disabled={unlinking}
                 accessibilityLabel="Dissocier le référant"
               >
@@ -114,6 +131,8 @@ export function AccountsSection({
           )}
         </Card>
       </View>
+
+      {/* Dissociation normale : un compte titulaire existe, rien ne bloque */}
       <ConfirmModal
         visible={unlinkVisible}
         title="Dissocier le référant"
@@ -121,11 +140,24 @@ export function AccountsSection({
         confirmLabel="Dissocier"
         confirmVariant="danger"
         loading={unlinking}
-        onConfirm={() => {
-          handleConfirmUnlink();
-          onReferrerChanged();
-        }}
+        onConfirm={handleConfirmUnlink}
         onCancel={() => setUnlinkVisible(false)}
+      />
+
+      {/* Dissociation bloquée : pas de compte titulaire, l'abonnement
+          deviendrait inaccessible. Modale explicative, pas de confirmation
+          possible — seule l'option de fermer est proposée. */}
+      <ConfirmModal
+        visible={orphanWarningVisible}
+        title="Dissociation impossible"
+        message="Ce bénéficiaire n'a pas de compte propre. Si vous dissociez le référant, plus personne ne pourra accéder à cet abonnement. Associez d'abord un compte au bénéficiaire avant de pouvoir dissocier le référant."
+        confirmLabel="Associer un compte"
+        confirmVariant="primary"
+        onConfirm={() => {
+          setOrphanWarningVisible(false);
+          setLinkAccountModalVisible(true);
+        }}
+        onCancel={() => setOrphanWarningVisible(false)}
       />
 
       <AssignReferrerModal
@@ -140,7 +172,7 @@ export function AccountsSection({
         onClose={() => setLinkAccountModalVisible(false)}
         onSuccess={onReferrerChanged}
       />
-    </>
+    </Section>
   );
 }
 

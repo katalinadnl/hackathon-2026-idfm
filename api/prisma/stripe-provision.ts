@@ -29,7 +29,6 @@ async function main() {
         some: { subscriptions: { some: {} } },
       },
     },
-    include: { beneficiaries: true },
   });
 
   console.log(`→ ${payers.length} compte(s) payeur(s) à provisionner`);

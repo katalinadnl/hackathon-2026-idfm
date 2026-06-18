@@ -92,10 +92,10 @@ export type SubscriptionResponse = {
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];
-    account: AccountInfo | null;
+    accountReferrer: AccountInfo | null;
+    accountTitulaire: AccountInfo | null;
   };
 
-  referrer: AccountInfo | null;
   payments: Payment[];
   documents: SubscriptionDocument[];
   passes: Pass[];
