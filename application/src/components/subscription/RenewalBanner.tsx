@@ -30,17 +30,21 @@ export function RenewalBanner({ endDate, onPress }: RenewalBannerProps) {
         : `Votre abonnement expire dans ${months} mois (${formatDate(endDate)}).`;
 
   return (
-    <View style={[s.banner, { backgroundColor: bg, borderColor: border }]}>
+    <View
+      style={[s.banner, { backgroundColor: bg, borderColor: border }]}
+      accessibilityRole={urgent ? "alert" : "none"}
+      accessibilityLabel={`${urgent ? "Renouvellement urgent" : "Pensez à renouveler"} : ${message}`}
+    >
       <View style={s.top}>
-        <Icon name="alert-triangle" size={18} color={iconColor} />
-        <Text style={[s.title, { color: text }]}>
+        <Icon name="alert-triangle" size={18} color={iconColor} accessible={false} />
+        <Text style={[s.title, { color: text }]} accessibilityElementsHidden>
           {urgent ? "Renouvellement urgent" : "Pensez à renouveler"}
         </Text>
-        <Badge tone={urgent ? "danger" : "warning"}>
+        <Badge tone={urgent ? "danger" : "warning"} accessibilityElementsHidden>
           {months === 0 ? "Ce mois" : `${months} mois`}
         </Badge>
       </View>
-      <Text style={[s.message, { color: text }]}>{message}</Text>
+      <Text style={[s.message, { color: text }]} accessibilityElementsHidden>{message}</Text>
       <Button
         variant={urgent ? "danger" : "primary"}
         size="sm"

@@ -243,7 +243,7 @@ export function AuthScreen() {
 
   const renderHeader = (title: string, subtitle: string) => (
     <>
-      <Text style={styles.title} role="heading" aria-level={1}>
+      <Text style={styles.title} accessibilityRole="header">
         {title}
       </Text>
       <Text style={styles.subtitle}>{subtitle}</Text>
@@ -512,7 +512,7 @@ export function AuthScreen() {
         <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
           <Logo />
 
-          <Text style={styles.title} role="heading" aria-level={1}>
+          <Text style={styles.title} accessibilityRole="header">
             {isLogin ? "Connexion à votre compte" : "Créer votre compte"}
           </Text>
           <Text style={styles.subtitle}>

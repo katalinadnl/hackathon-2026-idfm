@@ -121,9 +121,11 @@ type IconProps = {
   color?: string;
   label?: string;
   style?: StyleProp<ViewStyle>;
+  accessible?: boolean;
+  accessibilityLabel?: string;
 };
 
-export function Icon({ name, size = 24, color, label, style }: IconProps) {
+export function Icon({ name, size = 24, color, label, style, accessible, accessibilityLabel }: IconProps) {
   const sym = SYMBOL_MAP[name] ?? { ios: name, android: name, web: name };
   const symbolName = Platform.OS === 'ios' ? sym.ios : Platform.OS === 'android' ? sym.android : sym.web;
   return (
@@ -131,9 +133,10 @@ export function Icon({ name, size = 24, color, label, style }: IconProps) {
       name={symbolName as any}
       size={size}
       tintColor={color}
-      accessibilityLabel={label}
-      accessibilityElementsHidden={!label}
-      importantForAccessibility={label ? "yes" : "no-hide-descendants"}
+      accessible={accessible}
+      accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityElementsHidden={accessible === false ? true : !label}
+      importantForAccessibility={accessible === false ? "no-hide-descendants" : label ? "yes" : "no-hide-descendants"}
       style={style}
     />
   );

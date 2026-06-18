@@ -1,4 +1,5 @@
 import {
+  Platform,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -39,24 +40,32 @@ const VARIANTS = {
     bgPress: DS.actionPrimaryActive,
     text: DS.white,
     border: DS.actionPrimary,
+    focusBorder: "#FFFFFF",
+    focusShadow: "0 0 0 2px #FFFFFF, 0 0 0 5px #1972D2",
   },
   secondary: {
     bg: DS.surfaceCard,
     bgPress: DS.blueSoft,
     text: DS.actionPrimary,
     border: DS.borderDefault,
+    focusBorder: DS.actionPrimary,
+    focusShadow: "0 0 0 3px #1972D2",
   },
   tertiary: {
     bg: DS.bluePale,
     bgPress: DS.blueSoft,
     text: DS.actionPrimary,
     border: "transparent",
+    focusBorder: DS.actionPrimary,
+    focusShadow: "0 0 0 3px #1972D2",
   },
   danger: {
     bg: DS.danger,
     bgPress: DS.dangerText,
     text: DS.white,
     border: DS.danger,
+    focusBorder: "#FFFFFF",
+    focusShadow: "0 0 0 2px #FFFFFF, 0 0 0 5px #C52625",
   },
 } as const;
 
@@ -97,17 +106,19 @@ export function Button({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [
+      style={({ pressed, focused }) => [
         styles.base,
         {
           minHeight: s.minHeight,
           paddingHorizontal: s.paddingHorizontal,
           backgroundColor: pressed ? v.bgPress : v.bg,
-          borderColor: v.border,
+          borderColor: focused ? v.focusBorder : v.border,
+          borderWidth: focused ? 2.5 : 1.5,
           gap: s.gap,
           alignSelf: fullWidth ? "stretch" : "flex-start",
           opacity: disabled ? 0.5 : 1,
         },
+        focused && Platform.OS === "web" && ({ boxShadow: v.focusShadow, outline: "none" } as any),
         style,
       ]}
       accessible

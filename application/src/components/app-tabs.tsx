@@ -29,6 +29,14 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="advisor">
+        <NativeTabs.Trigger.Label>Conseiller IA</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require('@/assets/images/tabIcons/explore.png')}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
       <NativeTabs.Trigger name="(connected)">
         <NativeTabs.Trigger.Label>Compte</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon

@@ -72,15 +72,19 @@ export function RibTab({ accountId, subscriptionId }: Props) {
       <Card style={styles.card}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Coordonnées bancaires</Text>
+            <Text style={styles.title} accessibilityRole="header">Coordonnées bancaires</Text>
             <Text style={styles.subtitle}>Prélèvement SEPA</Text>
           </View>
           {pm.isDefault && <Badge tone="info">Par défaut</Badge>}
         </View>
 
-        <View style={styles.ibanBox}>
-          <Icon name="creditcard" size={22} color={DS.actionPrimary} />
-          <View style={{ flex: 1 }}>
+        <View
+          style={styles.ibanBox}
+          accessible
+          accessibilityLabel={`IBAN : ${pm.ibanMasked}, ${pm.bankName}, titulaire : ${pm.holderName}`}
+        >
+          <Icon name="creditcard" size={22} color={DS.actionPrimary} accessible={false} />
+          <View style={{ flex: 1 }} accessibilityElementsHidden>
             <Text style={styles.iban}>{pm.ibanMasked}</Text>
             <Text style={styles.bank}>
               {pm.bankName} · {pm.holderName}

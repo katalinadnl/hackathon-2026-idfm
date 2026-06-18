@@ -65,12 +65,13 @@ export function ChangeBankInfoModal({
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      accessibilityViewIsModal
     >
       <View style={s.overlay}>
         <Card style={s.modal}>
           <View style={s.header}>
-            <Icon name="creditcard" size={22} color={DS.actionPrimary} />
-            <Text style={s.title}>Changer le moyen de paiement</Text>
+            <Icon name="creditcard" size={22} color={DS.actionPrimary} accessible={false} />
+            <Text style={s.title} accessibilityRole="header">Changer le moyen de paiement</Text>
           </View>
 
           <Text style={s.body}>
@@ -80,7 +81,11 @@ export function ChangeBankInfoModal({
 
           {loading ? (
             <View style={s.loadingRow}>
-              <ActivityIndicator size="small" color={DS.actionPrimary} />
+              <ActivityIndicator
+                size="small"
+                color={DS.actionPrimary}
+                accessibilityLabel="Chargement des moyens de paiement"
+              />
             </View>
           ) : options.length === 0 ? (
             <Text style={s.empty}>
@@ -88,12 +93,15 @@ export function ChangeBankInfoModal({
               compte avant de continuer.
             </Text>
           ) : (
-            <View style={s.list}>
+            <View style={s.list} accessibilityRole="list">
               {options.map((bankInfo) => (
                 <Card
                   key={bankInfo.id}
                   interactive
                   onPress={() => setSelectedId(bankInfo.id)}
+                  accessibilityLabel={`${bankInfo.label ?? bankInfo.holderName}, ${maskIbanDisplay(bankInfo.iban)}${selectedId === bankInfo.id ? ", sélectionné" : ""}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selectedId === bankInfo.id }}
                   style={[
                     s.optionCard,
                     selectedId === bankInfo.id && s.optionCardSelected,
@@ -118,7 +126,11 @@ export function ChangeBankInfoModal({
             </View>
           )}
 
-          {error && <Text style={s.error}>{error}</Text>}
+          {error && (
+            <Text style={s.error} accessibilityRole="alert" accessibilityLiveRegion="assertive">
+              {error}
+            </Text>
+          )}
 
           <View style={s.actions}>
             <Button variant="tertiary" onPress={onClose} disabled={submitting}>

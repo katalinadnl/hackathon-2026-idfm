@@ -308,7 +308,7 @@ function ActivePassCard({ sub }: { sub: ApiSubscription }) {
             </Text>
           )}
           <View style={styles.roleRow}>
-            {sub.roles.map((r) => (
+            {(sub.roles ?? []).map((r) => (
               <View key={r} style={styles.roleChip}>
                 <Text style={styles.roleChipText}>{ROLE_LABELS[r]}</Text>
               </View>
@@ -345,7 +345,7 @@ export function PassRow({ sub }: { sub: ApiSubscription }) {
           Jusqu&apos;au {formatDate(sub.endDate)}
         </Text>
         <View style={styles.roleRowSmall}>
-          {sub.roles.map((r) => (
+          {(sub.roles ?? []).map((r) => (
             <Text key={r} style={styles.roleLabel}>
               {ROLE_LABELS[r]}
             </Text>

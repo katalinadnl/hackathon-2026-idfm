@@ -57,7 +57,7 @@ export function SubscriptionHeader({
       }
       content={
         <View style={s.headerText}>
-          <Text style={s.headerTitle}>{subscription.subscriptionType}</Text>
+          <Text style={s.headerTitle} accessibilityRole="header">{subscription.subscriptionType}</Text>
           <Text style={s.headerSub}>
             {subscription.beneficiary.firstName}{" "}
             {subscription.beneficiary.lastName}

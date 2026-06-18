@@ -53,12 +53,13 @@ export function CancelSubscriptionModal({
       transparent
       animationType="fade"
       onRequestClose={onClose}
+      accessibilityViewIsModal
     >
       <View style={s.overlay}>
         <Card style={s.modal}>
           <View style={s.header}>
-            <Icon name="alert-triangle" size={24} color={DS.dangerText} />
-            <Text style={s.title}>Résilier l&apos;abonnement</Text>
+            <Icon name="alert-triangle" size={24} color={DS.dangerText} accessible={false} />
+            <Text style={s.title} accessibilityRole="header">Résilier l&apos;abonnement</Text>
           </View>
 
           <Text style={s.body}>
@@ -66,21 +67,21 @@ export function CancelSubscriptionModal({
             :
           </Text>
 
-          <View style={s.bulletList}>
-            <View style={s.bulletRow}>
-              <Icon name="check" size={14} color={DS.textMuted} />
+          <View style={s.bulletList} accessibilityRole="list">
+            <View style={s.bulletRow} accessibilityRole="listitem">
+              <Icon name="check" size={14} color={DS.textMuted} accessible={false} />
               <Text style={s.bulletText}>
                 Aucun préavis n&apos;est nécessaire pour faire la demande.
               </Text>
             </View>
-            <View style={s.bulletRow}>
-              <Icon name="check" size={14} color={DS.textMuted} />
+            <View style={s.bulletRow} accessibilityRole="listitem">
+              <Icon name="check" size={14} color={DS.textMuted} accessible={false} />
               <Text style={s.bulletText}>
                 Le mois en cours reste dû dans son intégralité.
               </Text>
             </View>
-            <View style={s.bulletRow}>
-              <Icon name="check" size={14} color={DS.textMuted} />
+            <View style={s.bulletRow} accessibilityRole="listitem">
+              <Icon name="check" size={14} color={DS.textMuted} accessible={false} />
               <Text style={s.bulletText}>
                 Le pass sera bloqué dès maintenant, mais l&apos;abonnement ne
                 sera effectivement résilié qu&apos;à partir du{" "}
@@ -92,7 +93,11 @@ export function CancelSubscriptionModal({
             </View>
           </View>
 
-          {error && <Text style={s.error}>{error}</Text>}
+          {error && (
+            <Text style={s.error} accessibilityRole="alert" accessibilityLiveRegion="assertive">
+              {error}
+            </Text>
+          )}
 
           <View style={s.actions}>
             <Button variant="tertiary" onPress={onClose} disabled={submitting}>

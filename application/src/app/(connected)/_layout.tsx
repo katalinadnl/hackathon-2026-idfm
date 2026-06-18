@@ -1,13 +1,16 @@
 import { Href, Slot, usePathname, useRouter } from "expo-router";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
+import { AuthScreen } from "@/components/auth/AuthScreen";
 import { Icon } from "@/components/ui/Icon";
 import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { DS } from "@/constants/theme";
+import { useAuth } from "@/contexts/auth";
 type Section =
   | "dashboard"
   | "subscriptions"
   | "billing"
+  | "history"
   | "profile"
   | "bank-infos";
 
@@ -29,6 +32,12 @@ const NAV_ITEMS: { id: Section; icon: string; label: string; href: Href }[] = [
     icon: "receipt",
     label: "Facturations",
     href: "/(connected)/billing",
+  },
+  {
+    id: "history",
+    icon: "clock",
+    label: "Historique",
+    href: "/(connected)/history",
   },
   {
     id: "bank-infos",
@@ -95,9 +104,14 @@ const getPath = (href: Href): string =>
 const normalize = (p: string) => p.replace("/(connected)", "");
 
 export default function Connected() {
+  const { token } = useAuth();
   const { isDesktop } = usePageLayout();
   const router = useRouter();
   const pathname = usePathname();
+
+  if (!token) {
+    return <AuthScreen />;
+  }
   const isActive = (href: Href) => {
     const path = getPath(href);
     return pathname.startsWith(normalize(path));
