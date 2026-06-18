@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -16,6 +17,18 @@ export class BankInfoService {
     return this.prisma.bankInfo.create({ data: createBankInfoDto });
   }
 
+  async findAll(requesterId: number) {
+    return this.prisma.bankInfo.findMany({
+      where: { accountId: requesterId },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  /**
+   * Vérifie l'existence ET la propriété avant de retourner le BankInfo.
+   * Réutilisée par update/getUsage/remove pour que la vérification ait
+   * toujours lieu avant d'agir, jamais après.
+   */
   async findOne(id: number, requesterId: number) {
     const bankInfo = await this.prisma.bankInfo.findUnique({ where: { id } });
 
@@ -23,7 +36,9 @@ export class BankInfoService {
       throw new NotFoundException(`BankInfo ${id} introuvable`);
     }
     if (bankInfo.accountId !== requesterId) {
-      throw new ForbiddenException();
+      throw new ForbiddenException(
+        "Ce moyen de paiement n'appartient pas à ce compte.",
+      );
     }
 
     return bankInfo;
@@ -34,36 +49,70 @@ export class BankInfoService {
     updateBankInfoDto: UpdateBankInfoDto,
     requesterId: number,
   ) {
-    await this.ensureExists(id);
+    // findOne lève NotFoundException/ForbiddenException avant toute écriture
+    await this.findOne(id, requesterId);
 
-    const bankInfo = await this.prisma.bankInfo.update({
+    return this.prisma.bankInfo.update({
       where: { id },
       data: updateBankInfoDto,
     });
-    if (bankInfo.accountId !== requesterId) {
-      throw new ForbiddenException();
-    }
-    return bankInfo;
   }
 
-  async remove(id: number, requesterId: number) {
-    await this.ensureExists(id);
+  /**
+   * Liste les abonnements qui utilisent encore ce BankInfo — le front s'en
+   * sert pour savoir s'il doit proposer un remplacement avant suppression.
+   */
+  async getUsage(id: number, requesterId: number) {
+    await this.findOne(id, requesterId);
 
-    const bankInfo = await this.prisma.bankInfo.delete({ where: { id } });
-    if (bankInfo.accountId !== requesterId) {
-      throw new ForbiddenException();
-    }
-    return bankInfo;
+    return this.prisma.subscription.findMany({
+      where: { bankInfoId: id },
+      select: { id: true, reference: true, subscriptionType: true },
+    });
   }
 
-  private async ensureExists(id: number) {
-    const exists = await this.prisma.bankInfo.findUnique({
-      where: { id },
+  /**
+   * Supprime un BankInfo, après vérification de propriété. Si des
+   * abonnements y sont encore liés, la suppression est refusée tant qu'un
+   * replacementBankInfoId valide (appartenant au même compte) n'est pas
+   * fourni — le front propose déjà ce choix, mais le serveur reste le
+   * garde-fou final sur cette contrainte d'intégrité.
+   */
+  async remove(
+    id: number,
+    requesterId: number,
+    replacementBankInfoId?: number,
+  ) {
+    await this.findOne(id, requesterId);
+
+    const linkedSubscriptions = await this.prisma.subscription.findMany({
+      where: { bankInfoId: id },
       select: { id: true },
     });
 
-    if (!exists) {
-      throw new NotFoundException(`BankInfo ${id} introuvable`);
+    if (linkedSubscriptions.length === 0) {
+      await this.prisma.bankInfo.delete({ where: { id } });
+      return { deleted: true, reassignedCount: 0 };
     }
+
+    if (!replacementBankInfoId) {
+      throw new BadRequestException(
+        'Cet IBAN est utilisé par au moins un abonnement. Choisissez un IBAN de remplacement.',
+      );
+    }
+
+    // Le remplacement doit lui aussi appartenir au demandeur — réutilise
+    // findOne pour la même garantie de propriété.
+    await this.findOne(replacementBankInfoId, requesterId);
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.subscription.updateMany({
+        where: { bankInfoId: id },
+        data: { bankInfoId: replacementBankInfoId },
+      });
+      await tx.bankInfo.delete({ where: { id } });
+    });
+
+    return { deleted: true, reassignedCount: linkedSubscriptions.length };
   }
 }

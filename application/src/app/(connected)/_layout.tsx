@@ -35,7 +35,7 @@ const NAV_ITEMS: { id: Section; icon: string; label: string; href: Href }[] = [
     id: "bank-info",
     icon: "receipt",
     label: "Banque",
-    href: "/(connected)/bank-info",
+    href: "/(connected)/bank-infos",
   },
   {
     id: "history",
