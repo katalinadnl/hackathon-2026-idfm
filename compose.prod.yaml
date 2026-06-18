@@ -75,6 +75,8 @@ services:
       context: .
       dockerfile: docker/app/Dockerfile
       target: production
+      args:
+        EXPO_PUBLIC_API_URL: https://api.${DOMAIN}
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/health"]
