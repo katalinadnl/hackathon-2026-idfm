@@ -48,11 +48,13 @@ export class BillingService {
         OR: [
           { referrerId: accountId },
           { beneficiary: { account: { id: accountId } } },
+          { bankInfo: { accountId } },
         ],
       },
       include: {
         beneficiary: { include: { account: true } },
         passes: { where: { status: PassStatus.active }, take: 1 },
+        bankInfo: true,
       },
       orderBy: { startDate: 'desc' },
     });
@@ -61,6 +63,7 @@ export class BillingService {
       const roles: BillingRole[] = [];
       if (sub.beneficiary.account?.id === accountId) roles.push('holder');
       if (sub.referrerId === accountId) roles.push('referrer');
+      if (sub.bankInfo?.accountId === accountId) roles.push('payer');
       return { sub, roles, activePass: sub.passes[0] ?? null };
     });
   }

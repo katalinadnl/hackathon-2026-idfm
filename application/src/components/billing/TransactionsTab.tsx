@@ -526,21 +526,6 @@ function Row({
             )}
           </Pressable>
         )}
-        {!isOtherPayer && onRetry && (
-          <Pressable
-            onPress={onRetry}
-            disabled={retrying}
-            style={styles.retryButton}
-            accessibilityRole="button"
-            accessibilityLabel="Réessayer le prélèvement SEPA"
-          >
-            {retrying ? (
-              <ActivityIndicator size="small" color={DS.actionPrimary} />
-            ) : (
-              <Text style={styles.retryText}>Réessayer le prélèvement</Text>
-            )}
-          </Pressable>
-        )}
       </View>
       <Text
         style={[
