@@ -1,12 +1,5 @@
-import { useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TextInputProps,
-  View,
-  ViewProps,
-} from "react-native";
+import { useRef } from "react";
+import { Animated, StyleSheet, Text, TextInput, TextInputProps, View, ViewProps } from "react-native";
 
 import { DS } from "@/constants/theme";
 import { Icon } from "./Icon";
@@ -19,54 +12,41 @@ type InputProps = TextInputProps & {
   wrapperProps?: ViewProps;
 };
 
-export function Input({
-  label,
-  leadingIcon,
-  trailingIcon,
-  error,
-  style,
-  wrapperProps,
-  ...rest
-}: InputProps) {
-  const [focused, setFocused] = useState(false);
+export function Input({ label, leadingIcon, trailingIcon, error, style, onFocus, onBlur, wrapperProps, ...rest }: InputProps) {
+  const focusAnim = useRef(new Animated.Value(0)).current;
+
+  const handleFocus = (e: any) => {
+    Animated.timing(focusAnim, { toValue: 1, duration: 150, useNativeDriver: false }).start();
+    onFocus?.(e);
+  };
+
+  const handleBlur = (e: any) => {
+    Animated.timing(focusAnim, { toValue: 0, duration: 150, useNativeDriver: false }).start();
+    onBlur?.(e);
+  };
+
+  const borderColor = focusAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [DS.borderDefault, DS.actionPrimary],
+  });
 
   return (
     <View style={[styles.wrapper, wrapperProps?.style]}>
-      <Text style={styles.label} accessibilityRole="text">
-        {label}
-      </Text>
-      <View
-        style={[
-          styles.inputRow,
-          focused && styles.inputRowFocused,
-          !!error && styles.inputRowError,
-        ]}
-      >
-        {leadingIcon && (
-          <Icon
-            name={leadingIcon}
-            size={20}
-            color={focused ? DS.actionPrimary : DS.textMuted}
-          />
-        )}
+      <Text style={styles.label} accessibilityRole="text">{label}</Text>
+      <Animated.View style={[styles.inputRow, { borderColor }, !!error && styles.inputRowError]}>
+        {leadingIcon && <Icon name={leadingIcon} size={20} color={DS.textMuted} />}
         <TextInput
           style={[styles.input, style]}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           accessibilityLabel={label}
           placeholderTextColor={DS.textMuted}
           {...rest}
         />
-        {trailingIcon && (
-          <Icon name={trailingIcon} size={20} color={DS.textMuted} />
-        )}
-      </View>
+        {trailingIcon && <Icon name={trailingIcon} size={20} color={DS.textMuted} />}
+      </Animated.View>
       {!!error && (
-        <Text
-          style={styles.error}
-          accessibilityRole="alert"
-          accessibilityLiveRegion="polite"
-        >
+        <Text style={styles.error} accessibilityRole="alert" accessibilityLiveRegion="polite">
           {error}
         </Text>
       )}
@@ -94,14 +74,6 @@ const styles = StyleSheet.create({
     backgroundColor: DS.surfaceCard,
     paddingHorizontal: DS.space4,
     gap: DS.space2,
-  },
-  inputRowFocused: {
-    borderColor: DS.actionPrimary,
-    shadowColor: DS.actionPrimary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 2,
   },
   inputRowError: {
     borderColor: DS.danger,
