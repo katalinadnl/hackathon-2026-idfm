@@ -67,6 +67,7 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: DS.borderSubtle,
     marginHorizontal: DS.space5,
+    marginVertical: DS.space3,
   },
 
   viewTitle: {

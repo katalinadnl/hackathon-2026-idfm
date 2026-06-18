@@ -1,10 +1,12 @@
 import {
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { PaymentMode } from 'src/generated/prisma/enums';
 
 export class CreateSubscriptionDto {
   @IsInt()
@@ -13,9 +15,6 @@ export class CreateSubscriptionDto {
   @IsOptional()
   @IsInt()
   referrerId?: number;
-
-  @IsString()
-  navigoNumber: string;
 
   @IsString()
   subscriptionType: string;
@@ -32,4 +31,8 @@ export class CreateSubscriptionDto {
 
   @IsInt()
   bankInfoId: number;
+
+  @IsOptional()
+  @IsEnum(PaymentMode)
+  paymentMode?: PaymentMode;
 }

@@ -65,7 +65,7 @@ export type Pass = {
   navigoNumber: string;
   status: PassStatus;
   issuedAt: string;
-  delivery: Delivery;
+  delivery: Delivery | null;
   subscriptionId: number;
 };
 
@@ -84,6 +84,7 @@ export type SubscriptionResponse = {
   status: SubscriptionStatus;
   clientNumber: string;
   renewed: boolean;
+  paymentMode: PaymentMethod;
   bankInfo: BankInfo;
   beneficiary: {
     id: number;

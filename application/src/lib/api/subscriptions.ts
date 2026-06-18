@@ -2,15 +2,18 @@ import { http } from "@/services/api";
 import { BankInfo } from "@/types/bankInfo";
 import { AccountInfo } from "@/types/subscription";
 
+export type PaymentMode = "CARD_ONCE" | "SEPA_ONCE" | "SEPA_MONTHLY";
+
 export interface CreateSubscriptionPayload {
   beneficiaryId: number;
   referrerId?: number;
-  navigoNumber: string;
   subscriptionType: string;
   transportProductId?: number;
   startDate: string; // ISO
   endDate: string; // ISO
   status?: string;
+  bankInfoId: number;
+  paymentMode?: PaymentMode;
 }
 
 export interface Subscription {

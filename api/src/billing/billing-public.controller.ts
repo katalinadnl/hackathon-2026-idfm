@@ -12,13 +12,15 @@ export class BillingPublicController {
   @Get('payment/card-return')
   @ApiQuery({ name: 'paymentId', type: Number })
   @ApiQuery({ name: 'sessionId', type: String })
+  @ApiQuery({ name: 'redirectTo', type: String, required: false })
   async cardReturn(
     @Query('paymentId', ParseIntPipe) paymentId: number,
     @Query('sessionId') sessionId: string,
+    @Query('redirectTo') redirectTo: string | undefined,
     @Res() res: Response,
   ) {
     await this.billing.confirmCardPayment(paymentId, sessionId);
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:8081';
-    res.redirect(`${frontendUrl}/billing`);
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost';
+    res.redirect(`${frontendUrl}${redirectTo || '/billing'}`);
   }
 }

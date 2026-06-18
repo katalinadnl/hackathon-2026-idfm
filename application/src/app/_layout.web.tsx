@@ -237,11 +237,6 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
           Visiteurs
         </MobileNavItem>
         {token && (
-          <MobileNavItem href="/billing" onPress={onClose}>
-            Facturation
-          </MobileNavItem>
-        )}
-        {token && (
           <MobileNavItem href="/dashboard" onPress={onClose}>
             Mon espace
           </MobileNavItem>
@@ -325,7 +320,6 @@ function SiteHeader() {
                 <NavLink href="/">Accueil</NavLink>
                 <NavLink href="/visitors">Visiteurs</NavLink>
                 {token && <NavLink href="/dashboard">Mon espace</NavLink>}
-                {token && <NavLink href="/billing">Facturation</NavLink>}
               </View>
 
               <View style={styles.right}>

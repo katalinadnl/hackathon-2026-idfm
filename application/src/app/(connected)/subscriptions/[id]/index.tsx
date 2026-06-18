@@ -97,6 +97,7 @@ export default function SubscriptionDetailPage() {
 
           {subscription.passes.map(
             (pass) =>
+              pass.delivery &&
               pass.delivery.status !== "delivered" && (
                 <DeliveryBanner delivery={pass.delivery} key={pass.id} />
               ),
@@ -109,7 +110,7 @@ export default function SubscriptionDetailPage() {
               <Card style={s.topGridCard}>
                 <InfoRow
                   label="Numéro de pass"
-                  value={subscription.passes[0].navigoNumber}
+                  value={subscription.passes[0]?.navigoNumber ?? "—"}
                 />
                 <InfoRow
                   label="Numéro client"
@@ -156,11 +157,15 @@ export default function SubscriptionDetailPage() {
                 {subscription.bankInfo ? (
                   <>
                     <Text style={s.bankInfoLabel}>
-                      {subscription.bankInfo.label ??
-                        subscription.bankInfo.holderName}
+                      {subscription.paymentMode === "CARD_ONCE"
+                        ? "Carte bancaire"
+                        : subscription.paymentMode === "SEPA_ONCE"
+                          ? "Prélèvement SEPA (unique)"
+                          : "Prélèvement SEPA (mensuel)"}
                     </Text>
                     <Text style={s.bankInfoIban}>
-                      {maskIbanDisplay(subscription.bankInfo.iban)}
+                      {subscription.bankInfo.label ??
+                        subscription.bankInfo.holderName}
                     </Text>
                   </>
                 ) : (
@@ -169,13 +174,6 @@ export default function SubscriptionDetailPage() {
                   </Text>
                 )}
               </View>
-              <Button
-                variant="secondary"
-                size="sm"
-                onPress={() => setBankInfoModalVisible(true)}
-              >
-                {subscription.bankInfo ? "Modifier" : "Ajouter"}
-              </Button>
             </View>
           </Card>
           <SectionTitle>Mes documents</SectionTitle>
@@ -194,7 +192,7 @@ export default function SubscriptionDetailPage() {
           <PaymentHistoryCta
             payments={subscription.payments}
             onPress={() =>
-              router.push(`/subscriptions/${subscription.id}/payments` as any)
+              router.push(`/billing` as any)
             }
           />
 
@@ -203,7 +201,7 @@ export default function SubscriptionDetailPage() {
             {subscription.passes.some(
               (pass) =>
                 pass.status === "active" &&
-                pass.delivery.status === "delivered",
+                pass.delivery?.status === "delivered",
             ) && (
               <Button
                 variant="secondary"
