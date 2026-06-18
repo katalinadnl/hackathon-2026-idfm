@@ -56,6 +56,14 @@ const QUICK_SUGGESTIONS = [
   "Je ne comprends pas",
 ];
 
+const VOICE_DEMO_PHRASES = [
+  "Renouveler mon abonnement",
+  "Mon pass a expiré",
+  "J'ai perdu mon pass Navigo",
+  "Il me manque un justificatif",
+  "Mon paiement a échoué",
+];
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
@@ -103,15 +111,18 @@ function RichText({ text, style }: { text: string; style?: object }) {
 
 // ─── Voice hook (web only) ─────────────────────────────────────────────────────
 
-function useVoice(onTranscript: (text: string) => void) {
+function useVoice(
+  onTranscript: (text: string) => void,
+  onError?: (msg: string, isNetwork: boolean) => void,
+) {
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const onTranscriptRef = useRef(onTranscript);
+  const onErrorRef = useRef(onError);
   const recognizerRef = useRef<any>(null);
 
-  useEffect(() => {
-    onTranscriptRef.current = onTranscript;
-  });
+  useEffect(() => { onTranscriptRef.current = onTranscript; });
+  useEffect(() => { onErrorRef.current = onError; });
 
   useEffect(() => {
     if (Platform.OS !== "web") return;
@@ -137,7 +148,20 @@ function useVoice(onTranscript: (text: string) => void) {
       onTranscriptRef.current(transcript);
       setListening(false);
     };
-    rec.onerror = () => setListening(false);
+    rec.onerror = (e: any) => {
+      setListening(false);
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        onErrorRef.current?.("Accès au microphone refusé. Autorisez-le dans les paramètres du navigateur.", false);
+      } else if (e.error === "no-speech") {
+        onErrorRef.current?.("Aucune parole détectée. Réessayez.", false);
+      } else if (e.error === "audio-capture") {
+        onErrorRef.current?.("Microphone introuvable. Vérifiez qu'un micro est branché.", false);
+      } else if (e.error === "network") {
+        onErrorRef.current?.("Erreur réseau.", true);
+      } else {
+        onErrorRef.current?.(`Erreur dictée : ${e.error ?? "inconnue"}`, false);
+      }
+    };
     rec.onend = () => setListening(false);
     recognizerRef.current = rec;
     rec.start();
@@ -299,11 +323,28 @@ export default function AdvisorPage() {
     botMessageFromResponse(INITIAL_MESSAGE),
   ]);
   const [input, setInput] = useState("");
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [showDemoVoice, setShowDemoVoice] = useState(false);
   const scrollRef = useRef<ScrollView>(null);
+  const sendMessageRef = useRef<(text: string) => void>(() => {});
 
-  const handleTranscript = (text: string) => setInput(text);
+  const handleTranscript = (text: string) => {
+    setInput(text);
+    setVoiceError(null);
+    setShowDemoVoice(false);
+  };
+
+  const handleVoiceError = (msg: string, isNetwork: boolean) => {
+    if (isNetwork) {
+      setShowDemoVoice(true);
+      setVoiceError(null);
+    } else {
+      setVoiceError(msg);
+    }
+  };
+
   const { supported: voiceSupported, listening, startListening, stopListening } =
-    useVoice(handleTranscript);
+    useVoice(handleTranscript, handleVoiceError);
 
   function scrollToBottom() {
     setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -329,6 +370,9 @@ export default function AdvisorPage() {
     setInput("");
     scrollToBottom();
   }
+
+  // Keep the ref in sync so handleTranscript can call sendMessage after mount
+  useEffect(() => { sendMessageRef.current = sendMessage; });
 
   function toggleSimplified(id: string) {
     setMessages((prev) =>
@@ -475,9 +519,49 @@ export default function AdvisorPage() {
             </Pressable>
           </View>
 
+          {showDemoVoice && (
+            <View style={styles.demoVoicePanel}>
+              <View style={styles.demoVoiceHeader}>
+                <Icon name="mic" size={14} color={DS.actionPrimary} />
+                <Text style={styles.demoVoiceTitle}>Que voulez-vous dire ?</Text>
+                <Pressable
+                  onPress={() => setShowDemoVoice(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fermer"
+                  hitSlop={8}
+                >
+                  <Icon name="x" size={14} color={DS.textMuted} />
+                </Pressable>
+              </View>
+              {VOICE_DEMO_PHRASES.map((phrase) => (
+                <Pressable
+                  key={phrase}
+                  onPress={() => {
+                    setInput(phrase);
+                    setShowDemoVoice(false);
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={phrase}
+                  style={({ pressed }) => [
+                    styles.demoVoicePhrase,
+                    pressed && styles.demoVoicePhrasePressed,
+                  ]}
+                >
+                  <Icon name="mic" size={13} color={DS.textMuted} />
+                  <Text style={styles.demoVoicePhraseText}>{phrase}</Text>
+                </Pressable>
+              ))}
+            </View>
+          )}
+          {voiceError && (
+            <View style={styles.voiceErrorBar}>
+              <Icon name="warning" size={14} color={DS.warningText} />
+              <Text style={styles.voiceErrorText}>{voiceError}</Text>
+            </View>
+          )}
           {!voiceSupported && Platform.OS === "web" && (
             <Text style={styles.voiceUnsupported}>
-              Votre navigateur ne supporte pas la dictée vocale.
+              Dictée vocale non disponible (utilisez Chrome ou Safari).
             </Text>
           )}
         </View>
@@ -815,5 +899,56 @@ const styles = StyleSheet.create({
     textAlign: "center" as any,
     paddingBottom: DS.space2,
     paddingHorizontal: DS.space4,
+  },
+  demoVoicePanel: {
+    borderTopWidth: 1,
+    borderTopColor: DS.borderSubtle,
+    backgroundColor: DS.surfaceTint,
+    padding: DS.space3,
+    gap: DS.space1,
+  },
+  demoVoiceHeader: {
+    flexDirection: "row" as any,
+    alignItems: "center",
+    gap: DS.space2,
+    paddingBottom: DS.space2,
+  },
+  demoVoiceTitle: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "700",
+    color: DS.actionPrimary,
+    textTransform: "uppercase" as any,
+    letterSpacing: 0.5,
+  },
+  demoVoicePhrase: {
+    flexDirection: "row" as any,
+    alignItems: "center",
+    gap: DS.space2,
+    paddingVertical: DS.space2,
+    paddingHorizontal: DS.space3,
+    borderRadius: DS.radiusSm,
+    minHeight: DS.targetMin,
+  },
+  demoVoicePhrasePressed: {
+    backgroundColor: DS.surfaceSelected,
+  },
+  demoVoicePhraseText: {
+    fontSize: 14,
+    color: DS.textStrong,
+    fontStyle: "italic" as any,
+  },
+  voiceErrorBar: {
+    flexDirection: "row" as any,
+    alignItems: "center",
+    gap: DS.space2,
+    backgroundColor: DS.warningTint,
+    paddingHorizontal: DS.space4,
+    paddingVertical: DS.space2,
+  },
+  voiceErrorText: {
+    fontSize: 12,
+    color: DS.warningText,
+    flex: 1,
   },
 });
