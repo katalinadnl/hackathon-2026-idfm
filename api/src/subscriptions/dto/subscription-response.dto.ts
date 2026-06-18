@@ -89,7 +89,6 @@ export type SubscriptionResponse = {
     id: number;
     firstName: string;
     lastName: string;
-    email: string;
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];
