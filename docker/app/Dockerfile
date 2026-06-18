@@ -8,8 +8,9 @@ RUN npm ci --frozen-lockfile
 
 # ─── Stage 2 : build ──────────────────────────────────────────────────────────
 FROM deps AS build
+ARG EXPO_PUBLIC_API_URL
 COPY application/ ./
-RUN npm run build:web
+RUN EXPO_PUBLIC_API_URL=$EXPO_PUBLIC_API_URL npm run build:web
 
 # ─── Stage 3 : dev (utilisé par compose.yaml local) ──────────────────────────
 FROM deps AS dev
