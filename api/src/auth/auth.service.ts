@@ -13,6 +13,7 @@ import { MailService } from '../mail/mail.service';
 import { LoginDto, RegisterDto } from './dto';
 import { AccountRole } from 'src/generated/prisma/enums';
 import { JwtPayload } from './types';
+import { AccountsService } from 'src/accounts/accounts.service';
 
 export type AuthUser = {
   id: number;
@@ -26,8 +27,7 @@ export type AuthUser = {
 const OTP_TTL_MS = 10 * 60 * 1000;
 const RESET_TTL_MS = 60 * 60 * 1000;
 
-const APP_RESET_URL =
-  process.env.APP_RESET_PASSWORD_URL ?? 'http://localhost';
+const APP_RESET_URL = process.env.APP_RESET_PASSWORD_URL ?? 'http://localhost';
 
 @Injectable()
 export class AuthService {
@@ -35,11 +35,8 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly mail: MailService,
+    private readonly accountService: AccountsService,
   ) {}
-
-  private generateAccountNumber(): string {
-    return 'CM' + randomBytes(5).toString('hex').toUpperCase();
-  }
 
   private generateOtp(): string {
     return String(randomInt(100000, 999999));
@@ -84,7 +81,7 @@ export class AuthService {
       data: {
         email,
         passwordHash,
-        accountNumber: this.generateAccountNumber(),
+        accountNumber: await this.accountService.generateAccountNumber(),
       },
     });
 
@@ -114,7 +111,10 @@ export class AuthService {
 
     await this.mail.sendOtp(email, code);
 
-    return { requires2FA: true, message: 'Code de vérification envoyé par email.' };
+    return {
+      requires2FA: true,
+      message: 'Code de vérification envoyé par email.',
+    };
   }
 
   async verifyOtp(email: string, code: string) {
@@ -159,7 +159,7 @@ export class AuthService {
         data: {
           email,
           passwordHash,
-          accountNumber: this.generateAccountNumber(),
+          accountNumber: await this.accountService.generateAccountNumber(),
         },
       });
     }
@@ -196,7 +196,9 @@ export class AuthService {
 
   async resetPassword(token: string, newPassword: string) {
     if (!newPassword || newPassword.length < 6) {
-      throw new BadRequestException('Le mot de passe doit faire au moins 6 caractères.');
+      throw new BadRequestException(
+        'Le mot de passe doit faire au moins 6 caractères.',
+      );
     }
 
     const account = await this.prisma.account.findUnique({
@@ -208,7 +210,9 @@ export class AuthService {
       !account.resetPasswordExpiresAt ||
       account.resetPasswordExpiresAt < new Date()
     ) {
-      throw new BadRequestException('Lien de réinitialisation invalide ou expiré.');
+      throw new BadRequestException(
+        'Lien de réinitialisation invalide ou expiré.',
+      );
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);

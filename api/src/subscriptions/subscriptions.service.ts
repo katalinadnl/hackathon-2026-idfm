@@ -13,7 +13,9 @@ import {
 } from './subscriptions.type';
 import { ReportLostOrStolenDto } from './dto/report-lost-or-stolen.dto';
 import { AddressType, PassStatus } from 'src/generated/prisma/enums';
-import { Pass, SubscriptionResponse } from './dto/subscription-response.dto';
+import { SubscriptionResponse } from './dto/subscription-response.dto';
+import { MailService } from 'src/mail/mail.service';
+import { AccountsService } from 'src/accounts/accounts.service';
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 
@@ -31,7 +33,11 @@ export interface SubscriptionWithRoles {
 
 @Injectable()
 export class SubscriptionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mailService: MailService,
+    private readonly accountService: AccountsService,
+  ) {}
 
   async findAll(): Promise<SubscriptionResponse[]> {
     const subscriptions = await this.prisma.subscription.findMany({
@@ -124,7 +130,6 @@ export class SubscriptionsService {
         id: beneficiary.id,
         firstName: beneficiary.firstName,
         lastName: beneficiary.lastName,
-        email: beneficiary.email,
         birthDate: beneficiary.birthDate.toISOString(),
         residenceDepartment: { name: beneficiary.residenceDepartment.name },
         addresses: beneficiary.addresses.map((a) => ({
@@ -532,5 +537,147 @@ export class SubscriptionsService {
 
   getActivePass<T extends { status: string }>(passes: T[]): T | null {
     return passes.find((p) => p.status === PassStatus.active) ?? null;
+  }
+
+  /**
+   * Retourne les BankInfo que le demandeur peut choisir pour cet abonnement :
+   * - le titulaire ne voit que ses propres BankInfo
+   * - le référant voit les siens ET ceux du titulaire (il gère pour lui)
+   */
+  async getAvailableBankInfos(
+    subscriptionId: number,
+    requesterAccountId: number,
+  ) {
+    console.log(subscriptionId);
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { beneficiary: { include: { account: true } } },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
+    }
+
+    const holderAccountId = subscription.beneficiary.account?.id ?? null;
+    const isHolder = holderAccountId === requesterAccountId;
+    const isReferrer = subscription.referrerId === requesterAccountId;
+
+    if (!isHolder && !isReferrer) {
+      throw new ForbiddenException(
+        'Seul le titulaire ou le référant peut consulter les moyens de paiement.',
+      );
+    }
+
+    const accountIds =
+      isReferrer && holderAccountId
+        ? [requesterAccountId, holderAccountId]
+        : [requesterAccountId];
+
+    return this.prisma.bankInfo.findMany({
+      where: { accountId: { in: accountIds } },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  /**
+   * Change le BankInfo utilisé pour les prélèvements de cet abonnement.
+   * Le bankInfoId choisi doit appartenir à un compte autorisé (titulaire ou
+   * référant) — réutilise getAvailableBankInfos pour cette vérification, afin
+   * que la liste affichée au front et la règle appliquée côté serveur ne
+   * puissent jamais diverger.
+   */
+  async changeBankInfo(
+    subscriptionId: number,
+    requesterAccountId: number,
+    bankInfoId: number,
+  ) {
+    const allowed = await this.getAvailableBankInfos(
+      subscriptionId,
+      requesterAccountId,
+    );
+
+    const target = allowed.find((b) => b.id === bankInfoId);
+    if (!target) {
+      throw new BadRequestException(
+        "Cet IBAN n'est pas disponible pour cet abonnement.",
+      );
+    }
+
+    return this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: { bankInfoId: target.id },
+    });
+  }
+
+  /**
+   * Associe un compte au TITULAIRE d'un abonnement (Beneficiary.account) :
+   * - si un Account existe déjà avec cet email, on le lie directement
+   * - sinon, on délègue la création à AccountService (mot de passe temporaire,
+   *   mustChangePassword=true), puis on envoie l'email avec ce mot de passe
+   *
+   * Autorisé pour le référant de l'abonnement, ou pour le titulaire lui-même
+   * s'il agit déjà via un compte propre.
+   */
+  async linkOrCreateAccountForBeneficiary(
+    subscriptionId: number,
+    requesterAccountId: number,
+    email: string,
+  ) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { beneficiary: { include: { account: true } } },
+    });
+
+    if (!subscription) {
+      throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
+    }
+
+    const isReferrer = subscription.referrerId === requesterAccountId;
+    const isBeneficiaryAccount =
+      subscription.beneficiary.account?.id === requesterAccountId;
+
+    if (!isReferrer && !isBeneficiaryAccount) {
+      throw new ForbiddenException(
+        'Seul le référant ou le titulaire peut associer ce compte.',
+      );
+    }
+
+    if (subscription.beneficiary.account) {
+      throw new BadRequestException(
+        'Ce bénéficiaire a déjà un compte associé.',
+      );
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const beneficiaryId = subscription.beneficiary.id;
+
+    const existing = await this.prisma.account.findUnique({
+      where: { email: normalizedEmail },
+    });
+
+    if (existing) {
+      if (existing.beneficiaryId !== null) {
+        throw new BadRequestException(
+          'Ce compte est déjà associé à un autre bénéficiaire.',
+        );
+      }
+
+      return this.prisma.account.update({
+        where: { id: existing.id },
+        data: { beneficiaryId },
+      });
+    }
+
+    const { account, temporaryPassword } =
+      await this.accountService.createWithTemporaryPassword(
+        normalizedEmail,
+        beneficiaryId,
+      );
+
+    await this.mailService.sendAccountCreatedEmail(normalizedEmail, {
+      temporaryPassword,
+    });
+
+    return account;
   }
 }

@@ -6,6 +6,7 @@ import { AuthService } from './auth.service';
 import { FranceConnectService } from './france-connect.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { MailModule } from '../mail/mail.module';
+import { AccountsModule } from 'src/accounts/accounts.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { MailModule } from '../mail/mail.module';
       signOptions: { expiresIn: '30d' },
     }),
     MailModule,
+    AccountsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, FranceConnectService, JwtAuthGuard],

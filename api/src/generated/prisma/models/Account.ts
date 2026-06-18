@@ -43,6 +43,7 @@ export type AccountMinAggregateOutputType = {
   accountNumber: string | null
   createdAt: Date | null
   role: $Enums.AccountRole | null
+  mustChangePassword: boolean | null
   beneficiaryId: number | null
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
@@ -61,6 +62,7 @@ export type AccountMaxAggregateOutputType = {
   accountNumber: string | null
   createdAt: Date | null
   role: $Enums.AccountRole | null
+  mustChangePassword: boolean | null
   beneficiaryId: number | null
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
@@ -79,6 +81,7 @@ export type AccountCountAggregateOutputType = {
   accountNumber: number
   createdAt: number
   role: number
+  mustChangePassword: number
   beneficiaryId: number
   stripeCustomerId: number
   stripePaymentMethodId: number
@@ -109,6 +112,7 @@ export type AccountMinAggregateInputType = {
   accountNumber?: true
   createdAt?: true
   role?: true
+  mustChangePassword?: true
   beneficiaryId?: true
   stripeCustomerId?: true
   stripePaymentMethodId?: true
@@ -127,6 +131,7 @@ export type AccountMaxAggregateInputType = {
   accountNumber?: true
   createdAt?: true
   role?: true
+  mustChangePassword?: true
   beneficiaryId?: true
   stripeCustomerId?: true
   stripePaymentMethodId?: true
@@ -145,6 +150,7 @@ export type AccountCountAggregateInputType = {
   accountNumber?: true
   createdAt?: true
   role?: true
+  mustChangePassword?: true
   beneficiaryId?: true
   stripeCustomerId?: true
   stripePaymentMethodId?: true
@@ -250,6 +256,7 @@ export type AccountGroupByOutputType = {
   accountNumber: string
   createdAt: Date
   role: $Enums.AccountRole
+  mustChangePassword: boolean
   beneficiaryId: number | null
   stripeCustomerId: string | null
   stripePaymentMethodId: string | null
@@ -291,6 +298,7 @@ export type AccountWhereInput = {
   accountNumber?: Prisma.StringFilter<"Account"> | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   role?: Prisma.EnumAccountRoleFilter<"Account"> | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFilter<"Account"> | boolean
   beneficiaryId?: Prisma.IntNullableFilter<"Account"> | number | null
   stripeCustomerId?: Prisma.StringNullableFilter<"Account"> | string | null
   stripePaymentMethodId?: Prisma.StringNullableFilter<"Account"> | string | null
@@ -313,6 +321,7 @@ export type AccountOrderByWithRelationInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  mustChangePassword?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -341,6 +350,7 @@ export type AccountWhereUniqueInput = Prisma.AtLeast<{
   passwordHash?: Prisma.StringFilter<"Account"> | string
   createdAt?: Prisma.DateTimeFilter<"Account"> | Date | string
   role?: Prisma.EnumAccountRoleFilter<"Account"> | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFilter<"Account"> | boolean
   stripePaymentMethodId?: Prisma.StringNullableFilter<"Account"> | string | null
   stripeMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
   stripePreviousMandateId?: Prisma.StringNullableFilter<"Account"> | string | null
@@ -360,6 +370,7 @@ export type AccountOrderByWithAggregationInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  mustChangePassword?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrderInput | Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -386,6 +397,7 @@ export type AccountScalarWhereWithAggregatesInput = {
   accountNumber?: Prisma.StringWithAggregatesFilter<"Account"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Account"> | Date | string
   role?: Prisma.EnumAccountRoleWithAggregatesFilter<"Account"> | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolWithAggregatesFilter<"Account"> | boolean
   beneficiaryId?: Prisma.IntNullableWithAggregatesFilter<"Account"> | number | null
   stripeCustomerId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
   stripePaymentMethodId?: Prisma.StringNullableWithAggregatesFilter<"Account"> | string | null
@@ -403,6 +415,7 @@ export type AccountCreateInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -424,6 +437,7 @@ export type AccountUncheckedCreateInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -444,6 +458,7 @@ export type AccountUpdateInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -465,6 +480,7 @@ export type AccountUncheckedUpdateInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -486,6 +502,7 @@ export type AccountCreateManyInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -503,6 +520,7 @@ export type AccountUpdateManyMutationInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -520,6 +538,7 @@ export type AccountUncheckedUpdateManyInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -543,6 +562,7 @@ export type AccountCountOrderByAggregateInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  mustChangePassword?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrder
@@ -566,6 +586,7 @@ export type AccountMaxOrderByAggregateInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  mustChangePassword?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrder
@@ -584,6 +605,7 @@ export type AccountMinOrderByAggregateInput = {
   accountNumber?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   role?: Prisma.SortOrder
+  mustChangePassword?: Prisma.SortOrder
   beneficiaryId?: Prisma.SortOrder
   stripeCustomerId?: Prisma.SortOrder
   stripePaymentMethodId?: Prisma.SortOrder
@@ -693,6 +715,7 @@ export type AccountCreateWithoutBeneficiaryInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -713,6 +736,7 @@ export type AccountUncheckedCreateWithoutBeneficiaryInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -748,6 +772,7 @@ export type AccountUpdateWithoutBeneficiaryInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -768,6 +793,7 @@ export type AccountUncheckedUpdateWithoutBeneficiaryInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -787,6 +813,7 @@ export type AccountCreateWithoutBankInfosInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -807,6 +834,7 @@ export type AccountUncheckedCreateWithoutBankInfosInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -842,6 +870,7 @@ export type AccountUpdateWithoutBankInfosInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -862,6 +891,7 @@ export type AccountUncheckedUpdateWithoutBankInfosInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -881,6 +911,7 @@ export type AccountCreateWithoutReferredSubscriptionsInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -901,6 +932,7 @@ export type AccountUncheckedCreateWithoutReferredSubscriptionsInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -925,6 +957,7 @@ export type AccountCreateWithoutSubscriptionsInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
   stripeMandateId?: string | null
@@ -945,6 +978,7 @@ export type AccountUncheckedCreateWithoutSubscriptionsInput = {
   accountNumber: string
   createdAt?: Date | string
   role?: $Enums.AccountRole
+  mustChangePassword?: boolean
   beneficiaryId?: number | null
   stripeCustomerId?: string | null
   stripePaymentMethodId?: string | null
@@ -980,6 +1014,7 @@ export type AccountUpdateWithoutReferredSubscriptionsInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1000,6 +1035,7 @@ export type AccountUncheckedUpdateWithoutReferredSubscriptionsInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1030,6 +1066,7 @@ export type AccountUpdateWithoutSubscriptionsInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripeMandateId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1050,6 +1087,7 @@ export type AccountUncheckedUpdateWithoutSubscriptionsInput = {
   accountNumber?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   role?: Prisma.EnumAccountRoleFieldUpdateOperationsInput | $Enums.AccountRole
+  mustChangePassword?: Prisma.BoolFieldUpdateOperationsInput | boolean
   beneficiaryId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   stripeCustomerId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   stripePaymentMethodId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1119,6 +1157,7 @@ export type AccountSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   accountNumber?: boolean
   createdAt?: boolean
   role?: boolean
+  mustChangePassword?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -1142,6 +1181,7 @@ export type AccountSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   accountNumber?: boolean
   createdAt?: boolean
   role?: boolean
+  mustChangePassword?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -1161,6 +1201,7 @@ export type AccountSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   accountNumber?: boolean
   createdAt?: boolean
   role?: boolean
+  mustChangePassword?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -1180,6 +1221,7 @@ export type AccountSelectScalar = {
   accountNumber?: boolean
   createdAt?: boolean
   role?: boolean
+  mustChangePassword?: boolean
   beneficiaryId?: boolean
   stripeCustomerId?: boolean
   stripePaymentMethodId?: boolean
@@ -1191,7 +1233,7 @@ export type AccountSelectScalar = {
   resetPasswordExpiresAt?: boolean
 }
 
-export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "accountNumber" | "createdAt" | "role" | "beneficiaryId" | "stripeCustomerId" | "stripePaymentMethodId" | "stripeMandateId" | "stripePreviousMandateId" | "twoFactorCode" | "twoFactorExpiresAt" | "resetPasswordToken" | "resetPasswordExpiresAt", ExtArgs["result"]["account"]>
+export type AccountOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "passwordHash" | "accountNumber" | "createdAt" | "role" | "mustChangePassword" | "beneficiaryId" | "stripeCustomerId" | "stripePaymentMethodId" | "stripeMandateId" | "stripePreviousMandateId" | "twoFactorCode" | "twoFactorExpiresAt" | "resetPasswordToken" | "resetPasswordExpiresAt", ExtArgs["result"]["account"]>
 export type AccountInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   beneficiary?: boolean | Prisma.Account$beneficiaryArgs<ExtArgs>
   referredSubscriptions?: boolean | Prisma.Account$referredSubscriptionsArgs<ExtArgs>
@@ -1221,6 +1263,7 @@ export type $AccountPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     accountNumber: string
     createdAt: Date
     role: $Enums.AccountRole
+    mustChangePassword: boolean
     beneficiaryId: number | null
     stripeCustomerId: string | null
     stripePaymentMethodId: string | null
@@ -1663,6 +1706,7 @@ export interface AccountFieldRefs {
   readonly accountNumber: Prisma.FieldRef<"Account", 'String'>
   readonly createdAt: Prisma.FieldRef<"Account", 'DateTime'>
   readonly role: Prisma.FieldRef<"Account", 'AccountRole'>
+  readonly mustChangePassword: Prisma.FieldRef<"Account", 'Boolean'>
   readonly beneficiaryId: Prisma.FieldRef<"Account", 'Int'>
   readonly stripeCustomerId: Prisma.FieldRef<"Account", 'String'>
   readonly stripePaymentMethodId: Prisma.FieldRef<"Account", 'String'>

@@ -97,7 +97,6 @@ export class AdminBillingService {
           beneficiary: {
             id: sub.beneficiary.id,
             name: `${sub.beneficiary.firstName} ${sub.beneficiary.lastName}`,
-            email: sub.beneficiary.email,
           },
           bankInfo: sub.bankInfo,
           referrer: sub.referrer

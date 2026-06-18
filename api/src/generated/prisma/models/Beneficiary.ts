@@ -42,8 +42,6 @@ export type BeneficiaryMinAggregateOutputType = {
   id: number | null
   firstName: string | null
   lastName: string | null
-  email: string | null
-  phone: string | null
   birthDate: Date | null
   socialSecurityNumber: string | null
   status: $Enums.BeneficiaryStatus | null
@@ -55,8 +53,6 @@ export type BeneficiaryMaxAggregateOutputType = {
   id: number | null
   firstName: string | null
   lastName: string | null
-  email: string | null
-  phone: string | null
   birthDate: Date | null
   socialSecurityNumber: string | null
   status: $Enums.BeneficiaryStatus | null
@@ -68,8 +64,6 @@ export type BeneficiaryCountAggregateOutputType = {
   id: number
   firstName: number
   lastName: number
-  email: number
-  phone: number
   birthDate: number
   socialSecurityNumber: number
   status: number
@@ -95,8 +89,6 @@ export type BeneficiaryMinAggregateInputType = {
   id?: true
   firstName?: true
   lastName?: true
-  email?: true
-  phone?: true
   birthDate?: true
   socialSecurityNumber?: true
   status?: true
@@ -108,8 +100,6 @@ export type BeneficiaryMaxAggregateInputType = {
   id?: true
   firstName?: true
   lastName?: true
-  email?: true
-  phone?: true
   birthDate?: true
   socialSecurityNumber?: true
   status?: true
@@ -121,8 +111,6 @@ export type BeneficiaryCountAggregateInputType = {
   id?: true
   firstName?: true
   lastName?: true
-  email?: true
-  phone?: true
   birthDate?: true
   socialSecurityNumber?: true
   status?: true
@@ -221,8 +209,6 @@ export type BeneficiaryGroupByOutputType = {
   id: number
   firstName: string
   lastName: string
-  email: string
-  phone: string | null
   birthDate: Date
   socialSecurityNumber: string | null
   status: $Enums.BeneficiaryStatus
@@ -257,8 +243,6 @@ export type BeneficiaryWhereInput = {
   id?: Prisma.IntFilter<"Beneficiary"> | number
   firstName?: Prisma.StringFilter<"Beneficiary"> | string
   lastName?: Prisma.StringFilter<"Beneficiary"> | string
-  email?: Prisma.StringFilter<"Beneficiary"> | string
-  phone?: Prisma.StringNullableFilter<"Beneficiary"> | string | null
   birthDate?: Prisma.DateTimeFilter<"Beneficiary"> | Date | string
   socialSecurityNumber?: Prisma.StringNullableFilter<"Beneficiary"> | string | null
   status?: Prisma.EnumBeneficiaryStatusFilter<"Beneficiary"> | $Enums.BeneficiaryStatus
@@ -276,8 +260,6 @@ export type BeneficiaryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   socialSecurityNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -293,14 +275,12 @@ export type BeneficiaryOrderByWithRelationInput = {
 
 export type BeneficiaryWhereUniqueInput = Prisma.AtLeast<{
   id?: number
-  email?: string
   socialSecurityNumber?: string
   AND?: Prisma.BeneficiaryWhereInput | Prisma.BeneficiaryWhereInput[]
   OR?: Prisma.BeneficiaryWhereInput[]
   NOT?: Prisma.BeneficiaryWhereInput | Prisma.BeneficiaryWhereInput[]
   firstName?: Prisma.StringFilter<"Beneficiary"> | string
   lastName?: Prisma.StringFilter<"Beneficiary"> | string
-  phone?: Prisma.StringNullableFilter<"Beneficiary"> | string | null
   birthDate?: Prisma.DateTimeFilter<"Beneficiary"> | Date | string
   status?: Prisma.EnumBeneficiaryStatusFilter<"Beneficiary"> | $Enums.BeneficiaryStatus
   residenceDepartmentId?: Prisma.IntFilter<"Beneficiary"> | number
@@ -311,14 +291,12 @@ export type BeneficiaryWhereUniqueInput = Prisma.AtLeast<{
   account?: Prisma.XOR<Prisma.AccountNullableScalarRelationFilter, Prisma.AccountWhereInput> | null
   subscriptions?: Prisma.SubscriptionListRelationFilter
   addresses?: Prisma.AddressListRelationFilter
-}, "id" | "email" | "socialSecurityNumber">
+}, "id" | "socialSecurityNumber">
 
 export type BeneficiaryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrderInput | Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   socialSecurityNumber?: Prisma.SortOrderInput | Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -338,8 +316,6 @@ export type BeneficiaryScalarWhereWithAggregatesInput = {
   id?: Prisma.IntWithAggregatesFilter<"Beneficiary"> | number
   firstName?: Prisma.StringWithAggregatesFilter<"Beneficiary"> | string
   lastName?: Prisma.StringWithAggregatesFilter<"Beneficiary"> | string
-  email?: Prisma.StringWithAggregatesFilter<"Beneficiary"> | string
-  phone?: Prisma.StringNullableWithAggregatesFilter<"Beneficiary"> | string | null
   birthDate?: Prisma.DateTimeWithAggregatesFilter<"Beneficiary"> | Date | string
   socialSecurityNumber?: Prisma.StringNullableWithAggregatesFilter<"Beneficiary"> | string | null
   status?: Prisma.EnumBeneficiaryStatusWithAggregatesFilter<"Beneficiary"> | $Enums.BeneficiaryStatus
@@ -350,8 +326,6 @@ export type BeneficiaryScalarWhereWithAggregatesInput = {
 export type BeneficiaryCreateInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -367,8 +341,6 @@ export type BeneficiaryUncheckedCreateInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -383,8 +355,6 @@ export type BeneficiaryUncheckedCreateInput = {
 export type BeneficiaryUpdateInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -400,8 +370,6 @@ export type BeneficiaryUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -417,8 +385,6 @@ export type BeneficiaryCreateManyInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -429,8 +395,6 @@ export type BeneficiaryCreateManyInput = {
 export type BeneficiaryUpdateManyMutationInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -440,8 +404,6 @@ export type BeneficiaryUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -468,8 +430,6 @@ export type BeneficiaryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   socialSecurityNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -487,8 +447,6 @@ export type BeneficiaryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   socialSecurityNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -500,8 +458,6 @@ export type BeneficiaryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   firstName?: Prisma.SortOrder
   lastName?: Prisma.SortOrder
-  email?: Prisma.SortOrder
-  phone?: Prisma.SortOrder
   birthDate?: Prisma.SortOrder
   socialSecurityNumber?: Prisma.SortOrder
   status?: Prisma.SortOrder
@@ -677,8 +633,6 @@ export type BeneficiaryUpdateOneRequiredWithoutStatusVerificationsNestedInput = 
 export type BeneficiaryCreateWithoutAddressesInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -693,8 +647,6 @@ export type BeneficiaryUncheckedCreateWithoutAddressesInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -724,8 +676,6 @@ export type BeneficiaryUpdateToOneWithWhereWithoutAddressesInput = {
 export type BeneficiaryUpdateWithoutAddressesInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -740,8 +690,6 @@ export type BeneficiaryUncheckedUpdateWithoutAddressesInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -755,8 +703,6 @@ export type BeneficiaryUncheckedUpdateWithoutAddressesInput = {
 export type BeneficiaryCreateWithoutResidenceDepartmentInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -771,8 +717,6 @@ export type BeneficiaryUncheckedCreateWithoutResidenceDepartmentInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -796,8 +740,6 @@ export type BeneficiaryCreateManyResidenceDepartmentInputEnvelope = {
 export type BeneficiaryCreateWithoutWorkStudyDepartmentInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -812,8 +754,6 @@ export type BeneficiaryUncheckedCreateWithoutWorkStudyDepartmentInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -857,8 +797,6 @@ export type BeneficiaryScalarWhereInput = {
   id?: Prisma.IntFilter<"Beneficiary"> | number
   firstName?: Prisma.StringFilter<"Beneficiary"> | string
   lastName?: Prisma.StringFilter<"Beneficiary"> | string
-  email?: Prisma.StringFilter<"Beneficiary"> | string
-  phone?: Prisma.StringNullableFilter<"Beneficiary"> | string | null
   birthDate?: Prisma.DateTimeFilter<"Beneficiary"> | Date | string
   socialSecurityNumber?: Prisma.StringNullableFilter<"Beneficiary"> | string | null
   status?: Prisma.EnumBeneficiaryStatusFilter<"Beneficiary"> | $Enums.BeneficiaryStatus
@@ -885,8 +823,6 @@ export type BeneficiaryUpdateManyWithWhereWithoutWorkStudyDepartmentInput = {
 export type BeneficiaryCreateWithoutAccountInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -901,8 +837,6 @@ export type BeneficiaryUncheckedCreateWithoutAccountInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -932,8 +866,6 @@ export type BeneficiaryUpdateToOneWithWhereWithoutAccountInput = {
 export type BeneficiaryUpdateWithoutAccountInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -948,8 +880,6 @@ export type BeneficiaryUncheckedUpdateWithoutAccountInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -963,8 +893,6 @@ export type BeneficiaryUncheckedUpdateWithoutAccountInput = {
 export type BeneficiaryCreateWithoutSubscriptionsInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -979,8 +907,6 @@ export type BeneficiaryUncheckedCreateWithoutSubscriptionsInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -1010,8 +936,6 @@ export type BeneficiaryUpdateToOneWithWhereWithoutSubscriptionsInput = {
 export type BeneficiaryUpdateWithoutSubscriptionsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1026,8 +950,6 @@ export type BeneficiaryUncheckedUpdateWithoutSubscriptionsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1041,8 +963,6 @@ export type BeneficiaryUncheckedUpdateWithoutSubscriptionsInput = {
 export type BeneficiaryCreateWithoutStatusVerificationsInput = {
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -1057,8 +977,6 @@ export type BeneficiaryUncheckedCreateWithoutStatusVerificationsInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -1088,8 +1006,6 @@ export type BeneficiaryUpdateToOneWithWhereWithoutStatusVerificationsInput = {
 export type BeneficiaryUpdateWithoutStatusVerificationsInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1104,8 +1020,6 @@ export type BeneficiaryUncheckedUpdateWithoutStatusVerificationsInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1120,8 +1034,6 @@ export type BeneficiaryCreateManyResidenceDepartmentInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -1132,8 +1044,6 @@ export type BeneficiaryCreateManyWorkStudyDepartmentInput = {
   id?: number
   firstName: string
   lastName: string
-  email: string
-  phone?: string | null
   birthDate: Date | string
   socialSecurityNumber?: string | null
   status?: $Enums.BeneficiaryStatus
@@ -1143,8 +1053,6 @@ export type BeneficiaryCreateManyWorkStudyDepartmentInput = {
 export type BeneficiaryUpdateWithoutResidenceDepartmentInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1159,8 +1067,6 @@ export type BeneficiaryUncheckedUpdateWithoutResidenceDepartmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1175,8 +1081,6 @@ export type BeneficiaryUncheckedUpdateManyWithoutResidenceDepartmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1186,8 +1090,6 @@ export type BeneficiaryUncheckedUpdateManyWithoutResidenceDepartmentInput = {
 export type BeneficiaryUpdateWithoutWorkStudyDepartmentInput = {
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1202,8 +1104,6 @@ export type BeneficiaryUncheckedUpdateWithoutWorkStudyDepartmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1218,8 +1118,6 @@ export type BeneficiaryUncheckedUpdateManyWithoutWorkStudyDepartmentInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   firstName?: Prisma.StringFieldUpdateOperationsInput | string
   lastName?: Prisma.StringFieldUpdateOperationsInput | string
-  email?: Prisma.StringFieldUpdateOperationsInput | string
-  phone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   birthDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   socialSecurityNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   status?: Prisma.EnumBeneficiaryStatusFieldUpdateOperationsInput | $Enums.BeneficiaryStatus
@@ -1279,8 +1177,6 @@ export type BeneficiarySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   id?: boolean
   firstName?: boolean
   lastName?: boolean
-  email?: boolean
-  phone?: boolean
   birthDate?: boolean
   socialSecurityNumber?: boolean
   status?: boolean
@@ -1299,8 +1195,6 @@ export type BeneficiarySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   firstName?: boolean
   lastName?: boolean
-  email?: boolean
-  phone?: boolean
   birthDate?: boolean
   socialSecurityNumber?: boolean
   status?: boolean
@@ -1314,8 +1208,6 @@ export type BeneficiarySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   id?: boolean
   firstName?: boolean
   lastName?: boolean
-  email?: boolean
-  phone?: boolean
   birthDate?: boolean
   socialSecurityNumber?: boolean
   status?: boolean
@@ -1329,8 +1221,6 @@ export type BeneficiarySelectScalar = {
   id?: boolean
   firstName?: boolean
   lastName?: boolean
-  email?: boolean
-  phone?: boolean
   birthDate?: boolean
   socialSecurityNumber?: boolean
   status?: boolean
@@ -1338,7 +1228,7 @@ export type BeneficiarySelectScalar = {
   workStudyDepartmentId?: boolean
 }
 
-export type BeneficiaryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "lastName" | "email" | "phone" | "birthDate" | "socialSecurityNumber" | "status" | "residenceDepartmentId" | "workStudyDepartmentId", ExtArgs["result"]["beneficiary"]>
+export type BeneficiaryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "firstName" | "lastName" | "birthDate" | "socialSecurityNumber" | "status" | "residenceDepartmentId" | "workStudyDepartmentId", ExtArgs["result"]["beneficiary"]>
 export type BeneficiaryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   residenceDepartment?: boolean | Prisma.DepartmentDefaultArgs<ExtArgs>
   workStudyDepartment?: boolean | Prisma.Beneficiary$workStudyDepartmentArgs<ExtArgs>
@@ -1371,8 +1261,6 @@ export type $BeneficiaryPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: number
     firstName: string
     lastName: string
-    email: string
-    phone: string | null
     birthDate: Date
     socialSecurityNumber: string | null
     status: $Enums.BeneficiaryStatus
@@ -1810,8 +1698,6 @@ export interface BeneficiaryFieldRefs {
   readonly id: Prisma.FieldRef<"Beneficiary", 'Int'>
   readonly firstName: Prisma.FieldRef<"Beneficiary", 'String'>
   readonly lastName: Prisma.FieldRef<"Beneficiary", 'String'>
-  readonly email: Prisma.FieldRef<"Beneficiary", 'String'>
-  readonly phone: Prisma.FieldRef<"Beneficiary", 'String'>
   readonly birthDate: Prisma.FieldRef<"Beneficiary", 'DateTime'>
   readonly socialSecurityNumber: Prisma.FieldRef<"Beneficiary", 'String'>
   readonly status: Prisma.FieldRef<"Beneficiary", 'BeneficiaryStatus'>
