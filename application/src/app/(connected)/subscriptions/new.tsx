@@ -95,9 +95,12 @@ function guessNameFromEmail(email: string): {
   };
 }
 
-function pickRandomStatus(): BeneficiaryStatus {
-  const idx = Math.floor(Math.random() * STATUS_OPTIONS.length);
-  return STATUS_OPTIONS[idx].value;
+function pickRandomStatus(excludeMinor = false): BeneficiaryStatus {
+  const options = excludeMinor
+    ? STATUS_OPTIONS.filter((o) => o.value !== "MINOR")
+    : STATUS_OPTIONS;
+  const idx = Math.floor(Math.random() * options.length);
+  return options[idx].value;
 }
 
 function generateSimulatedSsn(birth: string, deptCode: string): string {
@@ -280,6 +283,25 @@ export default function NewSubscriptionPage() {
   const [status, setStatus] = useState<BeneficiaryStatus | null>(null);
   const [birthDate, setBirthDate] = useState("");
 
+  const age = useMemo(() => {
+    const d = parseFrDate(birthDate);
+    if (!d) return null;
+    const now = new Date();
+    let a = now.getFullYear() - d.getFullYear();
+    if (
+      now.getMonth() < d.getMonth() ||
+      (now.getMonth() === d.getMonth() && now.getDate() < d.getDate())
+    )
+      a -= 1;
+    return a;
+  }, [birthDate]);
+
+  useEffect(() => {
+    if (age === null) return;
+    if (age >= 62) setStatus("SENIOR");
+    else if (age < 16) setStatus("MINOR");
+  }, [age]);
+
   const heldTariffIds = useMemo(
     () =>
       target === "self" ? new Set(heldLongPlans.keys()) : new Set<number>(),
@@ -424,8 +446,27 @@ export default function NewSubscriptionPage() {
 
     setResidenceDept(residenceCode);
     setWorkDept(workCode);
-    setStatus(pickRandomStatus());
-    setSsn(generateSimulatedSsn(birth, residenceCode));
+
+    const parsed = parseFrDate(birth);
+    if (parsed) {
+      const now = new Date();
+      let a = now.getFullYear() - parsed.getFullYear();
+      if (
+        now.getMonth() < parsed.getMonth() ||
+        (now.getMonth() === parsed.getMonth() &&
+          now.getDate() < parsed.getDate())
+      )
+        a -= 1;
+      if (a >= 62) {
+        setStatus("SENIOR");
+        return;
+      }
+      if (a < 16) {
+        setStatus("MINOR");
+        return;
+      }
+    }
+    setStatus(pickRandomStatus(true));
   }
 
   function regenerateStatus() {
@@ -507,6 +548,8 @@ export default function NewSubscriptionPage() {
   function validateStatus(): boolean {
     const next: Record<string, string> = {};
     if (!status) next.status = "Le statut est requis.";
+    if (status === "DISABLED" && !ssn.trim())
+      next.ssn = "Le numéro de sécurité sociale est requis.";
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -961,8 +1004,19 @@ export default function NewSubscriptionPage() {
                 label="Date de naissance"
                 placeholder="JJ/MM/AAAA"
                 value={birthDate}
-                onChangeText={setBirthDate}
+                onChangeText={(text) => {
+                  const digits = text.replace(/\D/g, "").slice(0, 8);
+                  let formatted = digits;
+                  if (digits.length > 4) {
+                    formatted = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+                  } else if (digits.length > 2) {
+                    formatted = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+                  }
+                  setBirthDate(formatted);
+                }}
                 error={errors.birthDate}
+                keyboardType="number-pad"
+                maxLength={10}
               />
 
               <StepActions onBack={goBack} onContinue={continueFromProfile} />
@@ -974,9 +1028,8 @@ export default function NewSubscriptionPage() {
               <SectionTitle>Adresse</SectionTitle>
 
               <Text style={s.noteText}>
-                Ces départements ont été pré-remplis automatiquement (simulation
-                d&apos;un appel aux services de l&apos;État). Vous pouvez les
-                modifier si besoin.
+                Sélectionnez votre département de résidence et, si applicable,
+                votre département de travail ou d&apos;études.
               </Text>
 
               {departmentsLoading && (
@@ -1073,23 +1126,49 @@ export default function NewSubscriptionPage() {
             <View style={s.section}>
               <SectionTitle>Statut</SectionTitle>
 
-              <Text style={s.noteText}>
-                Statut et numéro de sécurité sociale simulés via les services de
-                l&apos;État ; le statut est tiré au hasard à chaque simulation.
-              </Text>
+              {age !== null && age >= 62 ? (
+                <Text style={s.noteText}>
+                  Le bénéficiaire a {age} ans : le statut Senior est attribué
+                  automatiquement.
+                </Text>
+              ) : age !== null && age < 16 ? (
+                <Text style={s.noteText}>
+                  Le bénéficiaire a {age} ans : le statut Mineur est attribué
+                  automatiquement.
+                </Text>
+              ) : (
+                <Text style={s.noteText}>
+                  Sélectionnez la situation actuelle. Le forfait recommandé
+                  sera adapté en fonction du statut et de l&apos;âge.
+                </Text>
+              )}
 
               <View>
                 <FieldLabel>Statut</FieldLabel>
                 <View style={s.chipsRow}>
-                  {STATUS_OPTIONS.map((opt) => {
+                  {STATUS_OPTIONS.filter((opt) => {
+                    if (age !== null && age >= 62) return opt.value === "SENIOR";
+                    if (age !== null && age < 16) return opt.value === "MINOR";
+                    if (opt.value === "MINOR") return false;
+                    if (opt.value === "SENIOR") return age === null || age >= 62;
+                    if (opt.value === "STUDENT") return age === null || age <= 26;
+                    return true;
+                  }).map((opt) => {
                     const selected = status === opt.value;
+                    const locked =
+                      (age !== null && age >= 62) ||
+                      (age !== null && age < 16);
                     return (
                       <Pressable
                         key={opt.value}
-                        onPress={() => setStatus(opt.value)}
+                        onPress={() => !locked && setStatus(opt.value)}
                         accessibilityRole="button"
                         accessibilityState={{ selected }}
-                        style={[s.chip, selected && s.chipSelected]}
+                        style={[
+                          s.chip,
+                          selected && s.chipSelected,
+                          locked && selected && { opacity: 0.8 },
+                        ]}
                       >
                         <Text
                           style={[s.chipLabel, selected && s.chipLabelSelected]}
@@ -1103,24 +1182,18 @@ export default function NewSubscriptionPage() {
                 {!!errors.status && (
                   <Text style={s.fieldError}>{errors.status}</Text>
                 )}
-                <Button
-                  variant="tertiary"
-                  size="sm"
-                  leadingIcon="refresh"
-                  style={s.regenerateBtn}
-                  onPress={regenerateStatus}
-                >
-                  Tirer un nouveau statut (simulation)
-                </Button>
               </View>
 
-              <Input
-                label="Numéro de sécurité sociale (optionnel)"
-                placeholder="1 23 45 67 890 123"
-                value={ssn}
-                onChangeText={setSsn}
-                keyboardType="number-pad"
-              />
+              {status === "DISABLED" && (
+                <Input
+                  label="Numéro de sécurité sociale"
+                  placeholder="1 23 45 67 890 123"
+                  value={ssn}
+                  onChangeText={setSsn}
+                  error={errors.ssn}
+                  keyboardType="number-pad"
+                />
+              )}
 
               <StepActions onBack={goBack} onContinue={continueFromStatus} />
             </View>
