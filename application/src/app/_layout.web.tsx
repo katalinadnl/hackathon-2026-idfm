@@ -233,6 +233,9 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
         <MobileNavItem href="/" onPress={onClose}>
           Accueil
         </MobileNavItem>
+        <MobileNavItem href="/abonnements" onPress={onClose}>
+          Nos abonnements
+        </MobileNavItem>
         <MobileNavItem href="/visitors" onPress={onClose}>
           Visiteurs
         </MobileNavItem>
@@ -318,6 +321,7 @@ function SiteHeader() {
             <>
               <View style={styles.nav}>
                 <NavLink href="/">Accueil</NavLink>
+                <NavLink href="/abonnements">Nos abonnements</NavLink>
                 <NavLink href="/visitors">Visiteurs</NavLink>
                 {token && <NavLink href="/dashboard">Mon espace</NavLink>}
               </View>
