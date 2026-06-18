@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { usePasses } from "@/hooks/useBilling";
+import { useLocalSearchParams } from "expo-router";
 type TabKey = "transactions" | "mandate" | "rib";
 
 export default function BillingScreen() {
@@ -17,8 +18,16 @@ export default function BillingScreen() {
   const accountId = user?.id ?? null;
   const { data: passes, loading, error } = usePasses(accountId);
 
+  const { subscriptionId: subscriptionIdParam } = useLocalSearchParams<{
+    subscriptionId?: string;
+  }>();
+  const initialSubscriptionId = subscriptionIdParam
+    ? Number(subscriptionIdParam)
+    : null;
+
   const [selectedPassId, setSelectedPassId] = useState<number | null>(
-    passes?.length === 1 ? passes[0].subscriptionId : null,
+    initialSubscriptionId ??
+      (passes?.length === 1 ? passes[0].subscriptionId : null),
   );
   const [activeTab, setActiveTab] = useState<TabKey>("transactions");
   const hasMultiplePasses = (passes?.length ?? 0) > 1;

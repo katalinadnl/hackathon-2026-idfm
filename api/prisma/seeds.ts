@@ -60,9 +60,9 @@ async function main() {
   const accSophie = await mk('sophie.lambert@email.fr', 'ACC-000012'); // pas de pass
   const accYoussef = await mk('youssef.amrani@email.fr', 'ACC-000013');
   // Comptes sans bénéficiaire direct (parents qui gèrent pour d'autres)
-  const accCaroline = await mk('caroline.moreau@email.fr', 'ACC-000014'); // mère de Théo/Léa, pas bénéficiaire
+  await mk('caroline.moreau@email.fr', 'ACC-000014'); // mère de Théo/Léa, pas bénéficiaire
   // Comptes admin
-  const accAdmin = await mk('admin@idfm.fr', 'ACC-000015');
+  await mk('admin@idfm.fr', 'ACC-000015');
   // Comptes "vides" — inscrits mais n'ont rien fait
   await mk('marc.henry@email.fr', 'ACC-000016');
   await mk('julie.fournier@email.fr', 'ACC-000017');
@@ -153,7 +153,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: val94.id,
       workStudyDepartmentId: paris.id,
-      accountId: accPierre.id,
+      accountTitulaireId: accPierre.id,
     },
     select: { id: true },
   });
@@ -168,6 +168,7 @@ async function main() {
       socialSecurityNumber: null,
       status: BeneficiaryStatus.MINOR,
       residenceDepartmentId: val94.id,
+      accountReferantId: accPierre.id,
     },
   });
   const lea = await prisma.beneficiary.upsert({
@@ -181,6 +182,7 @@ async function main() {
       socialSecurityNumber: null,
       status: BeneficiaryStatus.MINOR,
       residenceDepartmentId: val94.id,
+      accountReferantId: accPierre.id,
     },
   });
   const monique = await prisma.beneficiary.upsert({
@@ -194,7 +196,8 @@ async function main() {
       socialSecurityNumber: '150011212345678',
       status: BeneficiaryStatus.SENIOR,
       residenceDepartmentId: val94.id,
-      accountId: accMonique.id,
+      accountTitulaireId: accMonique.id,
+      accountReferantId: accPierre.id,
     },
   });
 
@@ -210,7 +213,8 @@ async function main() {
       status: BeneficiaryStatus.STUDENT,
       residenceDepartmentId: paris.id,
       workStudyDepartmentId: hauts92.id,
-      accountId: accAlice.id,
+      accountTitulaireId: accAlice.id,
+      accountReferantId: accPierre.id,
     },
   });
   const bernard = await prisma.beneficiary.upsert({
@@ -224,7 +228,7 @@ async function main() {
       socialSecurityNumber: '155072212345678',
       status: BeneficiaryStatus.SENIOR,
       residenceDepartmentId: hauts92.id,
-      accountId: accBernard.id,
+      accountTitulaireId: accBernard.id,
     },
   });
   const clara = await prisma.beneficiary.upsert({
@@ -239,7 +243,7 @@ async function main() {
       status: BeneficiaryStatus.DISABLED,
       residenceDepartmentId: seine93.id,
       workStudyDepartmentId: paris.id,
-      accountId: accClara.id,
+      accountTitulaireId: accClara.id,
     },
   });
   const emma = await prisma.beneficiary.upsert({
@@ -253,7 +257,7 @@ async function main() {
       socialSecurityNumber: '285092312345678',
       status: BeneficiaryStatus.UNEMPLOYED,
       residenceDepartmentId: seine77.id,
-      accountId: accEmma.id,
+      accountTitulaireId: accEmma.id,
     },
   });
   const hugo = await prisma.beneficiary.upsert({
@@ -268,7 +272,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: yvelines78.id,
       workStudyDepartmentId: paris.id,
-      accountId: accHugo.id,
+      accountTitulaireId: accHugo.id,
     },
   });
   const fatima = await prisma.beneficiary.upsert({
@@ -283,7 +287,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: essonne91.id,
       workStudyDepartmentId: paris.id,
-      accountId: accFatima.id,
+      accountTitulaireId: accFatima.id,
     },
   });
   const lucas = await prisma.beneficiary.upsert({
@@ -298,7 +302,7 @@ async function main() {
       status: BeneficiaryStatus.STUDENT,
       residenceDepartmentId: valdoise95.id,
       workStudyDepartmentId: paris.id,
-      accountId: accLucas.id,
+      accountTitulaireId: accLucas.id,
     },
   });
   const nadia = await prisma.beneficiary.upsert({
@@ -313,10 +317,10 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: paris.id,
       workStudyDepartmentId: hauts92.id,
-      accountId: accNadia.id,
+      accountTitulaireId: accNadia.id,
     },
   });
-  const olivier = await prisma.beneficiary.upsert({
+  await prisma.beneficiary.upsert({
     where: { id: 13 },
     update: {},
     create: {
@@ -327,10 +331,10 @@ async function main() {
       socialSecurityNumber: '195111212345678',
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: hauts92.id,
-      accountId: accOlivier.id,
+      accountTitulaireId: accOlivier.id,
     },
   });
-  const sophie = await prisma.beneficiary.upsert({
+  await prisma.beneficiary.upsert({
     where: { id: 14 },
     update: {},
     create: {
@@ -341,7 +345,7 @@ async function main() {
       socialSecurityNumber: '299071212345678',
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: seine93.id,
-      accountId: accSophie.id,
+      accountTitulaireId: accSophie.id,
     },
   });
   const youssef = await prisma.beneficiary.upsert({
@@ -356,7 +360,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: paris.id,
       workStudyDepartmentId: seine93.id,
-      accountId: accYoussef.id,
+      accountTitulaireId: accYoussef.id,
     },
   });
 
@@ -791,7 +795,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: pierre.id,
-      referrerId: accPierre.id,
       bankInfoId: bankInfoMoniquePourPierre.id,
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
@@ -809,7 +812,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: theo.id,
-      referrerId: accPierre.id,
       bankInfoId: bankInfoPierre.id,
       subscriptionType: 'Imagine R',
       startDate: new Date('2025-09-01'),
@@ -827,7 +829,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: lea.id,
-      referrerId: accPierre.id,
       bankInfoId: bankInfoPierre.id,
       subscriptionType: 'Imagine R',
       startDate: new Date('2025-09-01'),
@@ -844,7 +845,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: monique.id,
-      referrerId: accPierre.id,
       bankInfoId: bankInfoMoniquePourElle.id,
       subscriptionType: 'Navigo Annuel Senior',
       startDate: new Date('2026-01-01'),
@@ -861,7 +861,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: alice.id,
-      referrerId: accAlice.id,
       bankInfoId: bankInfoAlice.id,
       subscriptionType: 'Navigo Annuel Étudiant',
       startDate: new Date('2025-09-01'),
@@ -878,7 +877,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: bernard.id,
-      referrerId: accBernard.id,
       bankInfoId: bankInfoBernard.id,
       subscriptionType: 'Navigo Annuel Senior',
       startDate: new Date('2026-01-01'),
@@ -895,7 +893,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: clara.id,
-      referrerId: accClara.id,
       bankInfoId: bankInfoClara.id,
       subscriptionType: 'Navigo Annuel PMR',
       startDate: new Date('2026-01-01'),
@@ -912,7 +909,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: hugo.id,
-      referrerId: accHugo.id,
       bankInfoId: bankInfoHugo.id,
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
@@ -929,7 +925,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: fatima.id,
-      referrerId: accFatima.id,
       bankInfoId: bankInfoFatima.id,
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
@@ -946,7 +941,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: lucas.id,
-      referrerId: accLucas.id,
       bankInfoId: bankInfoLucas.id,
       subscriptionType: 'Imagine R',
       startDate: new Date('2025-09-01'),
@@ -963,7 +957,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: nadia.id,
-      referrerId: accNadia.id,
       bankInfoId: bankInfoNadia.id,
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
@@ -980,7 +973,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: youssef.id,
-      referrerId: accYoussef.id,
       bankInfoId: bankInfoYoussef.id,
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
@@ -997,7 +989,6 @@ async function main() {
     update: {},
     create: {
       beneficiaryId: emma.id,
-      referrerId: accEmma.id,
       bankInfoId: bankInfoEmma.id,
       subscriptionType: 'Navigo Solidarité',
       startDate: new Date('2026-03-01'),

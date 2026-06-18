@@ -70,7 +70,7 @@ export function ChangeBankInfoModal({
       <View style={s.overlay}>
         <Card style={s.modal}>
           <View style={s.header}>
-            <Icon name="credit-card" size={22} color={DS.actionPrimary} accessible={false} />
+            <Icon name="creditcard" size={22} color={DS.actionPrimary} accessible={false} />
             <Text style={s.title} accessibilityRole="header">Changer le moyen de paiement</Text>
           </View>
 

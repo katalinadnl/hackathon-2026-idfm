@@ -15,7 +15,7 @@ import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { SectionTitle } from "@/components/ui/Section";
 import { DS, MaxContentWidth } from "@/constants/theme";
 import { useFetch } from "@/hooks/useFetch";
 import { BankInfo } from "@/types/bankInfo";
@@ -175,7 +175,7 @@ export default function BankInfoDetailPage() {
 
           <Card style={s.card}>
             <View style={s.ibanRow}>
-              <Icon name="credit-card" size={20} color={DS.actionPrimary} />
+              <Icon name="creditcard" size={20} color={DS.actionPrimary} />
               <Text style={s.ibanText}>{formatIbanDisplay(bankInfo.iban)}</Text>
             </View>
 

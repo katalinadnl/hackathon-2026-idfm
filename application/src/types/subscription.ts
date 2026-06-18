@@ -86,11 +86,11 @@ export type SubscriptionResponse = {
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];
-    account: AccountInfo;
+
+    accountReferrer: AccountInfo | null;
+    accountTitulaire: AccountInfo | null;
   };
   bankInfo: BankInfo;
-  account: { email: string } | null;
-  referrer: AccountInfo | null;
   payer: AccountInfo | null;
   payments: Payment[];
   documents: SubscriptionDocument[];

@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Section } from "@/components/ui/Section";
 import { DS, MaxContentWidth } from "@/constants/theme";
 import { useFetch } from "@/hooks/useFetch";
 import { BankInfo } from "@/types/bankInfo";
@@ -61,59 +61,63 @@ export default function BankInfosListPage() {
           contentContainerStyle={s.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          <View style={s.headerRow}>
-            <SectionTitle>Mes moyens de paiement</SectionTitle>
-            <Button
-              variant="primary"
-              size="sm"
-              leadingIcon="plus"
-              onPress={() => router.push("/bank-infos/new" as any)}
-            >
-              Ajouter
-            </Button>
-          </View>
-
-          {list.length === 0 ? (
-            <Card>
-              <Text style={s.emptyText}>
-                Aucun moyen de paiement enregistré pour le moment.
-              </Text>
-            </Card>
-          ) : (
-            <View style={s.list}>
-              {list.map((bankInfo) => (
-                <Card
-                  key={bankInfo.id}
-                  interactive
-                  onPress={() =>
-                    router.push(`/bank-infos/${bankInfo.id}` as any)
-                  }
-                  style={s.bankCard}
-                >
-                  <View style={s.bankCardHeader}>
-                    <View style={s.bankCardIcon}>
-                      <Icon
-                        name="credit-card"
-                        size={18}
-                        color={DS.actionPrimary}
-                      />
-                    </View>
-                    <View style={s.bankCardInfo}>
-                      <Text style={s.bankCardLabel}>
-                        {bankInfo.label ?? bankInfo.holderName}
-                      </Text>
-                      <Text style={s.bankCardIban}>
-                        {maskIbanDisplay(bankInfo.iban)}
-                      </Text>
-                    </View>
-                    {bankInfo.isDefault && (
-                      <Badge tone="neutral">Par défaut</Badge>
-                    )}
-                  </View>
+          <Section
+            title="Mes moyens de paiement"
+            action={
+              <Button
+                variant="secondary"
+                size="sm"
+                leadingIcon="plus"
+                onPress={() => router.push("/bank-infos/new" as any)}
+              >
+                Ajouter
+              </Button>
+            }
+          >
+            <>
+              {list.length === 0 ? (
+                <Card>
+                  <Text style={s.emptyText}>
+                    Aucun moyen de paiement enregistré pour le moment.
+                  </Text>
                 </Card>
-              ))}
-            </View>
-          )}
+              ) : (
+                <View style={s.list}>
+                  {list.map((bankInfo) => (
+                    <Card
+                      key={bankInfo.id}
+                      interactive
+                      onPress={() =>
+                        router.push(`/bank-infos/${bankInfo.id}` as any)
+                      }
+                      style={s.bankCard}
+                    >
+                      <View style={s.bankCardHeader}>
+                        <View style={s.bankCardIcon}>
+                          <Icon
+                            name="creditcard"
+                            size={18}
+                            color={DS.actionPrimary}
+                          />
+                        </View>
+                        <View style={s.bankCardInfo}>
+                          <Text style={s.bankCardLabel}>
+                            {bankInfo.label ?? bankInfo.holderName}
+                          </Text>
+                          <Text style={s.bankCardIban}>
+                            {maskIbanDisplay(bankInfo.iban)}
+                          </Text>
+                        </View>
+                        {bankInfo.isDefault && (
+                          <Badge tone="neutral">Par défaut</Badge>
+                        )}
+                      </View>
+                    </Card>
+                  ))}
+                </View>
+              )}
+            </>
+          </Section>
         </ScrollView>
       </View>
     </SafeAreaView>
