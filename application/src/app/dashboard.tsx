@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card";
 import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
+import { useTariffs } from "@/hooks/useTariffs";
+import { Tariff } from "@/lib/api/tariffs";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import {
@@ -379,6 +381,71 @@ function NewSubscriptionCta({
     </View>
   );
 }
+
+function TariffCard({
+  tariff,
+  onSelect,
+}: {
+  tariff: Tariff;
+  onSelect: () => void;
+}) {
+  return (
+    <Card style={styles.tariffCard}>
+      <View style={styles.tariffCardBody}>
+        <Text style={styles.tariffName}>{tariff.name}</Text>
+        {!!tariff.description && (
+          <Text style={styles.tariffDesc}>{tariff.description}</Text>
+        )}
+        <Text style={styles.tariffPrice}>
+          {tariff.priceLabel}
+          <Text style={styles.tariffPricePeriod}>
+            {" "}
+            / {tariff.period ?? "an"}
+          </Text>
+        </Text>
+        {tariff.sellingArguments.slice(0, 3).map((arg) => (
+          <Text key={arg} style={styles.tariffArg}>
+            • {arg}
+          </Text>
+        ))}
+      </View>
+      <Button
+        variant="secondary"
+        size="sm"
+        trailingIcon="arrow-right"
+        onPress={onSelect}
+      >
+        Choisir cette formule
+      </Button>
+    </Card>
+  );
+}
+
+function TariffsDiscovery({
+  onSelect,
+}: {
+  onSelect: (target: "self" | "other") => void;
+}) {
+  const { tariffs, loading, error } = useTariffs();
+
+  if (loading || error || tariffs.length === 0) return null;
+
+  return (
+    <View style={styles.sectionContent}>
+      <SectionHeader title="Découvrez nos abonnements" />
+      <View style={styles.tariffGrid}>
+        {tariffs.map((tariff) => (
+          <TariffCard
+            key={tariff.id}
+            tariff={tariff}
+            onSelect={() => onSelect("self")}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
 // ─── Section content renderers ─────────────────────────────────────────────────
 
 function DashboardHome({
@@ -406,7 +473,10 @@ function DashboardHome({
       ) : null}
 
       {showEmptyState ? (
-        <NewSubscriptionCta onSelect={onNewSubscription} />
+        <>
+          <NewSubscriptionCta onSelect={onNewSubscription} />
+          <TariffsDiscovery onSelect={onNewSubscription} />
+        </>
       ) : (
         <>
           <SectionHeader
@@ -851,6 +921,75 @@ const styles = StyleSheet.create({
     gap: DS.space4,
   },
 
+  newSubGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: DS.space4,
+  },
+  newSubCard: {
+    flex: 1,
+    minWidth: 240,
+    gap: DS.space3,
+  },
+  newSubIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: DS.radiusMd,
+    backgroundColor: DS.surfaceSelected,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  newSubTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  newSubDesc: {
+    fontSize: 14,
+    color: DS.textMuted,
+    lineHeight: 20,
+  },
+
+  tariffGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: DS.space4,
+  },
+  tariffCard: {
+    flex: 1,
+    minWidth: 220,
+    gap: DS.space3,
+  },
+  tariffCardBody: {
+    flex: 1,
+    gap: DS.space2,
+  },
+  tariffName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  tariffDesc: {
+    fontSize: 13,
+    color: DS.textMuted,
+    lineHeight: 18,
+  },
+  tariffPrice: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: DS.actionPrimary,
+    marginTop: DS.space1,
+  },
+  tariffPricePeriod: {
+    fontSize: 13,
+    fontWeight: "400",
+    color: DS.textMuted,
+  },
+  tariffArg: {
+    fontSize: 13,
+    color: DS.textBody,
+  },
+
   card: {
     backgroundColor: DS.surfaceCard,
     borderRadius: DS.radiusMd,
@@ -1080,34 +1219,5 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: DS.textMuted,
     fontStyle: "italic",
-  },
-
-  newSubGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: DS.space4,
-  },
-  newSubCard: {
-    flex: 1,
-    minWidth: 240,
-    gap: DS.space3,
-  },
-  newSubIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: DS.radiusMd,
-    backgroundColor: DS.surfaceSelected,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  newSubTitle: {
-    fontSize: 17,
-    fontWeight: "700",
-    color: DS.textStrong,
-  },
-  newSubDesc: {
-    fontSize: 14,
-    color: DS.textMuted,
-    lineHeight: 20,
   },
 });
