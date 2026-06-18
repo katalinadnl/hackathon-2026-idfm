@@ -52,3 +52,8 @@ export type Payment = Prisma.PaymentModel
  * 
  */
 export type TransportProduct = Prisma.TransportProductModel
+/**
+ * Model TariffReduction
+ * 
+ */
+export type TariffReduction = Prisma.TariffReductionModel

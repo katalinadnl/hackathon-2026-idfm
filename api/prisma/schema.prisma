@@ -159,4 +159,20 @@ model TransportProduct {
   syncedAt     DateTime @default(now()) @updatedAt
 
   subscriptions Subscription[]
+  reductions    TariffReduction[]
+}
+
+model TariffReduction {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique 
+  description String?
+  indication  String? 
+
+  reductionPercent Int?
+  isFree           Boolean  @default(false)
+  sellingArguments String[]
+  syncedAt         DateTime @default(now()) @updatedAt
+
+  baseProductId Int?
+  baseProduct   TransportProduct? @relation(fields: [baseProductId], references: [id])
 }

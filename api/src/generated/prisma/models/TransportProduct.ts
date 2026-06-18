@@ -289,6 +289,7 @@ export type TransportProductWhereInput = {
   isAnnualPlan?: Prisma.BoolFilter<"TransportProduct"> | boolean
   syncedAt?: Prisma.DateTimeFilter<"TransportProduct"> | Date | string
   subscriptions?: Prisma.SubscriptionListRelationFilter
+  reductions?: Prisma.TariffReductionListRelationFilter
 }
 
 export type TransportProductOrderByWithRelationInput = {
@@ -307,6 +308,7 @@ export type TransportProductOrderByWithRelationInput = {
   isAnnualPlan?: Prisma.SortOrder
   syncedAt?: Prisma.SortOrder
   subscriptions?: Prisma.SubscriptionOrderByRelationAggregateInput
+  reductions?: Prisma.TariffReductionOrderByRelationAggregateInput
 }
 
 export type TransportProductWhereUniqueInput = Prisma.AtLeast<{
@@ -328,6 +330,7 @@ export type TransportProductWhereUniqueInput = Prisma.AtLeast<{
   isAnnualPlan?: Prisma.BoolFilter<"TransportProduct"> | boolean
   syncedAt?: Prisma.DateTimeFilter<"TransportProduct"> | Date | string
   subscriptions?: Prisma.SubscriptionListRelationFilter
+  reductions?: Prisma.TariffReductionListRelationFilter
 }, "id" | "name">
 
 export type TransportProductOrderByWithAggregationInput = {
@@ -387,6 +390,7 @@ export type TransportProductCreateInput = {
   isAnnualPlan?: boolean
   syncedAt?: Date | string
   subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutTransportProductInput
+  reductions?: Prisma.TariffReductionCreateNestedManyWithoutBaseProductInput
 }
 
 export type TransportProductUncheckedCreateInput = {
@@ -405,6 +409,7 @@ export type TransportProductUncheckedCreateInput = {
   isAnnualPlan?: boolean
   syncedAt?: Date | string
   subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutTransportProductInput
+  reductions?: Prisma.TariffReductionUncheckedCreateNestedManyWithoutBaseProductInput
 }
 
 export type TransportProductUpdateInput = {
@@ -422,6 +427,7 @@ export type TransportProductUpdateInput = {
   isAnnualPlan?: Prisma.BoolFieldUpdateOperationsInput | boolean
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptions?: Prisma.SubscriptionUpdateManyWithoutTransportProductNestedInput
+  reductions?: Prisma.TariffReductionUpdateManyWithoutBaseProductNestedInput
 }
 
 export type TransportProductUncheckedUpdateInput = {
@@ -440,6 +446,7 @@ export type TransportProductUncheckedUpdateInput = {
   isAnnualPlan?: Prisma.BoolFieldUpdateOperationsInput | boolean
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutTransportProductNestedInput
+  reductions?: Prisma.TariffReductionUncheckedUpdateManyWithoutBaseProductNestedInput
 }
 
 export type TransportProductCreateManyInput = {
@@ -589,6 +596,22 @@ export type TransportProductUpdatesellingArgumentsInput = {
   push?: string | string[]
 }
 
+export type TransportProductCreateNestedOneWithoutReductionsInput = {
+  create?: Prisma.XOR<Prisma.TransportProductCreateWithoutReductionsInput, Prisma.TransportProductUncheckedCreateWithoutReductionsInput>
+  connectOrCreate?: Prisma.TransportProductCreateOrConnectWithoutReductionsInput
+  connect?: Prisma.TransportProductWhereUniqueInput
+}
+
+export type TransportProductUpdateOneWithoutReductionsNestedInput = {
+  create?: Prisma.XOR<Prisma.TransportProductCreateWithoutReductionsInput, Prisma.TransportProductUncheckedCreateWithoutReductionsInput>
+  connectOrCreate?: Prisma.TransportProductCreateOrConnectWithoutReductionsInput
+  upsert?: Prisma.TransportProductUpsertWithoutReductionsInput
+  disconnect?: Prisma.TransportProductWhereInput | boolean
+  delete?: Prisma.TransportProductWhereInput | boolean
+  connect?: Prisma.TransportProductWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TransportProductUpdateToOneWithWhereWithoutReductionsInput, Prisma.TransportProductUpdateWithoutReductionsInput>, Prisma.TransportProductUncheckedUpdateWithoutReductionsInput>
+}
+
 export type TransportProductCreateWithoutSubscriptionsInput = {
   name: string
   description?: string | null
@@ -603,6 +626,7 @@ export type TransportProductCreateWithoutSubscriptionsInput = {
   imageUrl?: string | null
   isAnnualPlan?: boolean
   syncedAt?: Date | string
+  reductions?: Prisma.TariffReductionCreateNestedManyWithoutBaseProductInput
 }
 
 export type TransportProductUncheckedCreateWithoutSubscriptionsInput = {
@@ -620,6 +644,7 @@ export type TransportProductUncheckedCreateWithoutSubscriptionsInput = {
   imageUrl?: string | null
   isAnnualPlan?: boolean
   syncedAt?: Date | string
+  reductions?: Prisma.TariffReductionUncheckedCreateNestedManyWithoutBaseProductInput
 }
 
 export type TransportProductCreateOrConnectWithoutSubscriptionsInput = {
@@ -652,6 +677,7 @@ export type TransportProductUpdateWithoutSubscriptionsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isAnnualPlan?: Prisma.BoolFieldUpdateOperationsInput | boolean
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reductions?: Prisma.TariffReductionUpdateManyWithoutBaseProductNestedInput
 }
 
 export type TransportProductUncheckedUpdateWithoutSubscriptionsInput = {
@@ -669,6 +695,93 @@ export type TransportProductUncheckedUpdateWithoutSubscriptionsInput = {
   imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   isAnnualPlan?: Prisma.BoolFieldUpdateOperationsInput | boolean
   syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reductions?: Prisma.TariffReductionUncheckedUpdateManyWithoutBaseProductNestedInput
+}
+
+export type TransportProductCreateWithoutReductionsInput = {
+  name: string
+  description?: string | null
+  indication?: string | null
+  period?: string | null
+  priceLabel: string
+  priceCents?: number | null
+  sellingArguments?: Prisma.TransportProductCreatesellingArgumentsInput | string[]
+  subscriptionTag?: string | null
+  portalUrl?: string | null
+  rechargeUrl?: string | null
+  imageUrl?: string | null
+  isAnnualPlan?: boolean
+  syncedAt?: Date | string
+  subscriptions?: Prisma.SubscriptionCreateNestedManyWithoutTransportProductInput
+}
+
+export type TransportProductUncheckedCreateWithoutReductionsInput = {
+  id?: number
+  name: string
+  description?: string | null
+  indication?: string | null
+  period?: string | null
+  priceLabel: string
+  priceCents?: number | null
+  sellingArguments?: Prisma.TransportProductCreatesellingArgumentsInput | string[]
+  subscriptionTag?: string | null
+  portalUrl?: string | null
+  rechargeUrl?: string | null
+  imageUrl?: string | null
+  isAnnualPlan?: boolean
+  syncedAt?: Date | string
+  subscriptions?: Prisma.SubscriptionUncheckedCreateNestedManyWithoutTransportProductInput
+}
+
+export type TransportProductCreateOrConnectWithoutReductionsInput = {
+  where: Prisma.TransportProductWhereUniqueInput
+  create: Prisma.XOR<Prisma.TransportProductCreateWithoutReductionsInput, Prisma.TransportProductUncheckedCreateWithoutReductionsInput>
+}
+
+export type TransportProductUpsertWithoutReductionsInput = {
+  update: Prisma.XOR<Prisma.TransportProductUpdateWithoutReductionsInput, Prisma.TransportProductUncheckedUpdateWithoutReductionsInput>
+  create: Prisma.XOR<Prisma.TransportProductCreateWithoutReductionsInput, Prisma.TransportProductUncheckedCreateWithoutReductionsInput>
+  where?: Prisma.TransportProductWhereInput
+}
+
+export type TransportProductUpdateToOneWithWhereWithoutReductionsInput = {
+  where?: Prisma.TransportProductWhereInput
+  data: Prisma.XOR<Prisma.TransportProductUpdateWithoutReductionsInput, Prisma.TransportProductUncheckedUpdateWithoutReductionsInput>
+}
+
+export type TransportProductUpdateWithoutReductionsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  indication?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  period?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceLabel?: Prisma.StringFieldUpdateOperationsInput | string
+  priceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sellingArguments?: Prisma.TransportProductUpdatesellingArgumentsInput | string[]
+  subscriptionTag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  portalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rechargeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isAnnualPlan?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptions?: Prisma.SubscriptionUpdateManyWithoutTransportProductNestedInput
+}
+
+export type TransportProductUncheckedUpdateWithoutReductionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  indication?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  period?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  priceLabel?: Prisma.StringFieldUpdateOperationsInput | string
+  priceCents?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  sellingArguments?: Prisma.TransportProductUpdatesellingArgumentsInput | string[]
+  subscriptionTag?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  portalUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  rechargeUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isAnnualPlan?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  syncedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  subscriptions?: Prisma.SubscriptionUncheckedUpdateManyWithoutTransportProductNestedInput
 }
 
 
@@ -678,10 +791,12 @@ export type TransportProductUncheckedUpdateWithoutSubscriptionsInput = {
 
 export type TransportProductCountOutputType = {
   subscriptions: number
+  reductions: number
 }
 
 export type TransportProductCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscriptions?: boolean | TransportProductCountOutputTypeCountSubscriptionsArgs
+  reductions?: boolean | TransportProductCountOutputTypeCountReductionsArgs
 }
 
 /**
@@ -701,6 +816,13 @@ export type TransportProductCountOutputTypeCountSubscriptionsArgs<ExtArgs extend
   where?: Prisma.SubscriptionWhereInput
 }
 
+/**
+ * TransportProductCountOutputType without action
+ */
+export type TransportProductCountOutputTypeCountReductionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.TariffReductionWhereInput
+}
+
 
 export type TransportProductSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -718,6 +840,7 @@ export type TransportProductSelect<ExtArgs extends runtime.Types.Extensions.Inte
   isAnnualPlan?: boolean
   syncedAt?: boolean
   subscriptions?: boolean | Prisma.TransportProduct$subscriptionsArgs<ExtArgs>
+  reductions?: boolean | Prisma.TransportProduct$reductionsArgs<ExtArgs>
   _count?: boolean | Prisma.TransportProductCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["transportProduct"]>
 
@@ -775,6 +898,7 @@ export type TransportProductSelectScalar = {
 export type TransportProductOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "indication" | "period" | "priceLabel" | "priceCents" | "sellingArguments" | "subscriptionTag" | "portalUrl" | "rechargeUrl" | "imageUrl" | "isAnnualPlan" | "syncedAt", ExtArgs["result"]["transportProduct"]>
 export type TransportProductInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   subscriptions?: boolean | Prisma.TransportProduct$subscriptionsArgs<ExtArgs>
+  reductions?: boolean | Prisma.TransportProduct$reductionsArgs<ExtArgs>
   _count?: boolean | Prisma.TransportProductCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TransportProductIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -784,6 +908,7 @@ export type $TransportProductPayload<ExtArgs extends runtime.Types.Extensions.In
   name: "TransportProduct"
   objects: {
     subscriptions: Prisma.$SubscriptionPayload<ExtArgs>[]
+    reductions: Prisma.$TariffReductionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1195,6 +1320,7 @@ readonly fields: TransportProductFieldRefs;
 export interface Prisma__TransportProductClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   subscriptions<T extends Prisma.TransportProduct$subscriptionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TransportProduct$subscriptionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SubscriptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  reductions<T extends Prisma.TransportProduct$reductionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TransportProduct$reductionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TariffReductionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1652,6 +1778,30 @@ export type TransportProduct$subscriptionsArgs<ExtArgs extends runtime.Types.Ext
   take?: number
   skip?: number
   distinct?: Prisma.SubscriptionScalarFieldEnum | Prisma.SubscriptionScalarFieldEnum[]
+}
+
+/**
+ * TransportProduct.reductions
+ */
+export type TransportProduct$reductionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the TariffReduction
+   */
+  select?: Prisma.TariffReductionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the TariffReduction
+   */
+  omit?: Prisma.TariffReductionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.TariffReductionInclude<ExtArgs> | null
+  where?: Prisma.TariffReductionWhereInput
+  orderBy?: Prisma.TariffReductionOrderByWithRelationInput | Prisma.TariffReductionOrderByWithRelationInput[]
+  cursor?: Prisma.TariffReductionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.TariffReductionScalarFieldEnum | Prisma.TariffReductionScalarFieldEnum[]
 }
 
 /**

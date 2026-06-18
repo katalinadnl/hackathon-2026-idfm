@@ -1,4 +1,4 @@
-import type { Tariff } from "@/lib/api/tariffs";
+import type { Tariff, TariffReduction } from "@/lib/api/tariffs";
 import type { BeneficiaryStatus } from "@/types/beneficiary";
 
 export interface TariffRecommendation {
@@ -40,6 +40,37 @@ function firstAvailable(
   return tariffs.find((t) => !held.has(t.id)) ?? null;
 }
 
+function findReduction(
+  tariff: Tariff | null,
+  ...needles: string[]
+): TariffReduction | null {
+  if (!tariff) return null;
+  for (const needle of needles) {
+    const lower = needle.toLowerCase();
+    const match = tariff.reductions.find((r) =>
+      r.name.toLowerCase().includes(lower),
+    );
+    if (match) return match;
+  }
+  return null;
+}
+
+function formatReductionAdvisory(
+  reduction: TariffReduction | null,
+  fallback: string,
+): string {
+  if (!reduction) return fallback;
+  const benefit = reduction.isFree
+    ? "la gratuité"
+    : reduction.reductionPercent
+      ? `une réduction de ${reduction.reductionPercent} %`
+      : "une réduction";
+  const condition = reduction.indication
+    ? ` (${reduction.name}, ${reduction.indication})`
+    : ` (${reduction.name})`;
+  return `Selon votre situation, vous pourriez bénéficier de ${benefit} sur ce forfait${condition} — à vérifier auprès d'Île-de-France Mobilités.`;
+}
+
 export function recommendTariff(
   tariffs: Tariff[],
   status: BeneficiaryStatus | null,
@@ -77,29 +108,40 @@ export function recommendTariff(
   }
 
   if (status === "SENIOR" && navigoAnnuel) {
+    const reduction = findReduction(navigoAnnuel, "senior");
     return {
       recommended: navigoAnnuel,
       reason: "Senior",
-      advisory:
-        "En tant que senior (62 ans et plus), vous pourriez bénéficier de -50% sur ce forfait sous condition (Forfait Navigo Annuel Tarification Senior) — à vérifier auprès d'Île-de-France Mobilités.",
+      advisory: formatReductionAdvisory(
+        reduction,
+        "En tant que senior (62 ans et plus), vous pourriez bénéficier d'une réduction sous condition (Forfait Navigo Annuel Tarification Senior) — à vérifier auprès d'Île-de-France Mobilités.",
+      ),
     };
   }
 
   if (status === "DISABLED" && navigoAnnuel) {
+    const reduction =
+      findReduction(navigoAnnuel, "handicap") ??
+      findReduction(navigoAnnuel, "améthyste");
     return {
       recommended: navigoAnnuel,
       reason: "Statut handicap",
-      advisory:
+      advisory: formatReductionAdvisory(
+        reduction,
         "Selon votre situation, vous pourriez bénéficier d'une gratuité ou d'une réduction de 50 % (Forfait Améthyste ou réduction handicap), sous conditions — à vérifier auprès d'Île-de-France Mobilités.",
+      ),
     };
   }
 
   if (status === "UNEMPLOYED" && navigoAnnuel) {
+    const reduction = findReduction(navigoAnnuel, "solidarité");
     return {
       recommended: navigoAnnuel,
       reason: "Sans emploi",
-      advisory:
+      advisory: formatReductionAdvisory(
+        reduction,
         "Selon votre quotient familial, vous pourriez bénéficier d'une réduction Solidarité Transport (jusqu'à la gratuité), sous conditions — à vérifier auprès d'Île-de-France Mobilités.",
+      ),
     };
   }
 

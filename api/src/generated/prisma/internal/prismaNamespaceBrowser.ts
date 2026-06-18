@@ -57,7 +57,8 @@ export const ModelName = {
   Account: 'Account',
   Subscription: 'Subscription',
   Payment: 'Payment',
-  TransportProduct: 'TransportProduct'
+  TransportProduct: 'TransportProduct',
+  TariffReduction: 'TariffReduction'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -184,6 +185,21 @@ export const TransportProductScalarFieldEnum = {
 } as const
 
 export type TransportProductScalarFieldEnum = (typeof TransportProductScalarFieldEnum)[keyof typeof TransportProductScalarFieldEnum]
+
+
+export const TariffReductionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  indication: 'indication',
+  reductionPercent: 'reductionPercent',
+  isFree: 'isFree',
+  sellingArguments: 'sellingArguments',
+  syncedAt: 'syncedAt',
+  baseProductId: 'baseProductId'
+} as const
+
+export type TariffReductionScalarFieldEnum = (typeof TariffReductionScalarFieldEnum)[keyof typeof TariffReductionScalarFieldEnum]
 
 
 export const SortOrder = {

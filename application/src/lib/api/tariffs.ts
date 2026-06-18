@@ -14,6 +14,17 @@ export interface Tariff {
   rechargeUrl: string | null;
   imageUrl: string | null;
   isAnnualPlan: boolean;
+  reductions: TariffReduction[];
+}
+
+export interface TariffReduction {
+  id: number;
+  name: string;
+  description: string | null;
+  indication: string | null;
+  reductionPercent: number | null;
+  isFree: boolean;
+  sellingArguments: string[];
 }
 
 export const tariffsApi = {

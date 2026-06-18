@@ -10,6 +10,7 @@ export class TariffsService {
     return this.prisma.transportProduct.findMany({
       where: onlyAnnual ? { isAnnualPlan: true } : undefined,
       orderBy: { priceCents: 'asc' },
+      include: { reductions: true },
     });
   }
 }

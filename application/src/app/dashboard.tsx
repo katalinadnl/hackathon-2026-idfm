@@ -16,7 +16,7 @@ import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card";
 import { pageInner, usePageLayout } from "@/hooks/use-page-layout";
 import { useTariffs } from "@/hooks/useTariffs";
-import { Tariff } from "@/lib/api/tariffs";
+import { Tariff, TariffReduction } from "@/lib/api/tariffs";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import {
@@ -382,6 +382,15 @@ function NewSubscriptionCta({
   );
 }
 
+function formatReductionBenefit(r: TariffReduction): string {
+  if (r.isFree && r.reductionPercent) {
+    return `gratuit ou jusqu'à -${r.reductionPercent} %`;
+  }
+  if (r.isFree) return "gratuit";
+  if (r.reductionPercent) return `-${r.reductionPercent} %`;
+  return "réduction";
+}
+
 function TariffCard({
   tariff,
   onSelect,
@@ -421,6 +430,44 @@ function TariffCard({
   );
 }
 
+function ReductionCard({
+  reduction,
+  baseProductName,
+  onSelect,
+}: {
+  reduction: TariffReduction;
+  baseProductName: string;
+  onSelect: () => void;
+}) {
+  return (
+    <Card style={styles.tariffCard}>
+      <View style={styles.tariffCardBody}>
+        <Text style={styles.tariffName}>{reduction.name}</Text>
+        <Text style={styles.tariffReductionBase}>
+          S&apos;applique sur {baseProductName}
+        </Text>
+        {!!reduction.description && (
+          <Text style={styles.tariffDesc}>{reduction.description}</Text>
+        )}
+        <Text style={styles.tariffPrice}>
+          {formatReductionBenefit(reduction)}
+        </Text>
+        {!!reduction.indication && (
+          <Text style={styles.tariffArg}>• {reduction.indication}</Text>
+        )}
+      </View>
+      <Button
+        variant="secondary"
+        size="sm"
+        trailingIcon="arrow-right"
+        onPress={onSelect}
+      >
+        Choisir cette formule
+      </Button>
+    </Card>
+  );
+}
+
 function TariffsDiscovery({
   onSelect,
 }: {
@@ -429,6 +476,13 @@ function TariffsDiscovery({
   const { tariffs, loading, error } = useTariffs();
 
   if (loading || error || tariffs.length === 0) return null;
+
+  const reductionCards = tariffs.flatMap((tariff) =>
+    (tariff.reductions ?? []).map((reduction) => ({
+      reduction,
+      baseProductName: tariff.name,
+    })),
+  );
 
   return (
     <View style={styles.sectionContent}>
@@ -442,6 +496,22 @@ function TariffsDiscovery({
           />
         ))}
       </View>
+
+      {reductionCards.length > 0 && (
+        <>
+          <SectionHeader title="Réductions et tarifs solidaires" />
+          <View style={styles.tariffGrid}>
+            {reductionCards.map(({ reduction, baseProductName }) => (
+              <ReductionCard
+                key={reduction.id}
+                reduction={reduction}
+                baseProductName={baseProductName}
+                onSelect={() => onSelect("self")}
+              />
+            ))}
+          </View>
+        </>
+      )}
     </View>
   );
 }
@@ -733,7 +803,6 @@ export default function DashboardPage() {
 }
 
 // ─── Styles ────────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   page: {
     flex: 1,
@@ -988,6 +1057,11 @@ const styles = StyleSheet.create({
   tariffArg: {
     fontSize: 13,
     color: DS.textBody,
+  },
+  tariffReductionBase: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: DS.actionPrimary,
   },
 
   card: {

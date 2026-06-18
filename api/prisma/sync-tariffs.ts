@@ -8,16 +8,16 @@ const prisma = new PrismaClient({ adapter });
 
 // Jeu de données ouvert IDFM "titres-et-tarifs"
 // (https://data.iledefrance-mobilites.fr/explore/dataset/titres-et-tarifs/).
+
 const SOURCE_API_URL =
   'https://data.iledefrance-mobilites.fr/api/explore/v2.1/catalog/datasets/titres-et-tarifs/exports/csv?use_labels=true&delimiter=%3B';
-
 
 function parseCsv(text: string): string[][] {
   const rows: string[][] = [];
   let row: string[] = [];
   let field = '';
   let inQuotes = false;
-  const content = text.replace(/^\uFEFF/, ''); 
+  const content = text.replace(/^\uFEFF/, ''); // retire le BOM UTF-8
 
   for (let i = 0; i < content.length; i++) {
     const char = content[i];
@@ -75,6 +75,27 @@ function isAnnualPlan(
   if (trimmedPrice.startsWith('-')) return false;
   if (/^gratuit/i.test(trimmedPrice)) return false;
   return true;
+}
+
+const REDUCTION_BASE_PRODUCT: Record<string, string> = {
+  'Forfait Navigo Annuel Tarification Senior': 'Forfait Navigo Annuel',
+  'Forfait Améthyste': 'Forfait Navigo Annuel',
+  'Forfaits ou titres personne en situation de handicap': 'Forfait Navigo Annuel',
+  'Forfaits ou titres accompagnant handicap': 'Forfait Navigo Annuel',
+  'Solidarité 75%': 'Forfait Navigo Annuel',
+  'Solidarité Gratuité': 'Forfait Navigo Annuel',
+};
+
+function parseReductionPercent(...fields: string[]): number | null {
+  for (const field of fields) {
+    const match = field.match(/(\d+)\s*%/);
+    if (match) return Number(match[1]);
+  }
+  return null;
+}
+
+function looksFree(...fields: string[]): boolean {
+  return fields.some((f) => /gratuit/i.test(f));
 }
 
 async function fetchCsv(): Promise<string> {
@@ -149,12 +170,47 @@ async function main() {
     count++;
   }
 
+  let reductionCount = 0;
+  for (const cells of dataRows) {
+    const name = cells[idx.name]?.trim();
+    const baseProductName = name && REDUCTION_BASE_PRODUCT[name];
+    if (!baseProductName) continue;
+
+    const priceLabel = (cells[idx.priceLabel] ?? '').trim();
+    const indication = cells[idx.indication]?.trim() || '';
+    const sellingArgumentsRaw = cells[idx.sellingArguments] ?? '';
+
+    const baseProduct = await prisma.transportProduct.findUnique({
+      where: { name: baseProductName },
+      select: { id: true },
+    });
+
+    const data = {
+      description: cells[idx.description]?.trim() || null,
+      indication: indication || null,
+      reductionPercent: parseReductionPercent(priceLabel, indication),
+      isFree: looksFree(priceLabel, indication),
+      sellingArguments: sellingArgumentsRaw
+        .split(';')
+        .map((s) => s.trim())
+        .filter(Boolean),
+      baseProductId: baseProduct?.id ?? null,
+    };
+
+    await prisma.tariffReduction.upsert({
+      where: { name },
+      update: data,
+      create: { name, ...data },
+    });
+    reductionCount++;
+  }
+
   const annualCount = await prisma.transportProduct.count({
     where: { isAnnualPlan: true },
   });
 
   console.log(
-    `✅ ${count} titres synchronisés (dont ${annualCount} formules longues).`,
+    `✅ ${count} titres synchronisés (dont ${annualCount} formules longues, ${reductionCount} réductions rattachées).`,
   );
   await prisma.$disconnect();
 }
