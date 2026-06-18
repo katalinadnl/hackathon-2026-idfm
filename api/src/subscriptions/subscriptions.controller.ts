@@ -23,10 +23,18 @@ import { LinkReferrerDto } from './dto/link-referrer.dto';
 @Controller('subscriptions')
 export class SubscriptionsController {
   constructor(private readonly subscriptionsService: SubscriptionsService) {}
-  // TODO : use token
+  
   @Post()
-  create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
-    return this.subscriptionsService.create(createSubscriptionDto);
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  create(
+    @Body() createSubscriptionDto: CreateSubscriptionDto,
+    @GetMe() user: JwtPayload,
+  ) {
+    return this.subscriptionsService.create({
+      ...createSubscriptionDto,
+      referrerId: user.id,
+    });
   }
 
   @Post(':id/renew')
