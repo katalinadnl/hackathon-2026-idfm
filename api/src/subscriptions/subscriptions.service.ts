@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   BadRequestException,
   ForbiddenException,
   Injectable,
@@ -13,9 +14,10 @@ import {
 } from './subscriptions.type';
 import { ReportLostOrStolenDto } from './dto/report-lost-or-stolen.dto';
 import { AddressType, PassStatus } from 'src/generated/prisma/enums';
-import { SubscriptionResponse } from './dto/subscription-response.dto';
 import { MailService } from 'src/mail/mail.service';
 import { AccountsService } from 'src/accounts/accounts.service';
+import { Pass, SubscriptionResponse } from './dto/subscription-response.dto';
+import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 
@@ -23,6 +25,7 @@ export interface SubscriptionWithRoles {
   id: number;
   navigoNumber: string | null;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: Date;
   endDate: Date;
   status: string;
@@ -38,6 +41,70 @@ export class SubscriptionsService {
     private readonly mailService: MailService,
     private readonly accountService: AccountsService,
   ) {}
+  // TODO : verify bank info id
+  async create(createSubscriptionDto: CreateSubscriptionDto) {
+    const existing = await this.findExistingSubscriptionForPlan(
+      createSubscriptionDto.beneficiaryId,
+      createSubscriptionDto.subscriptionType,
+      createSubscriptionDto.transportProductId,
+    );
+
+    if (existing) {
+      const isCurrentlyActive =
+        existing.status === 'active' && existing.endDate >= new Date();
+
+      if (isCurrentlyActive) {
+        throw new ConflictException(
+          `Ce bénéficiaire a déjà un abonnement actif pour la formule "${createSubscriptionDto.subscriptionType}" (jusqu'au ${existing.endDate.toLocaleDateString('fr-FR')}). Choisissez une autre formule.`,
+        );
+      }
+
+      // Abonnement existant pour cette même formule, mais inactif ou
+      // expiré : on le réactive avec les nouvelles dates plutôt que de
+      // créer un doublon. On garde volontairement le même navigoNumber
+      // (même "carte"/référence) — celui généré côté front pour cette
+      // soumission est simplement ignoré dans ce cas.
+      return this.prisma.subscription.update({
+        where: { id: existing.id },
+        data: {
+          status: 'active',
+          startDate: createSubscriptionDto.startDate,
+          endDate: createSubscriptionDto.endDate,
+          referrerId: createSubscriptionDto.referrerId,
+          bankInfoId: createSubscriptionDto.bankInfoId,
+        },
+      });
+    }
+
+    return this.prisma.subscription.create({
+      data: createSubscriptionDto,
+    });
+  }
+
+  private async findExistingSubscriptionForPlan(
+    beneficiaryId: number,
+    subscriptionType: string,
+    transportProductId?: number,
+  ) {
+    const plan = transportProductId
+      ? await this.prisma.transportProduct.findUnique({
+          where: { id: transportProductId },
+          select: { id: true, isAnnualPlan: true },
+        })
+      : await this.prisma.transportProduct.findUnique({
+          where: { name: subscriptionType },
+          select: { id: true, isAnnualPlan: true },
+        });
+    if (!plan?.isAnnualPlan) return null;
+
+    return this.prisma.subscription.findFirst({
+      where: {
+        beneficiaryId,
+        OR: [{ transportProductId: plan.id }, { subscriptionType }],
+      },
+      orderBy: { endDate: 'desc' },
+    });
+  }
 
   async findAll(): Promise<SubscriptionResponse[]> {
     const subscriptions = await this.prisma.subscription.findMany({
@@ -73,6 +140,19 @@ export class SubscriptionsService {
     await this.ensureExists(id);
 
     return this.prisma.subscription.delete({ where: { id } });
+  }
+
+  async renew(id: number, startDateInput: string) {
+    await this.ensureExists(id);
+
+    const startDate = new Date(startDateInput);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 12);
+
+    return this.prisma.subscription.update({
+      where: { id },
+      data: { status: 'active', startDate, endDate },
+    });
   }
 
   private async ensureExists(id: number) {
@@ -121,6 +201,7 @@ export class SubscriptionsService {
         };
       }),
       subscriptionType: subscription.subscriptionType,
+      transportProductId: subscription.transportProductId,
       startDate: subscription.startDate.toISOString(),
       endDate: subscription.endDate.toISOString(),
       clientNumber: account?.accountNumber ?? '',
@@ -197,6 +278,7 @@ export class SubscriptionsService {
         id: sub.id,
         navigoNumber: sub.passes[0]?.navigoNumber ?? null,
         subscriptionType: sub.subscriptionType,
+        transportProductId: sub.transportProductId,
         startDate: sub.startDate,
         endDate: sub.endDate,
         status: sub.status,

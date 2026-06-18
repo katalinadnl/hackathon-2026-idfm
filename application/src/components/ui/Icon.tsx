@@ -70,6 +70,22 @@ const SYMBOL_MAP: Record<
     android: "account_circle",
     web: "account_circle",
   },
+  "user-plus": {
+    ios: "person.badge.plus",
+    android: "person_add",
+    web: "person_add",
+  },
+  camera: { ios: "camera", android: "photo_camera", web: "photo_camera" },
+  upload: {
+    ios: "arrow.up.doc",
+    android: "upload_file",
+    web: "upload_file",
+  },
+  refresh: {
+    ios: "arrow.clockwise",
+    android: "refresh",
+    web: "refresh",
+  },
   link: {
     ios: "arrow.up.right.square",
     android: "open_in_new",

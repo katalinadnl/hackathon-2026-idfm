@@ -71,6 +71,7 @@ export type SubscriptionStatus =
 export type SubscriptionResponse = {
   id: number;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: string;
   endDate: string;
   status: SubscriptionStatus;
