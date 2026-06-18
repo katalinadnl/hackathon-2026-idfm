@@ -7,7 +7,12 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { ApiOkResponse, ApiQuery, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
 import type { Response } from 'express';
 
 import { BillingService } from './billing.service';
@@ -27,6 +32,7 @@ function optionalInt(value?: string): number | undefined {
 
 @ApiTags('Billing')
 @UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('billing')
 export class BillingController {
   constructor(

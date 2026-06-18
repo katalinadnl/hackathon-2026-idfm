@@ -130,4 +130,18 @@ export class SubscriptionsController {
       dto.bankInfoId,
     );
   }
+
+  @Post(':id/link-account')
+  linkOrCreateAccountForBeneficiary(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: { email: string },
+    @GetMe() user: JwtPayload,
+  ) {
+    const requesterAccountId = user!.id;
+    return this.subscriptionsService.linkOrCreateAccountForBeneficiary(
+      id,
+      requesterAccountId,
+      dto.email,
+    );
+  }
 }

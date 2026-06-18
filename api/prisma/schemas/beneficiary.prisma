@@ -48,6 +48,7 @@ model Beneficiary {
   birthDate            DateTime
   socialSecurityNumber String?           @unique
   status               BeneficiaryStatus @default(ACTIVE)
+  accountId Int?
 
   residenceDepartmentId Int
   workStudyDepartmentId Int?
@@ -56,7 +57,7 @@ model Beneficiary {
   workStudyDepartment Department? @relation("WorkStudyDepartment", fields: [workStudyDepartmentId], references: [id])
 
   statusVerifications StatusVerification[]
-  account             Account?
+  account             Account? @relation("Account", fields: [accountId], references: [id])
   subscriptions       Subscription[]       @relation("SubscriptionHolder")
 
   addresses Address[]

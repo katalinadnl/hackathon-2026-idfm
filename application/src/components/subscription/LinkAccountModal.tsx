@@ -33,7 +33,7 @@ export function LinkAccountModal({
   const [selected, setSelected] = useState<AccountInfo | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
+  const [manualEmail, setManualEmail] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -72,12 +72,13 @@ export function LinkAccountModal({
   };
 
   const handleConfirm = async () => {
-    if (!selected) return;
-
+    if (!selected && !manualEmail) return;
     setSubmitting(true);
     setError(null);
+    const emailToUse = selected?.email ?? manualEmail;
+    if (!emailToUse) return;
     try {
-      await linkAccount(subscriptionId, selected.id);
+      await linkAccount(subscriptionId, emailToUse);
       handleClose();
       onSuccess();
     } catch {
@@ -112,6 +113,7 @@ export function LinkAccountModal({
             onChangeText={(text) => {
               setQuery(text);
               setSelected(null);
+              setManualEmail(null);
             }}
             leadingIcon="search"
             autoCapitalize="none"
@@ -154,7 +156,25 @@ export function LinkAccountModal({
           )}
 
           {!searching && query.trim().length >= 2 && results.length === 0 && (
-            <Text style={s.noResults}>Aucun compte trouvé.</Text>
+            <View style={{ gap: 10 }}>
+              <Text style={{ color: DS.actionPrimary }}>
+                {manualEmail
+                  ? `Nouveau compte : ${manualEmail}`
+                  : "Aucun compte trouvé."}
+              </Text>
+
+              <Button
+                variant="secondary"
+                fullWidth
+                size="sm"
+                onPress={() => {
+                  setManualEmail(query.trim().toLowerCase());
+                  setSelected(null);
+                }}
+              >
+                Utiliser cet email
+              </Button>
+            </View>
           )}
 
           {error && <Text style={s.error}>{error}</Text>}
@@ -171,7 +191,7 @@ export function LinkAccountModal({
             <Button
               variant="primary"
               onPress={handleConfirm}
-              disabled={!selected || submitting}
+              disabled={(!selected && !manualEmail) || submitting}
             >
               {submitting ? "Association…" : "Associer"}
             </Button>

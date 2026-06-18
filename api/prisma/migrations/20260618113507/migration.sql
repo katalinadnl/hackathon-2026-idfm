@@ -59,11 +59,10 @@ CREATE TABLE "Beneficiary" (
     "id" SERIAL NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
-    "email" TEXT NOT NULL,
-    "phone" TEXT,
     "birthDate" TIMESTAMP(3) NOT NULL,
     "socialSecurityNumber" TEXT,
     "status" "BeneficiaryStatus" NOT NULL DEFAULT 'ACTIVE',
+    "accountId" INTEGER,
     "residenceDepartmentId" INTEGER NOT NULL,
     "workStudyDepartmentId" INTEGER,
 
@@ -113,7 +112,7 @@ CREATE TABLE "Account" (
     "accountNumber" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "role" "AccountRole" NOT NULL DEFAULT 'client',
-    "beneficiaryId" INTEGER,
+    "mustChangePassword" BOOLEAN NOT NULL DEFAULT false,
     "stripeCustomerId" TEXT,
     "stripePaymentMethodId" TEXT,
     "stripeMandateId" TEXT,
@@ -154,6 +153,7 @@ CREATE TABLE "Subscription" (
     "cancellationEffectiveAt" TIMESTAMP(3),
     "cancelledById" INTEGER,
     "bankInfoId" INTEGER NOT NULL,
+    "transportProductId" INTEGER,
     "paymentMode" "PaymentMode" NOT NULL DEFAULT 'SEPA_MONTHLY',
     "annualAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "monthlyAmount" DOUBLE PRECISION,
@@ -188,15 +188,48 @@ CREATE TABLE "StatusVerification" (
     "validFrom" TIMESTAMP(3),
     "validUntil" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "tariffReductionId" INTEGER,
 
     CONSTRAINT "StatusVerification_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "Department_code_key" ON "Department"("code");
+-- CreateTable
+CREATE TABLE "TransportProduct" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "indication" TEXT,
+    "period" TEXT,
+    "priceLabel" TEXT NOT NULL,
+    "priceCents" INTEGER,
+    "sellingArguments" TEXT[],
+    "subscriptionTag" TEXT,
+    "portalUrl" TEXT,
+    "rechargeUrl" TEXT,
+    "imageUrl" TEXT,
+    "isAnnualPlan" BOOLEAN NOT NULL DEFAULT false,
+    "syncedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TransportProduct_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TariffReduction" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "indication" TEXT,
+    "reductionPercent" INTEGER,
+    "isFree" BOOLEAN NOT NULL DEFAULT false,
+    "sellingArguments" TEXT[],
+    "syncedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "baseProductId" INTEGER,
+
+    CONSTRAINT "TariffReduction_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Beneficiary_email_key" ON "Beneficiary"("email");
+CREATE UNIQUE INDEX "Department_code_key" ON "Department"("code");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Beneficiary_socialSecurityNumber_key" ON "Beneficiary"("socialSecurityNumber");
@@ -214,9 +247,6 @@ CREATE UNIQUE INDEX "Account_email_key" ON "Account"("email");
 CREATE UNIQUE INDEX "Account_accountNumber_key" ON "Account"("accountNumber");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Account_beneficiaryId_key" ON "Account"("beneficiaryId");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Account_stripeCustomerId_key" ON "Account"("stripeCustomerId");
 
 -- CreateIndex
@@ -228,6 +258,12 @@ CREATE UNIQUE INDEX "Subscription_reference_key" ON "Subscription"("reference");
 -- CreateIndex
 CREATE UNIQUE INDEX "Payment_subscriptionId_paidAt_amount_key" ON "Payment"("subscriptionId", "paidAt", "amount");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "TransportProduct_name_key" ON "TransportProduct"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "TariffReduction_name_key" ON "TariffReduction"("name");
+
 -- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -236,6 +272,9 @@ ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_residenceDepartmentId_fkey
 
 -- AddForeignKey
 ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_workStudyDepartmentId_fkey" FOREIGN KEY ("workStudyDepartmentId") REFERENCES "Department"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Beneficiary" ADD CONSTRAINT "Beneficiary_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Pass" ADD CONSTRAINT "Pass_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -248,9 +287,6 @@ ALTER TABLE "Delivery" ADD CONSTRAINT "Delivery_passId_fkey" FOREIGN KEY ("passI
 
 -- AddForeignKey
 ALTER TABLE "Delivery" ADD CONSTRAINT "Delivery_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Account" ADD CONSTRAINT "Account_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "BankInfo" ADD CONSTRAINT "BankInfo_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -268,7 +304,16 @@ ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_cancelledById_fkey" FORE
 ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_bankInfoId_fkey" FOREIGN KEY ("bankInfoId") REFERENCES "BankInfo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_transportProductId_fkey" FOREIGN KEY ("transportProductId") REFERENCES "TransportProduct"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Payment" ADD CONSTRAINT "Payment_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "Subscription"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "StatusVerification" ADD CONSTRAINT "StatusVerification_tariffReductionId_fkey" FOREIGN KEY ("tariffReductionId") REFERENCES "TariffReduction"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "StatusVerification" ADD CONSTRAINT "StatusVerification_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TariffReduction" ADD CONSTRAINT "TariffReduction_baseProductId_fkey" FOREIGN KEY ("baseProductId") REFERENCES "TransportProduct"("id") ON DELETE SET NULL ON UPDATE CASCADE;

@@ -85,6 +85,7 @@ export type SubscriptionResponse = {
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];
+    account: AccountInfo;
   };
   bankInfo: BankInfo;
   account: { email: string } | null;

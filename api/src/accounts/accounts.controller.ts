@@ -5,13 +5,13 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { GetMe } from 'src/auth/decorators/get-me.decorator';
 import type { JwtPayload } from 'src/auth/types';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('accounts')
 export class AccountsController {
   constructor(private readonly accountsService: AccountsService) {}
 
   @Get('search')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   searchAccounts(@Query('email') email: string, @GetMe() user: JwtPayload) {
     return this.accountsService.searchAccountsByEmail(email ?? '', user);
   }

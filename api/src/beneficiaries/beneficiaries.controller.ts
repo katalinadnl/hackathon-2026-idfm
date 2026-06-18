@@ -8,13 +8,13 @@ import { BeneficiariesService } from './beneficiaries.service';
 import { CreateBeneficiaryDto } from './dto/create-beneficiary.dto';
 
 @ApiTags('beneficiaries')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
 @Controller('beneficiaries')
 export class BeneficiariesController {
   constructor(private readonly beneficiariesService: BeneficiariesService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({
     summary:
       'Create a beneficiary, optionally linking it to the connected account',

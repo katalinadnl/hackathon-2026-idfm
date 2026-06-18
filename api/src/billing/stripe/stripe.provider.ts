@@ -216,7 +216,7 @@ export class StripeProvider {
   ): Promise<{ url: string; sessionId: string } | null> {
     const payer = await this.prisma.account.findUnique({
       where: { id: payerId },
-      include: { beneficiary: true },
+      include: { beneficiaries: true },
     });
     if (!payer) return null;
 
@@ -224,9 +224,7 @@ export class StripeProvider {
     let customerId = payer.stripeCustomerId;
 
     if (!customerId) {
-      const name = payer.beneficiary
-        ? `${payer.beneficiary.firstName} ${payer.beneficiary.lastName}`
-        : payer.email.split('@')[0];
+      const name = payer.email.split('@')[0];
       const customer = await stripe.customers.create({
         email: payer.email,
         name,

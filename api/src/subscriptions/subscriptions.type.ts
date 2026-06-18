@@ -9,7 +9,7 @@ export const subscriptionInclude = {
     },
   },
   referrer: {
-    include: { beneficiary: true },
+    include: { beneficiaries: true },
   },
   bankInfo: true,
   payments: {
