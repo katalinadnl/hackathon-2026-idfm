@@ -39,7 +39,7 @@ services:
       context: .
       dockerfile: docker/api/Dockerfile
       target: production
-    command: node dist/main
+    command: node dist/src/main
     restart: unless-stopped
     environment:
       PORT: 3000

@@ -26,4 +26,4 @@ RUN npm ci --frozen-lockfile --omit=dev
 
 USER app
 EXPOSE 3000
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
