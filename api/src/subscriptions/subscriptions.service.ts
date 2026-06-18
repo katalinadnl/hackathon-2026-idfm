@@ -48,6 +48,12 @@ export class SubscriptionsService {
           `Ce bénéficiaire a déjà un abonnement actif pour la formule "${createSubscriptionDto.subscriptionType}" (jusqu'au ${existing.endDate.toLocaleDateString('fr-FR')}). Choisissez une autre formule.`,
         );
       }
+
+      // Abonnement existant pour cette même formule, mais inactif ou
+      // expiré : on le réactive avec les nouvelles dates plutôt que de
+      // créer un doublon. On garde volontairement le même navigoNumber
+      // (même "carte"/référence) — celui généré côté front pour cette
+      // soumission est simplement ignoré dans ce cas.
       return this.prisma.subscription.update({
         where: { id: existing.id },
         data: {
@@ -124,6 +130,19 @@ export class SubscriptionsService {
     await this.ensureExists(id);
 
     return this.prisma.subscription.delete({ where: { id } });
+  }
+
+  async renew(id: number, startDateInput: string) {
+    await this.ensureExists(id);
+
+    const startDate = new Date(startDateInput);
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + 12);
+
+    return this.prisma.subscription.update({
+      where: { id },
+      data: { status: 'active', startDate, endDate },
+    });
   }
 
   private async ensureExists(id: number) {

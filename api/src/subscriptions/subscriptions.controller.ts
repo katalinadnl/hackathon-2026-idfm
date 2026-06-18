@@ -10,6 +10,7 @@ import {
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { UpdateSubscriptionDto } from './dto/update-subscription.dto';
+import { RenewSubscriptionDto } from './dto/renew-subscription.dto';
 
 @Controller('subscriptions')
 export class SubscriptionsController {
@@ -18,6 +19,11 @@ export class SubscriptionsController {
   @Post()
   create(@Body() createSubscriptionDto: CreateSubscriptionDto) {
     return this.subscriptionsService.create(createSubscriptionDto);
+  }
+
+  @Post(':id/renew')
+  renew(@Param('id') id: string, @Body() dto: RenewSubscriptionDto) {
+    return this.subscriptionsService.renew(+id, dto.startDate);
   }
 
   @Get()

@@ -25,4 +25,7 @@ export interface Subscription {
 export const subscriptionsApi = {
   create: (payload: CreateSubscriptionPayload) =>
     http.post<Subscription>("/subscriptions", payload),
+
+  renew: (id: number, startDate: string) =>
+    http.post<Subscription>(`/subscriptions/${id}/renew`, { startDate }),
 };

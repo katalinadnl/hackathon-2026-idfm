@@ -34,6 +34,7 @@ export type Subscription = {
   id: number;
   navigoNumber: string;
   subscriptionType: string;
+  transportProductId: number | null;
   startDate: string;
   endDate: string;
   status: "active" | "expired" | "blocked";
