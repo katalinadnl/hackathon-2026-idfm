@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { Input } from "@/components/ui/Input";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { SectionTitle } from "@/components/ui/Section";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
 import { useDepartments } from "@/hooks/useDepartments";

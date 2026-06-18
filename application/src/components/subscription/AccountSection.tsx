@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { DS } from "@/constants/theme";
-import { SectionTitle } from "../ui/SectionTitle";
+import { SectionTitle, Section } from "../ui/Section";
 import { AccountInfo, SubscriptionResponse } from "@/types/subscription";
 import { useState } from "react";
 import { ConfirmModal } from "../ui/ConfirmModal";
@@ -51,8 +51,7 @@ export function AccountsSection({
   };
 
   return (
-    <>
-      <SectionTitle>Comptes associés</SectionTitle>
+    <Section title="Comptes associés">
       <View style={s.accountGrid}>
         <Card style={s.accountCard}>
           <View style={s.accountCardHeader}>
@@ -140,7 +139,7 @@ export function AccountsSection({
         onClose={() => setLinkAccountModalVisible(false)}
         onSuccess={onReferrerChanged}
       />
-    </>
+    </Section>
   );
 }
 

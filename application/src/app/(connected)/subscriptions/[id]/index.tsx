@@ -15,9 +15,9 @@ import { DeliveryBanner } from "@/components/subscription/DeliveryBanner";
 import { DocumentCard } from "@/components/subscription/DocumentCard";
 import { RenewalBanner } from "@/components/subscription/RenewalBanner";
 import { SubscriptionHeader } from "@/components/subscription/SubscriptionHeader";
-import { DS, MaxContentWidth } from "@/constants/theme";
+import { DS } from "@/constants/theme";
 import { AccountsSection } from "@/components/subscription/AccountSection";
-import { SectionTitle } from "@/components/ui/SectionTitle";
+import { Section } from "@/components/ui/Section";
 import { PaymentHistoryCta } from "@/components/subscription/PaiementHistory";
 import { Icon } from "@/components/ui/Icon";
 import { formatDate, getAge } from "@/lib/subscription-helpers";
@@ -71,21 +71,17 @@ export default function SubscriptionDetailPage() {
 
   return (
     <SafeAreaView style={s.root} edges={["top"]}>
-      <View style={s.headerBg}>
-        <View style={s.wrapper}>
-          <SubscriptionHeader
-            subscription={subscription}
-            onBack={() => router.back()}
-          />
-        </View>
-      </View>
-
       <View style={s.wrapper}>
         <ScrollView
           style={s.scroll}
           contentContainerStyle={s.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          <SubscriptionHeader
+            subscription={subscription}
+            onBack={() => router.back()}
+          />
+
           {!subscription.renewed && (
             <RenewalBanner
               endDate={subscription.endDate}
@@ -104,8 +100,7 @@ export default function SubscriptionDetailPage() {
 
           {/* Abonnement + Titulaire côte à côte */}
           <View style={s.topGrid}>
-            <View style={s.topGridCol}>
-              <SectionTitle>Abonnement</SectionTitle>
+            <Section title="Abonnement">
               <Card style={s.topGridCard}>
                 <InfoRow
                   label="Numéro de pass"
@@ -117,9 +112,8 @@ export default function SubscriptionDetailPage() {
                   last
                 />
               </Card>
-            </View>
-            <View style={s.topGridCol}>
-              <SectionTitle>Titulaire</SectionTitle>
+            </Section>
+            <Section title="Titulaire">
               <Card style={s.topGridCard}>
                 <InfoRow
                   label="Nom"
@@ -135,7 +129,7 @@ export default function SubscriptionDetailPage() {
                   last
                 />
               </Card>
-            </View>
+            </Section>
           </View>
 
           <AccountsSection
@@ -145,50 +139,52 @@ export default function SubscriptionDetailPage() {
             subscriptionId={subscription.id}
             onReferrerChanged={() => reload()}
           />
-          <SectionTitle>Moyen de paiement</SectionTitle>
-          <Card style={s.bankInfoCard}>
-            <View style={s.bankInfoRow}>
-              <View style={s.bankInfoIcon}>
-                <Icon name="credit-card" size={18} color={DS.actionPrimary} />
-              </View>
-              <View style={s.bankInfoText}>
-                {subscription.bankInfo ? (
-                  <>
-                    <Text style={s.bankInfoLabel}>
-                      {subscription.bankInfo.label ??
-                        subscription.bankInfo.holderName}
+          <Section title="Moyen de paiement">
+            <Card style={s.bankInfoCard}>
+              <View style={s.bankInfoRow}>
+                <View style={s.bankInfoIcon}>
+                  <Icon name="credit-card" size={18} color={DS.actionPrimary} />
+                </View>
+                <View style={s.bankInfoText}>
+                  {subscription.bankInfo ? (
+                    <>
+                      <Text style={s.bankInfoLabel}>
+                        {subscription.bankInfo.label ??
+                          subscription.bankInfo.holderName}
+                      </Text>
+                      <Text style={s.bankInfoIban}>
+                        {maskIbanDisplay(subscription.bankInfo.iban)}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text style={s.bankInfoEmpty}>
+                      Aucun moyen de paiement configuré
                     </Text>
-                    <Text style={s.bankInfoIban}>
-                      {maskIbanDisplay(subscription.bankInfo.iban)}
-                    </Text>
-                  </>
-                ) : (
-                  <Text style={s.bankInfoEmpty}>
-                    Aucun moyen de paiement configuré
-                  </Text>
-                )}
+                  )}
+                </View>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => setBankInfoModalVisible(true)}
+                >
+                  {subscription.bankInfo ? "Modifier" : "Ajouter"}
+                </Button>
               </View>
-              <Button
-                variant="secondary"
-                size="sm"
-                onPress={() => setBankInfoModalVisible(true)}
-              >
-                {subscription.bankInfo ? "Modifier" : "Ajouter"}
-              </Button>
-            </View>
-          </Card>
-          <SectionTitle>Mes documents</SectionTitle>
-          {subscription.documents.length === 0 ? (
-            <Card>
-              <InfoRow label="Aucun document disponible" value="" last />
             </Card>
-          ) : (
-            <View style={s.docGrid}>
-              {subscription.documents.map((doc) => (
-                <DocumentCard key={doc.id} doc={doc} />
-              ))}
-            </View>
-          )}
+          </Section>
+          <Section title="Mes documents">
+            {subscription.documents.length === 0 ? (
+              <Card>
+                <InfoRow label="Aucun document disponible" value="" last />
+              </Card>
+            ) : (
+              <View style={s.docGrid}>
+                {subscription.documents.map((doc) => (
+                  <DocumentCard key={doc.id} doc={doc} />
+                ))}
+              </View>
+            )}
+          </Section>
 
           <PaymentHistoryCta
             payments={subscription.payments}
@@ -196,35 +192,35 @@ export default function SubscriptionDetailPage() {
               router.push(`/subscriptions/${subscription.id}/payments` as any)
             }
           />
-
-          <SectionTitle>Actions</SectionTitle>
-          <Card style={s.actionsCard}>
-            {subscription.passes.some(
-              (pass) =>
-                pass.status === "active" &&
-                pass.delivery.status === "delivered",
-            ) && (
-              <Button
-                variant="secondary"
-                size="md"
-                leadingIcon="alert-triangle"
-                fullWidth
-                onPress={() => setReportModalVisible(true)}
-              >
-                Signaler une perte ou un vol
-              </Button>
-            )}
-            {subscription.status === "active" && (
-              <Button
-                variant="danger"
-                size="md"
-                fullWidth
-                onPress={() => setCancelModalVisible(true)}
-              >
-                Résilier l&apos;abonnement
-              </Button>
-            )}
-          </Card>
+          <Section title="Actions">
+            <Card style={s.actionsCard}>
+              {subscription.passes.some(
+                (pass) =>
+                  pass.status === "active" &&
+                  pass.delivery.status === "delivered",
+              ) && (
+                <Button
+                  variant="secondary"
+                  size="md"
+                  leadingIcon="alert-triangle"
+                  fullWidth
+                  onPress={() => setReportModalVisible(true)}
+                >
+                  Signaler une perte ou un vol
+                </Button>
+              )}
+              {subscription.status === "active" && (
+                <Button
+                  variant="danger"
+                  size="md"
+                  fullWidth
+                  onPress={() => setCancelModalVisible(true)}
+                >
+                  Résilier l&apos;abonnement
+                </Button>
+              )}
+            </Card>
+          </Section>
         </ScrollView>
       </View>
       <ReportLostOrStolenModal
@@ -263,33 +259,25 @@ export default function SubscriptionDetailPage() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: DS.surfacePage },
+  root: { flex: 1 },
   centered: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     gap: DS.space3,
-    padding: DS.space5,
   },
   errorText: {
     fontSize: 14,
     color: DS.textMuted,
     textAlign: "center",
   },
-  headerBg: {
-    backgroundColor: DS.surfaceCard,
-    borderBottomWidth: 1,
-    borderBottomColor: DS.borderSubtle,
-  },
   wrapper: {
     flex: 1,
-    maxWidth: MaxContentWidth,
     width: "100%",
     alignSelf: "center",
   },
   scroll: { flex: 1 },
   scrollContent: {
-    paddingHorizontal: DS.space5,
     paddingBottom: DS.space8,
     gap: DS.space6,
   },
