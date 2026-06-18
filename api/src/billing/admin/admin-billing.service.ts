@@ -116,8 +116,10 @@ export class AdminBillingService {
       where: { id },
       include: {
         beneficiary: true,
-        bankInfo: { include: { account: { include: { beneficiary: true } } } },
-        referrer: { include: { beneficiary: true } },
+        bankInfo: {
+          include: { account: { include: { beneficiaries: true } } },
+        },
+        referrer: { include: { beneficiaries: true } },
         payments: { orderBy: { paidAt: 'desc' } },
         passes: { include: { delivery: true } },
       },
@@ -276,16 +278,14 @@ export class AdminBillingService {
   async getAccountMandate(accountId: number) {
     const account = await this.prisma.account.findUnique({
       where: { id: accountId },
-      include: { beneficiary: true },
+      include: { beneficiaries: true },
     });
     if (!account) throw new NotFoundException(`Account ${accountId} not found`);
 
     return {
       accountId: account.id,
       email: account.email,
-      beneficiary: account.beneficiary
-        ? `${account.beneficiary.firstName} ${account.beneficiary.lastName}`
-        : null,
+      beneficiary: account.beneficiaries,
       stripeCustomerId: account.stripeCustomerId,
       stripePaymentMethodId: account.stripePaymentMethodId,
       stripeMandateId: account.stripeMandateId,

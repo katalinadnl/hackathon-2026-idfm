@@ -30,7 +30,6 @@ export class BankInfoController {
 
   @Get()
   findAll(@GetMe() user: JwtPayload) {
-    console.log(user);
     return this.bankInfoService.findAll(user.id);
   }
   @Get(':id')

@@ -400,7 +400,9 @@ export class BillingService {
       where: { id: subscriptionId },
       include: {
         beneficiary: true,
-        bankInfo: { include: { account: { include: { beneficiary: true } } } },
+        bankInfo: {
+          include: { account: { include: { beneficiaries: true } } },
+        },
       },
     });
 
@@ -409,11 +411,7 @@ export class BillingService {
     }
 
     const payerAccount = sub.bankInfo.account;
-    const debtorName =
-      sub.bankInfo.holderName ||
-      (payerAccount.beneficiary
-        ? `${payerAccount.beneficiary.firstName} ${payerAccount.beneficiary.lastName}`
-        : payerAccount.email);
+    const debtorName = sub.bankInfo.holderName || payerAccount.email;
 
     const subscribe = await this.subscribeService.findOne(subscriptionId);
     const navigo = this.subscribeService.getActivePass(subscribe.passes);

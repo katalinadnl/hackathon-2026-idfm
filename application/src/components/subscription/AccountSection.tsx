@@ -19,7 +19,7 @@ function accountName(info: AccountInfo) {
 
 type AccountsSectionProps = {
   isOldEnough: boolean;
-  account: { email: string } | null;
+  accountBeneficiary: AccountInfo | null;
   referrer: AccountInfo | null;
   subscriptionId: SubscriptionResponse["id"];
   onReferrerChanged: () => void;
@@ -27,7 +27,7 @@ type AccountsSectionProps = {
 
 export function AccountsSection({
   isOldEnough,
-  account,
+  accountBeneficiary,
   referrer,
   subscriptionId,
   onReferrerChanged,
@@ -60,8 +60,8 @@ export function AccountsSection({
             <Text style={s.accountCardTitle}>Compte</Text>
           </View>
           {isOldEnough ? (
-            account ? (
-              <Text style={s.accountCardValue}>{account.email}</Text>
+            accountBeneficiary ? (
+              <Text style={s.accountCardValue}>{accountBeneficiary.email}</Text>
             ) : (
               <>
                 <Text style={s.accountCardSub}>Aucun compte associé</Text>

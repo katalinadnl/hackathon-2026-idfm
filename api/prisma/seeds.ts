@@ -17,6 +17,59 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
+  // ── Clean up old data (order matters for FK constraints) ───────────────────
+  await prisma.passUsage.deleteMany();
+  await prisma.delivery.deleteMany();
+  await prisma.pass.deleteMany();
+  await prisma.payment.deleteMany();
+  await prisma.subscription.deleteMany();
+  await prisma.bankInfo.deleteMany();
+  await prisma.account.deleteMany();
+
+  // ── Accounts (20 comptes) ────────────────────────────────────────────────────
+  // email reste le critère unique pour Account (il n'a pas bougé, seul
+  // Beneficiary a perdu ce champ).
+  const passwordHash = await hash('Password123!', 10);
+  const mk = (
+    email: string,
+    num: string,
+    role: 'client' | 'admin' = 'client',
+  ) =>
+    prisma.account.upsert({
+      where: { email },
+      update: {},
+      create: {
+        email,
+        passwordHash,
+        accountNumber: num,
+        role,
+      },
+    });
+
+  const accPierre = await mk('pierre.moreau@email.fr', 'ACC-000001');
+  const accMonique = await mk('monique.moreau@email.fr', 'ACC-000002');
+  const accAlice = await mk('alice.martin@email.fr', 'ACC-000003');
+  const accBernard = await mk('bernard.dupont@email.fr', 'ACC-000004');
+  const accClara = await mk('clara.petit@email.fr', 'ACC-000005');
+  const accEmma = await mk('emma.leroy@email.fr', 'ACC-000006');
+  const accHugo = await mk('hugo.garcia@email.fr', 'ACC-000007');
+  const accFatima = await mk('fatima.benali@email.fr', 'ACC-000008');
+  const accLucas = await mk('lucas.roux@email.fr', 'ACC-000009');
+  const accNadia = await mk('nadia.cohen@email.fr', 'ACC-000010');
+  const accOlivier = await mk('olivier.blanc@email.fr', 'ACC-000011'); // pas de pass
+  const accSophie = await mk('sophie.lambert@email.fr', 'ACC-000012'); // pas de pass
+  const accYoussef = await mk('youssef.amrani@email.fr', 'ACC-000013');
+  // Comptes sans bénéficiaire direct (parents qui gèrent pour d'autres)
+  const accCaroline = await mk('caroline.moreau@email.fr', 'ACC-000014'); // mère de Théo/Léa, pas bénéficiaire
+  // Comptes admin
+  const accAdmin = await mk('admin@idfm.fr', 'ACC-000015');
+  // Comptes "vides" — inscrits mais n'ont rien fait
+  await mk('marc.henry@email.fr', 'ACC-000016');
+  await mk('julie.fournier@email.fr', 'ACC-000017');
+  await mk('david.nguyen@email.fr', 'ACC-000018');
+  await mk('camille.robert@email.fr', 'ACC-000019');
+  await mk('thomas.girard@email.fr', 'ACC-000020');
+
   // ── Departments ──────────────────────────────────────────────────────────────
   const departments = await Promise.all([
     prisma.department.upsert({
@@ -100,7 +153,9 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: val94.id,
       workStudyDepartmentId: paris.id,
+      accountId: accPierre.id,
     },
+    select: { id: true },
   });
   const theo = await prisma.beneficiary.upsert({
     where: { id: 2 },
@@ -139,6 +194,7 @@ async function main() {
       socialSecurityNumber: '150011212345678',
       status: BeneficiaryStatus.SENIOR,
       residenceDepartmentId: val94.id,
+      accountId: accMonique.id,
     },
   });
 
@@ -154,6 +210,7 @@ async function main() {
       status: BeneficiaryStatus.STUDENT,
       residenceDepartmentId: paris.id,
       workStudyDepartmentId: hauts92.id,
+      accountId: accAlice.id,
     },
   });
   const bernard = await prisma.beneficiary.upsert({
@@ -167,6 +224,7 @@ async function main() {
       socialSecurityNumber: '155072212345678',
       status: BeneficiaryStatus.SENIOR,
       residenceDepartmentId: hauts92.id,
+      accountId: accBernard.id,
     },
   });
   const clara = await prisma.beneficiary.upsert({
@@ -181,6 +239,7 @@ async function main() {
       status: BeneficiaryStatus.DISABLED,
       residenceDepartmentId: seine93.id,
       workStudyDepartmentId: paris.id,
+      accountId: accClara.id,
     },
   });
   const emma = await prisma.beneficiary.upsert({
@@ -194,6 +253,7 @@ async function main() {
       socialSecurityNumber: '285092312345678',
       status: BeneficiaryStatus.UNEMPLOYED,
       residenceDepartmentId: seine77.id,
+      accountId: accEmma.id,
     },
   });
   const hugo = await prisma.beneficiary.upsert({
@@ -208,6 +268,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: yvelines78.id,
       workStudyDepartmentId: paris.id,
+      accountId: accHugo.id,
     },
   });
   const fatima = await prisma.beneficiary.upsert({
@@ -222,6 +283,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: essonne91.id,
       workStudyDepartmentId: paris.id,
+      accountId: accFatima.id,
     },
   });
   const lucas = await prisma.beneficiary.upsert({
@@ -236,6 +298,7 @@ async function main() {
       status: BeneficiaryStatus.STUDENT,
       residenceDepartmentId: valdoise95.id,
       workStudyDepartmentId: paris.id,
+      accountId: accLucas.id,
     },
   });
   const nadia = await prisma.beneficiary.upsert({
@@ -250,6 +313,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: paris.id,
       workStudyDepartmentId: hauts92.id,
+      accountId: accNadia.id,
     },
   });
   const olivier = await prisma.beneficiary.upsert({
@@ -263,6 +327,7 @@ async function main() {
       socialSecurityNumber: '195111212345678',
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: hauts92.id,
+      accountId: accOlivier.id,
     },
   });
   const sophie = await prisma.beneficiary.upsert({
@@ -276,6 +341,7 @@ async function main() {
       socialSecurityNumber: '299071212345678',
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: seine93.id,
+      accountId: accSophie.id,
     },
   });
   const youssef = await prisma.beneficiary.upsert({
@@ -290,6 +356,7 @@ async function main() {
       status: BeneficiaryStatus.ACTIVE,
       residenceDepartmentId: paris.id,
       workStudyDepartmentId: seine93.id,
+      accountId: accYoussef.id,
     },
   });
 
@@ -533,81 +600,6 @@ async function main() {
     ],
   });
 
-  // ── Clean up old data (order matters for FK constraints) ───────────────────
-  await prisma.passUsage.deleteMany();
-  await prisma.delivery.deleteMany();
-  await prisma.pass.deleteMany();
-  await prisma.payment.deleteMany();
-  await prisma.subscription.deleteMany();
-  await prisma.bankInfo.deleteMany();
-  await prisma.account.deleteMany();
-
-  // ── Accounts (20 comptes) ────────────────────────────────────────────────────
-  // email reste le critère unique pour Account (il n'a pas bougé, seul
-  // Beneficiary a perdu ce champ).
-  const passwordHash = await hash('Password123!', 10);
-  const mk = (
-    email: string,
-    num: string,
-    benId: number | null,
-    role: 'client' | 'admin' = 'client',
-  ) =>
-    prisma.account.upsert({
-      where: { email },
-      update: {},
-      create: {
-        email,
-        passwordHash,
-        accountNumber: num,
-        beneficiaryId: benId,
-        role,
-      },
-    });
-
-  const accPierre = await mk('pierre.moreau@email.fr', 'ACC-000001', pierre.id);
-  const accMonique = await mk(
-    'monique.moreau@email.fr',
-    'ACC-000002',
-    monique.id,
-  );
-  const accAlice = await mk('alice.martin@email.fr', 'ACC-000003', alice.id);
-  const accBernard = await mk(
-    'bernard.dupont@email.fr',
-    'ACC-000004',
-    bernard.id,
-  );
-  const accClara = await mk('clara.petit@email.fr', 'ACC-000005', clara.id);
-  const accEmma = await mk('emma.leroy@email.fr', 'ACC-000006', emma.id);
-  const accHugo = await mk('hugo.garcia@email.fr', 'ACC-000007', hugo.id);
-  const accFatima = await mk('fatima.benali@email.fr', 'ACC-000008', fatima.id);
-  const accLucas = await mk('lucas.roux@email.fr', 'ACC-000009', lucas.id);
-  const accNadia = await mk('nadia.cohen@email.fr', 'ACC-000010', nadia.id);
-  const accOlivier = await mk(
-    'olivier.blanc@email.fr',
-    'ACC-000011',
-    olivier.id,
-  ); // pas de pass
-  const accSophie = await mk(
-    'sophie.lambert@email.fr',
-    'ACC-000012',
-    sophie.id,
-  ); // pas de pass
-  const accYoussef = await mk(
-    'youssef.amrani@email.fr',
-    'ACC-000013',
-    youssef.id,
-  );
-  // Comptes sans bénéficiaire direct (parents qui gèrent pour d'autres)
-  const accCaroline = await mk('caroline.moreau@email.fr', 'ACC-000014', null); // mère de Théo/Léa, pas bénéficiaire
-  // Comptes admin
-  const accAdmin = await mk('admin@idfm.fr', 'ACC-000015', null, 'admin');
-  // Comptes "vides" — inscrits mais n'ont rien fait
-  await mk('marc.henry@email.fr', 'ACC-000016', null);
-  await mk('julie.fournier@email.fr', 'ACC-000017', null);
-  await mk('david.nguyen@email.fr', 'ACC-000018', null);
-  await mk('camille.robert@email.fr', 'ACC-000019', null);
-  await mk('thomas.girard@email.fr', 'ACC-000020', null);
-
   // ── Bank infos ────────────────────────────────────────────────────────────────
   // bankInfoId est obligatoire sur Subscription : chaque compte qui paie pour
   // au moins un abonnement a donc son propre IBAN ci-dessous. Monique a en
@@ -805,7 +797,6 @@ async function main() {
       startDate: new Date('2026-01-01'),
       endDate: new Date('2026-12-31'),
       // transportProductId: 23,
-
       status: 'active',
       paymentMode: PaymentMode.SEPA_MONTHLY,
       annualAmount: 924.0,

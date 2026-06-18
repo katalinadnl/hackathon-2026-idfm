@@ -19,9 +19,6 @@ export type AuthUser = {
   id: number;
   email: string;
   accountNumber: string;
-  beneficiaryId: number | null;
-  firstName: string | null;
-  lastName: string | null;
   role: AccountRole;
 };
 
@@ -46,16 +43,13 @@ export class AuthService {
   private async toAuthUser(accountId: number): Promise<AuthUser> {
     const account = await this.prisma.account.findUniqueOrThrow({
       where: { id: accountId },
-      include: { beneficiary: true },
+      include: { beneficiaries: true },
     });
     return {
       id: account.id,
       email: account.email,
       accountNumber: account.accountNumber,
       role: account.role,
-      beneficiaryId: account.beneficiaryId,
-      firstName: account.beneficiary?.firstName ?? null,
-      lastName: account.beneficiary?.lastName ?? null,
     };
   }
 

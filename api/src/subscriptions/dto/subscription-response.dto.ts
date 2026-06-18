@@ -15,7 +15,6 @@ export type AccountInfo = {
   id: number;
   email: string;
   accountNumber: string;
-  beneficiary: { firstName: string; lastName: string } | null;
 };
 
 export type PaymentMethod = 'CARD_ONCE' | 'SEPA_ONCE' | 'SEPA_MONTHLY';
@@ -93,9 +92,9 @@ export type SubscriptionResponse = {
     birthDate: string;
     residenceDepartment: { name: string };
     addresses: Address[];
+    account: AccountInfo | null;
   };
 
-  account: { email: string } | null;
   referrer: AccountInfo | null;
   payments: Payment[];
   documents: SubscriptionDocument[];

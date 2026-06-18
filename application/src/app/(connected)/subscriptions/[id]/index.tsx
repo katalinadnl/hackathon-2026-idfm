@@ -141,9 +141,8 @@ export default function SubscriptionDetailPage() {
 
           <AccountsSection
             isOldEnough={isOldEnough}
-            account={subscription.account}
+            accountBeneficiary={subscription.beneficiary.account}
             referrer={subscription.referrer}
-            payer={subscription.payer}
             subscriptionId={subscription.id}
             onReferrerChanged={() => reload()}
           />

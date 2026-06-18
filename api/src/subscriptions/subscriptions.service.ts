@@ -15,7 +15,7 @@ import {
 import { ReportLostOrStolenDto } from './dto/report-lost-or-stolen.dto';
 import { MailService } from 'src/mail/mail.service';
 import { AccountsService } from 'src/accounts/accounts.service';
-import { Pass, SubscriptionResponse } from './dto/subscription-response.dto';
+import { SubscriptionResponse } from './dto/subscription-response.dto';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { AddressType, PassStatus } from 'src/generated/prisma/enums';
 
@@ -41,6 +41,7 @@ export class SubscriptionsService {
     private readonly mailService: MailService,
     private readonly accountService: AccountsService,
   ) {}
+
   // TODO : verify bank info id
   async create(createSubscriptionDto: CreateSubscriptionDto) {
     const existing = await this.findExistingSubscriptionForPlan(
@@ -236,7 +237,6 @@ export class SubscriptionsService {
   ): SubscriptionResponse {
     const beneficiary = subscription.beneficiary;
     const account = beneficiary.account;
-
     return {
       id: subscription.id,
       bankInfo: subscription.bankInfo,
@@ -270,6 +270,7 @@ export class SubscriptionsService {
         lastName: beneficiary.lastName,
         birthDate: beneficiary.birthDate.toISOString(),
         residenceDepartment: { name: beneficiary.residenceDepartment.name },
+        account: beneficiary.account,
         addresses: beneficiary.addresses.map((a) => ({
           id: a.id,
           type: a.type,
@@ -282,18 +283,15 @@ export class SubscriptionsService {
         })),
       },
 
-      account: account ? { email: account.email } : null,
+      // Le référent peut très bien n'avoir aucun Beneficiary propre (un
+      // parent qui ne gère que ses enfants) : son identité affichée repose
+      // uniquement sur les champs natifs d'Account, jamais sur un
+      // bénéficiaire dérivé.
       referrer: subscription.referrer
         ? {
             id: subscription.referrer.id,
             email: subscription.referrer.email,
             accountNumber: subscription.referrer.accountNumber,
-            beneficiary: subscription.referrer.beneficiary
-              ? {
-                  firstName: subscription.referrer.beneficiary.firstName,
-                  lastName: subscription.referrer.beneficiary.lastName,
-                }
-              : null,
           }
         : null,
 
@@ -687,7 +685,6 @@ export class SubscriptionsService {
     subscriptionId: number,
     requesterAccountId: number,
   ) {
-    console.log(subscriptionId);
     const subscription = await this.prisma.subscription.findUnique({
       where: { id: subscriptionId },
       include: { beneficiary: { include: { account: true } } },
@@ -749,13 +746,17 @@ export class SubscriptionsService {
   }
 
   /**
-   * Associe un compte au TITULAIRE d'un abonnement (Beneficiary.account) :
-   * - si un Account existe déjà avec cet email, on le lie directement
+   * Associe un compte au TITULAIRE d'un abonnement (Beneficiary.accountId) :
+   * - si un Account existe déjà avec cet email, on le lie directement — un
+   *   même compte peut désormais gérer plusieurs bénéficiaires (ex: un
+   *   parent qui inscrit plusieurs enfants sous son propre compte), donc
+   *   retrouver un compte "déjà pris" par un autre bénéficiaire n'est plus
+   *   une erreur comme c'était le cas sous l'ancienne relation 1-1
    * - sinon, on délègue la création à AccountService (mot de passe temporaire,
-   *   mustChangePassword=true), puis on envoie l'email avec ce mot de passe
+   *   mustChangePassword=true), puis on lie ce nouveau compte au bénéficiaire,
+   *   puis on envoie l'email avec ce mot de passe
    *
-   * Autorisé pour le référant de l'abonnement, ou pour le titulaire lui-même
-   * s'il agit déjà via un compte propre.
+   * Autorisé pour le référant de l'abonnement uniquement.
    */
   async linkOrCreateAccountForBeneficiary(
     subscriptionId: number,
@@ -770,21 +771,16 @@ export class SubscriptionsService {
     if (!subscription) {
       throw new NotFoundException(`Abonnement ${subscriptionId} introuvable`);
     }
-
-    const isReferrer = subscription.referrerId === requesterAccountId;
-    const isBeneficiaryAccount =
-      subscription.beneficiary.account?.id === requesterAccountId;
-
-    if (!isReferrer && !isBeneficiaryAccount) {
-      throw new ForbiddenException(
-        'Seul le référant ou le titulaire peut associer ce compte.',
-      );
-    }
-
     if (subscription.beneficiary.account) {
       throw new BadRequestException(
         'Ce bénéficiaire a déjà un compte associé.',
       );
+    }
+
+    const isReferrer = subscription.referrerId === requesterAccountId;
+
+    if (!isReferrer) {
+      throw new ForbiddenException('Seul le référant peut associer ce compte.');
     }
 
     const normalizedEmail = email.trim().toLowerCase();
@@ -795,23 +791,19 @@ export class SubscriptionsService {
     });
 
     if (existing) {
-      if (existing.beneficiaryId !== null) {
-        throw new BadRequestException(
-          'Ce compte est déjà associé à un autre bénéficiaire.',
-        );
-      }
-
-      return this.prisma.account.update({
-        where: { id: existing.id },
-        data: { beneficiaryId },
+      return this.prisma.beneficiary.update({
+        where: { id: beneficiaryId },
+        data: { accountId: existing.id },
       });
     }
 
     const { account, temporaryPassword } =
-      await this.accountService.createWithTemporaryPassword(
-        normalizedEmail,
-        beneficiaryId,
-      );
+      await this.accountService.createWithTemporaryPassword(normalizedEmail);
+
+    await this.prisma.beneficiary.update({
+      where: { id: beneficiaryId },
+      data: { accountId: account.id },
+    });
 
     await this.mailService.sendAccountCreatedEmail(normalizedEmail, {
       temporaryPassword,
