@@ -8,7 +8,6 @@ import {
   Delete,
   UseGuards,
   ParseIntPipe,
-  Req,
 } from '@nestjs/common';
 import { SubscriptionsService } from './subscriptions.service';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
