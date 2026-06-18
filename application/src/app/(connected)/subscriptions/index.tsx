@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/Button";
@@ -9,6 +10,7 @@ import { LoadingPlaceholder, PassRow } from "../dashboard";
 
 export default function SubscriptionsView() {
   const { user } = useAuth();
+  const router = useRouter();
 
   const {
     data: subscriptions,
@@ -42,7 +44,12 @@ export default function SubscriptionsView() {
         )}
       </View>
 
-      <Button variant="secondary" size="md" leadingIcon="ticket">
+      <Button
+        variant="secondary"
+        size="md"
+        leadingIcon="ticket"
+        onPress={() => router.push("/(connected)/subscriptions/new")}
+      >
         Ajouter un abonnement
       </Button>
     </>

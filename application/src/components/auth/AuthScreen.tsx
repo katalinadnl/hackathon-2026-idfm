@@ -267,7 +267,7 @@ export function AuthScreen() {
 
   if (mode === "otp") {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="always">
         <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]} style={styles.safe}>
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
@@ -342,7 +342,7 @@ export function AuthScreen() {
 
   if (mode === "forgot") {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="always">
         <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]} style={styles.safe}>
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
@@ -391,7 +391,7 @@ export function AuthScreen() {
 
   if (mode === "forgot-sent") {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="always">
         <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]} style={styles.safe}>
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
@@ -423,7 +423,7 @@ export function AuthScreen() {
 
   if (mode === "reset") {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="always">
         <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]} style={styles.safe}>
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
@@ -469,7 +469,7 @@ export function AuthScreen() {
 
   if (mode === "reset-done") {
     return (
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} keyboardShouldPersistTaps="always">
         <SafeAreaView edges={Platform.OS === "web" ? [] : ["top"]} style={styles.safe}>
           <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
             <Logo />
