@@ -1,4 +1,6 @@
 import {
+  AccessibilityRole,
+  AccessibilityState,
   Platform,
   Pressable,
   StyleProp,
@@ -14,6 +16,8 @@ type CardProps = {
   interactive?: boolean;
   onPress?: () => void;
   accessibilityLabel?: string;
+  accessibilityRole?: AccessibilityRole;
+  accessibilityState?: AccessibilityState;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -22,6 +26,8 @@ export function Card({
   interactive = false,
   onPress,
   accessibilityLabel,
+  accessibilityRole,
+  accessibilityState,
   style,
 }: CardProps) {
   if (interactive || onPress) {
@@ -56,8 +62,9 @@ export function Card({
           style,
         ]}
         accessible
-        accessibilityRole={Platform.OS === "web" ? "none" : "button"}
+        accessibilityRole={accessibilityRole ?? (Platform.OS === "web" ? "none" : "button")}
         accessibilityLabel={accessibilityLabel}
+        accessibilityState={accessibilityState}
         {...(webProps as any)}
       >
         {children}

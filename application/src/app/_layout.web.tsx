@@ -106,9 +106,9 @@ function AuthGate() {
   );
 }
 
-function NavLink({ href, children }: { href: string; children: string }) {
+function NavLink({ href, children, highlight }: { href: string; children: string; highlight?: boolean }) {
   const pathname = usePathname();
-  const isActive = pathname === href;
+  const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
 
   return (
     <Link href={href as any} asChild>
@@ -123,10 +123,15 @@ function NavLink({ href, children }: { href: string; children: string }) {
       >
         <View style={styles.navLinkInner}>
           <Text
-            style={[styles.navLinkText, isActive && styles.navLinkTextActive]}
+            style={[styles.navLinkText, isActive && styles.navLinkTextActive, highlight && styles.navLinkTextHighlight]}
           >
             {children}
           </Text>
+          {highlight && (
+            <View style={styles.navBadgeAI} accessibilityElementsHidden>
+              <Text style={styles.navBadgeAIText}>IA</Text>
+            </View>
+          )}
         </View>
         {isActive && <View style={styles.navLinkIndicator} />}
       </Pressable>
@@ -246,6 +251,11 @@ function MobileMenu({ onClose }: { onClose: () => void }) {
             Mon espace
           </MobileNavItem>
         )}
+        {token && (
+          <MobileNavItem href="/advisor" onPress={onClose}>
+            Conseiller IA
+          </MobileNavItem>
+        )}
 
         <View style={styles.mobileMenuDivider} />
 
@@ -326,6 +336,7 @@ function SiteHeader() {
                 <NavLink href="/abonnements">Nos abonnements</NavLink>
                 <NavLink href="/visitors">Visiteurs</NavLink>
                 {token && <NavLink href="/dashboard">Mon espace</NavLink>}
+                {token && <NavLink href="/advisor" highlight>Conseiller IA</NavLink>}
               </View>
 
               <View style={styles.right}>
@@ -440,6 +451,7 @@ const styles = StyleSheet.create({
   },
   navLinkInner: {
     flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingBottom: DS.space1,
@@ -455,10 +467,26 @@ const styles = StyleSheet.create({
   navLinkTextActive: {
     color: DS.actionPrimary,
   },
+  navLinkTextHighlight: {
+    color: DS.actionPrimary,
+  },
   navLinkIndicator: {
     height: 2,
     borderRadius: 1,
     backgroundColor: DS.actionPrimary,
+  },
+  navBadgeAI: {
+    backgroundColor: DS.actionPrimary,
+    borderRadius: DS.radiusPill,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+    marginLeft: 4,
+  },
+  navBadgeAIText: {
+    fontSize: 10,
+    fontWeight: "800",
+    color: DS.white,
+    letterSpacing: 0.4,
   },
   right: {
     gap: DS.space3,

@@ -94,12 +94,13 @@ export function LinkAccountModal({
       transparent
       animationType="fade"
       onRequestClose={handleClose}
+      accessibilityViewIsModal
     >
       <View style={s.overlay}>
         <Card style={s.modal}>
           <View style={s.header}>
-            <Icon name="person" size={22} color={DS.actionPrimary} />
-            <Text style={s.title}>Associer un compte</Text>
+            <Icon name="person" size={22} color={DS.actionPrimary} accessible={false} />
+            <Text style={s.title} accessibilityRole="header">Associer un compte</Text>
           </View>
 
           <Text style={s.body}>
@@ -123,18 +124,25 @@ export function LinkAccountModal({
 
           {searching && (
             <View style={s.searchingRow}>
-              <ActivityIndicator size="small" color={DS.actionPrimary} />
-              <Text style={s.searchingText}>Recherche…</Text>
+              <ActivityIndicator
+                size="small"
+                color={DS.actionPrimary}
+                accessibilityLabel="Recherche en cours"
+              />
+              <Text style={s.searchingText} accessibilityElementsHidden>Recherche…</Text>
             </View>
           )}
 
           {!searching && results.length > 0 && (
-            <View style={s.resultsList}>
+            <View style={s.resultsList} accessibilityRole="list">
               {results.map((account) => (
                 <Card
                   key={account.id}
                   interactive
                   onPress={() => setSelected(account)}
+                  accessibilityLabel={`${accountLabel(account)}, ${account.email}${selected?.id === account.id ? ", sélectionné" : ""}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: selected?.id === account.id }}
                   style={[
                     s.resultCard,
                     selected?.id === account.id && s.resultCardSelected,
@@ -177,7 +185,11 @@ export function LinkAccountModal({
             </View>
           )}
 
-          {error && <Text style={s.error}>{error}</Text>}
+          {error && (
+            <Text style={s.error} accessibilityRole="alert" accessibilityLiveRegion="assertive">
+              {error}
+            </Text>
+          )}
 
           <View style={s.actions}>
             <Button

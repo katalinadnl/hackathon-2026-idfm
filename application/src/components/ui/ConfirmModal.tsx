@@ -37,10 +37,11 @@ export function ConfirmModal({
       transparent
       animationType="fade"
       onRequestClose={onCancel}
+      accessibilityViewIsModal
     >
       <View style={s.overlay}>
         <Card style={s.modal}>
-          <Text style={s.title}>{title}</Text>
+          <Text style={s.title} accessibilityRole="header">{title}</Text>
           <Text style={s.message}>{message}</Text>
           <View style={s.actions}>
             <Button variant="tertiary" onPress={onCancel} disabled={loading}>

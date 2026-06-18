@@ -49,7 +49,7 @@ export function SubscriptionHeader({
 
       <View style={s.headerMain}>
         <View style={s.headerText}>
-          <Text style={s.headerTitle}>{subscription.subscriptionType}</Text>
+          <Text style={s.headerTitle} accessibilityRole="header">{subscription.subscriptionType}</Text>
           <Text style={s.headerSub}>
             {subscription.beneficiary.firstName}{" "}
             {subscription.beneficiary.lastName}
@@ -61,14 +61,20 @@ export function SubscriptionHeader({
       </View>
 
       <View style={s.headerDates}>
-        <View>
-          <Text style={s.dateLabel}>Début</Text>
-          <Text style={s.dateValue}>{formatDate(subscription.startDate)}</Text>
+        <View
+          accessible
+          accessibilityLabel={`Date de début : ${formatDate(subscription.startDate)}`}
+        >
+          <Text style={s.dateLabel} accessibilityElementsHidden>Début</Text>
+          <Text style={s.dateValue} accessibilityElementsHidden>{formatDate(subscription.startDate)}</Text>
         </View>
-        <View style={s.dateDivider} />
-        <View>
-          <Text style={s.dateLabel}>Fin</Text>
-          <Text style={s.dateValue}>{formatDate(subscription.endDate)}</Text>
+        <View style={s.dateDivider} accessible={false} />
+        <View
+          accessible
+          accessibilityLabel={`Date de fin : ${formatDate(subscription.endDate)}`}
+        >
+          <Text style={s.dateLabel} accessibilityElementsHidden>Fin</Text>
+          <Text style={s.dateValue} accessibilityElementsHidden>{formatDate(subscription.endDate)}</Text>
         </View>
       </View>
     </View>

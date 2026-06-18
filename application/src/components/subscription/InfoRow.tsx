@@ -10,9 +10,13 @@ type InfoRowProps = {
 
 export function InfoRow({ label, value, last = false }: InfoRowProps) {
   return (
-    <View style={[s.infoRow, !last && s.infoRowBorder]}>
-      <Text style={s.infoLabel}>{label}</Text>
-      <Text style={s.infoValue} numberOfLines={1}>
+    <View
+      style={[s.infoRow, !last && s.infoRowBorder]}
+      accessible
+      accessibilityLabel={`${label} : ${value}`}
+    >
+      <Text style={s.infoLabel} accessibilityElementsHidden>{label}</Text>
+      <Text style={s.infoValue} numberOfLines={1} accessibilityElementsHidden>
         {value}
       </Text>
     </View>

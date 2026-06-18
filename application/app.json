@@ -18,7 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.application"
     },
     "web": {
       "output": "static",
@@ -38,6 +39,7 @@
       ],
       "expo-secure-store"
     ],
+    "newArchEnabled": false,
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

@@ -240,6 +240,9 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
                 onPress={() => setMonthPage((p) => Math.max(0, p - 1))}
                 disabled={monthPage === 0}
                 style={styles.pageBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Page précédente"
+                accessibilityState={{ disabled: monthPage === 0 }}
               >
                 <Text
                   style={[
@@ -250,7 +253,10 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
                   ← Précédent
                 </Text>
               </Pressable>
-              <Text style={styles.pageInfo}>
+              <Text
+                style={styles.pageInfo}
+                accessibilityLabel={`Page ${monthPage + 1} sur ${Math.ceil(data.monthGroups!.length / 5)}`}
+              >
                 {monthPage + 1} /{" "}
                 {Math.ceil(data.monthGroups!.length / 5)}
               </Text>
@@ -268,6 +274,9 @@ export function TransactionsTab({ accountId, subscriptionId }: Props) {
                   Math.ceil(data.monthGroups!.length / 5) - 1
                 }
                 style={styles.pageBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Page suivante"
+                accessibilityState={{ disabled: monthPage === Math.ceil(data.monthGroups!.length / 5) - 1 }}
               >
                 <Text
                   style={[
@@ -348,6 +357,8 @@ function MonthGroupCard({
         onPress={() => setExpanded(!expanded)}
         style={styles.groupHeader}
         accessibilityRole="button"
+        accessibilityLabel={`${group.label}, ${group.transactions.length} paiement${group.transactions.length > 1 ? "s" : ""}${hasUnpaid ? `, ${group.outstanding} € impayé` : ""}`}
+        accessibilityState={{ expanded }}
       >
         <View style={styles.groupHeaderLeft}>
           <Text style={styles.groupMonth}>{group.label}</Text>
@@ -405,6 +416,9 @@ function MonthGroupCard({
                 onPress={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
                 style={styles.pageBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Page précédente"
+                accessibilityState={{ disabled: page === 0 }}
               >
                 <Text
                   style={[styles.pageBtnText, page === 0 && styles.pageDisabled]}
@@ -412,13 +426,19 @@ function MonthGroupCard({
                   ← Précédent
                 </Text>
               </Pressable>
-              <Text style={styles.pageInfo}>
+              <Text
+                style={styles.pageInfo}
+                accessibilityLabel={`Page ${page + 1} sur ${totalPages}`}
+              >
                 {page + 1} / {totalPages}
               </Text>
               <Pressable
                 onPress={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page === totalPages - 1}
                 style={styles.pageBtn}
+                accessibilityRole="button"
+                accessibilityLabel="Page suivante"
+                accessibilityState={{ disabled: page === totalPages - 1 }}
               >
                 <Text
                   style={[

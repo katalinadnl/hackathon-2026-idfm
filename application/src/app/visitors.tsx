@@ -317,7 +317,7 @@ export default function VisitorsScreen() {
                   placeholder={t('visitors_from_ph')}
                   value={from}
                   onChangeText={setFrom}
-                  style={isDesktop ? { flex: 1 } as any : undefined}
+                  wrapperProps={isDesktop ? { style: { flex: 1 } } : undefined}
                 />
                 <Input
                   label={t('to_label')}
@@ -325,16 +325,18 @@ export default function VisitorsScreen() {
                   placeholder={t('visitors_to_ph')}
                   value={to}
                   onChangeText={setTo}
-                  style={isDesktop ? { flex: 1 } as any : undefined}
+                  wrapperProps={isDesktop ? { style: { flex: 1 } } : undefined}
                 />
-                <Button
-                  size="lg"
-                  leadingIcon="search"
-                  fullWidth={!isDesktop}
-                  accessibilityLabel={t('visitors_go')}
-                >
-                  {t('visitors_go')}
-                </Button>
+                <View style={isDesktop ? { paddingTop: 28 } : undefined}>
+                  <Button
+                    size="lg"
+                    leadingIcon="search"
+                    fullWidth={!isDesktop}
+                    accessibilityLabel={t('visitors_go')}
+                  >
+                    {t('visitors_go')}
+                  </Button>
+                </View>
               </View>
               <View style={styles.chips}>
                 <Text style={styles.chipsLabel}>{t('visitors_quick')}</Text>

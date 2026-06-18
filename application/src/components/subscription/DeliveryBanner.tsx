@@ -26,17 +26,28 @@ type DeliveryBannerProps = {
 export function DeliveryBanner({ delivery }: DeliveryBannerProps) {
   const currentIdx = DELIVERY_ORDER.indexOf(delivery.status);
 
+  const currentStep = DELIVERY_STEPS[currentIdx];
+  const accessibleStatus = currentStep
+    ? `Statut actuel : ${currentStep.label}.`
+    : "";
+  const etaText = delivery.estimatedAt
+    ? ` Livraison estimée le ${formatDate(delivery.estimatedAt)}.`
+    : "";
+
   return (
-    <View style={s.banner}>
+    <View
+      style={s.banner}
+      accessibilityLabel={`Suivi de livraison${delivery.trackingNumber ? `, numéro ${delivery.trackingNumber}` : ""}. ${accessibleStatus}${etaText}`}
+    >
       <View style={s.header}>
-        <Icon name="post" size={16} color={DS.actionPrimary} />
-        <Text style={s.title}>Suivi de livraison</Text>
+        <Icon name="post" size={16} color={DS.actionPrimary} accessible={false} />
+        <Text style={s.title} accessibilityElementsHidden>Suivi de livraison</Text>
         {delivery.trackingNumber && (
-          <Text style={s.tracking}>n° {delivery.trackingNumber}</Text>
+          <Text style={s.tracking} accessibilityElementsHidden>n° {delivery.trackingNumber}</Text>
         )}
       </View>
 
-      <View style={s.steps}>
+      <View style={s.steps} accessibilityElementsHidden>
         {DELIVERY_STEPS.map((step, i) => {
           const done = i <= currentIdx;
           const active = i === currentIdx;
@@ -66,7 +77,7 @@ export function DeliveryBanner({ delivery }: DeliveryBannerProps) {
         })}
       </View>
       {delivery.estimatedAt && (
-        <Text style={s.eta}>
+        <Text style={s.eta} accessibilityElementsHidden>
           Livraison estimée le {formatDate(delivery.estimatedAt)}
         </Text>
       )}
