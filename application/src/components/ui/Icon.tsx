@@ -1,5 +1,5 @@
 import { SymbolView } from "expo-symbols";
-import { StyleProp, ViewStyle } from "react-native";
+import { Platform, StyleProp, ViewStyle } from "react-native";
 
 // Maps design-system icon names to platform-specific symbol names
 const SYMBOL_MAP: Record<
@@ -124,9 +124,10 @@ type IconProps = {
 
 export function Icon({ name, size = 24, color, label, style }: IconProps) {
   const sym = SYMBOL_MAP[name] ?? { ios: name, android: name, web: name };
+  const symbolName = Platform.OS === 'ios' ? sym.ios : Platform.OS === 'android' ? sym.android : sym.web;
   return (
     <SymbolView
-      name={sym as any}
+      name={symbolName as any}
       size={size}
       tintColor={color}
       accessibilityLabel={label}
