@@ -8,7 +8,8 @@ type Section =
   | "dashboard"
   | "subscriptions"
   | "billing"
-  | "profile";
+  | "profile"
+  | "bank-infos";
 
 const NAV_ITEMS: { id: Section; icon: string; label: string; href: Href }[] = [
   {
@@ -28,6 +29,12 @@ const NAV_ITEMS: { id: Section; icon: string; label: string; href: Href }[] = [
     icon: "receipt",
     label: "Facturations",
     href: "/(connected)/billing",
+  },
+  {
+    id: "bank-infos",
+    icon: "creditcard",
+    label: "Information bancaire",
+    href: "/(connected)/bank-infos",
   },
   {
     id: "profile",
