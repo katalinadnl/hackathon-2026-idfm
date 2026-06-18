@@ -13,7 +13,7 @@ import {
 } from './subscriptions.type';
 import { ReportLostOrStolenDto } from './dto/report-lost-or-stolen.dto';
 import { AddressType, PassStatus } from 'src/generated/prisma/enums';
-import { SubscriptionResponse } from './dto/subscription-response.dto';
+import { Pass, SubscriptionResponse } from './dto/subscription-response.dto';
 
 export type SubscriptionRole = 'titulaire' | 'payeur' | 'gestionnaire';
 
@@ -111,6 +111,7 @@ export class SubscriptionsService {
             estimatedAt: pass.delivery.estimatedAt?.toISOString() ?? null,
             trackingNumber: pass.delivery.trackingNumber,
           },
+          subscriptionId: subscription.id,
         };
       }),
       subscriptionType: subscription.subscriptionType,
@@ -159,6 +160,7 @@ export class SubscriptionsService {
         amount: p.amount,
         method: p.method,
         status: p.status,
+        subscriptionId: subscription.id,
       })),
       documents: [],
     };
@@ -526,5 +528,9 @@ export class SubscriptionsService {
 
   private firstDayOfNextMonth(date: Date): Date {
     return new Date(date.getFullYear(), date.getMonth() + 1, 1);
+  }
+
+  getActivePass<T extends { status: string }>(passes: T[]): T | null {
+    return passes.find((p) => p.status === PassStatus.active) ?? null;
   }
 }

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -23,6 +24,7 @@ import {
 import { PaymentMode } from '../generated/prisma/enums';
 import { StripeProvider } from './stripe/stripe.provider';
 import { InvoiceData } from './invoice-pdf.service';
+import { SubscriptionsService } from 'src/subscriptions/subscriptions.service';
 
 const CREDITOR_NAME = 'Île-de-France Mobilités';
 const CREDITOR_ICS = 'FR93ZZZ123456';
@@ -32,6 +34,7 @@ export class BillingService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly stripe: StripeProvider,
+    private readonly subscribeService: SubscriptionsService,
   ) {}
 
   /**
@@ -409,6 +412,11 @@ export class BillingService {
         ? `${payerAccount.beneficiary.firstName} ${payerAccount.beneficiary.lastName}`
         : payerAccount.email);
 
+    const subscribe = await this.subscribeService.findOne(subscriptionId);
+    const navigo = this.subscribeService.getActivePass(subscribe.passes);
+    if (!navigo) {
+      throw new BadRequestException('Aucun pass actif pour cet abonnement.');
+    }
     const active: SepaMandate = {
       reference: `IDFM-SUB-${sub.id}`,
       status: sub.status === 'active' ? 'active' : 'revoked',
@@ -416,6 +424,7 @@ export class BillingService {
       creditorName: CREDITOR_NAME,
       creditorIcs: CREDITOR_ICS,
       debtorName,
+      navigoNumber: navigo.navigoNumber,
       ibanMasked: this.maskIban(sub.bankInfo.iban),
       signedAt: sub.bankInfo.createdAt.toISOString(),
       revokedAt: null,
@@ -679,7 +688,6 @@ export class BillingService {
         subscription: {
           include: {
             beneficiary: true,
-            payer: true,
             bankInfo: { include: { account: true } },
           },
         },

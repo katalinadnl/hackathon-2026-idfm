@@ -65,11 +65,7 @@ export class MandatePdfService {
       }
 
       doc.moveDown(1);
-      doc
-        .moveTo(50, doc.y)
-        .lineTo(545, doc.y)
-        .strokeColor(LIGHT_GRAY)
-        .stroke();
+      doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor(LIGHT_GRAY).stroke();
       doc.moveDown(0.8);
 
       doc

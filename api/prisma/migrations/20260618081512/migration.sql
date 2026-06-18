@@ -20,7 +20,7 @@ CREATE TYPE "AccountRole" AS ENUM ('client', 'admin');
 CREATE TYPE "SubscriptionStatus" AS ENUM ('active', 'expired', 'cancelled', 'pending_cancellation');
 
 -- CreateEnum
-CREATE TYPE "PaymentMethod" AS ENUM ('card', 'direct_debit');
+CREATE TYPE "PaymentMode" AS ENUM ('CARD_ONCE', 'SEPA_ONCE', 'SEPA_MONTHLY');
 
 -- CreateEnum
 CREATE TYPE "PaymentStatus" AS ENUM ('succeeded', 'failed', 'pending');
@@ -118,6 +118,10 @@ CREATE TABLE "Account" (
     "stripePaymentMethodId" TEXT,
     "stripeMandateId" TEXT,
     "stripePreviousMandateId" TEXT,
+    "twoFactorCode" TEXT,
+    "twoFactorExpiresAt" TIMESTAMP(3),
+    "resetPasswordToken" TEXT,
+    "resetPasswordExpiresAt" TIMESTAMP(3),
 
     CONSTRAINT "Account_pkey" PRIMARY KEY ("id")
 );
@@ -150,6 +154,9 @@ CREATE TABLE "Subscription" (
     "cancellationEffectiveAt" TIMESTAMP(3),
     "cancelledById" INTEGER,
     "bankInfoId" INTEGER NOT NULL,
+    "paymentMode" "PaymentMode" NOT NULL DEFAULT 'SEPA_MONTHLY',
+    "annualAmount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+    "monthlyAmount" DOUBLE PRECISION,
 
     CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
 );
@@ -160,7 +167,7 @@ CREATE TABLE "Payment" (
     "subscriptionId" INTEGER NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "paidAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "method" "PaymentMethod" NOT NULL,
+    "method" "PaymentMode" NOT NULL,
     "status" "PaymentStatus" NOT NULL DEFAULT 'succeeded',
 
     CONSTRAINT "Payment_pkey" PRIMARY KEY ("id")
@@ -213,7 +220,13 @@ CREATE UNIQUE INDEX "Account_beneficiaryId_key" ON "Account"("beneficiaryId");
 CREATE UNIQUE INDEX "Account_stripeCustomerId_key" ON "Account"("stripeCustomerId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Account_resetPasswordToken_key" ON "Account"("resetPasswordToken");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Subscription_reference_key" ON "Subscription"("reference");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Payment_subscriptionId_paidAt_amount_key" ON "Payment"("subscriptionId", "paidAt", "amount");
 
 -- AddForeignKey
 ALTER TABLE "Address" ADD CONSTRAINT "Address_beneficiaryId_fkey" FOREIGN KEY ("beneficiaryId") REFERENCES "Beneficiary"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

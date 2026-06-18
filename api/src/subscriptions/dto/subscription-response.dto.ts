@@ -18,7 +18,7 @@ export type AccountInfo = {
   beneficiary: { firstName: string; lastName: string } | null;
 };
 
-export type PaymentMethod = 'card' | 'direct_debit';
+export type PaymentMethod = 'CARD_ONCE' | 'SEPA_ONCE' | 'SEPA_MONTHLY';
 export type PaymentStatus = 'succeeded' | 'failed' | 'pending';
 
 export type Payment = {
@@ -66,6 +66,7 @@ export type Pass = {
   status: PassStatus;
   issuedAt: string;
   delivery: Delivery;
+  subscriptionId: number;
 };
 
 export type SubscriptionStatus =

@@ -47,7 +47,7 @@ export class BillingController {
   @ApiQuery({ name: 'subscriptionId', type: Number, required: false })
   getTransactions(
     @GetMe() user: JwtPayload,
-    @Query('subscriptionId') subscriptionId?: number,
+    @Query('subscriptionId') subscriptionId?: string,
   ) {
     return this.billing.getTransactions(
       accountIdOf(user),
@@ -181,7 +181,6 @@ export class BillingController {
     const baseUrl = process.env.FRONTEND_URL ?? 'http://localhost:8081';
     return this.billing.payByCard(accountIdOf(user), paymentId, baseUrl);
   }
-
 
   @Post('payment-method/change')
   @ApiQuery({ name: 'subscriptionId', type: Number, required: false })

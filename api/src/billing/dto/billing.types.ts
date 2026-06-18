@@ -29,6 +29,7 @@ export interface SepaMandate {
   creditorIcs: string;
   debtorName: string;
   ibanMasked: string;
+  navigoNumber: string;
   signedAt: string;
   revokedAt: string | null;
   subscriptionId: number;

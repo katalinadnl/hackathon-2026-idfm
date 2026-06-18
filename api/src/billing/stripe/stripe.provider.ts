@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import Stripe from 'stripe';
 
 import { PrismaService } from '../../prisma/prisma.service';
@@ -7,6 +11,7 @@ import {
   PaymentMethodInfo,
   SepaMandate,
 } from '../dto/billing.types';
+import { SubscriptionsService } from 'src/subscriptions/subscriptions.service';
 
 type StripeClient = InstanceType<typeof Stripe>;
 
@@ -17,7 +22,10 @@ const CREDITOR_ICS = 'FR93ZZZ123456';
 export class StripeProvider {
   private client: StripeClient | null = null;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly subscriptionService: SubscriptionsService,
+  ) {}
 
   get isConnected(): boolean {
     return Boolean(process.env.STRIPE_SECRET_KEY);
@@ -84,7 +92,12 @@ export class StripeProvider {
         : mandate.payment_method?.id;
     const pm = pmId ? await stripe.paymentMethods.retrieve(pmId) : null;
     const sepa = pm?.sepa_debit;
+    const subscription = await this.subscriptionService.findOne(subscriptionId);
+    const navigo = this.subscriptionService.getActivePass(subscription.passes);
 
+    if (!navigo) {
+      throw new BadRequestException('Aucun pass actif pour cet abonnement.');
+    }
     return {
       reference:
         mandate.payment_method_details?.sepa_debit?.reference ?? mandateId,
@@ -94,6 +107,7 @@ export class StripeProvider {
       creditorIcs: CREDITOR_ICS,
       debtorName: pm?.billing_details?.name ?? '—',
       ibanMasked: this.maskIban(sepa?.last4 ?? null),
+      navigoNumber: navigo?.navigoNumber,
       signedAt: pm
         ? new Date(pm.created * 1000).toISOString()
         : new Date().toISOString(),
