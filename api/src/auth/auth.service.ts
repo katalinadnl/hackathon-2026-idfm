@@ -18,6 +18,7 @@ export type AuthUser = {
   id: number;
   email: string;
   accountNumber: string;
+  beneficiaryId: number | null;
   firstName: string | null;
   lastName: string | null;
   role: AccountRole;
@@ -51,7 +52,11 @@ export class AuthService {
       include: { beneficiary: true },
     });
     return {
-      ...account,
+      id: account.id,
+      email: account.email,
+      accountNumber: account.accountNumber,
+      role: account.role,
+      beneficiaryId: account.beneficiaryId,
       firstName: account.beneficiary?.firstName ?? null,
       lastName: account.beneficiary?.lastName ?? null,
     };

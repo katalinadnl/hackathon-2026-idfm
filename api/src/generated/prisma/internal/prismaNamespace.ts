@@ -394,7 +394,9 @@ export const ModelName = {
   BankInfo: 'BankInfo',
   Subscription: 'Subscription',
   Payment: 'Payment',
-  StatusVerification: 'StatusVerification'
+  StatusVerification: 'StatusVerification',
+  TransportProduct: 'TransportProduct',
+  TariffReduction: 'TariffReduction'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -410,7 +412,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "address" | "department" | "beneficiary" | "pass" | "passUsage" | "delivery" | "account" | "bankInfo" | "subscription" | "payment" | "statusVerification"
+    modelProps: "address" | "department" | "beneficiary" | "pass" | "passUsage" | "delivery" | "account" | "bankInfo" | "subscription" | "payment" | "statusVerification" | "transportProduct" | "tariffReduction"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1228,6 +1230,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    TransportProduct: {
+      payload: Prisma.$TransportProductPayload<ExtArgs>
+      fields: Prisma.TransportProductFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TransportProductFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TransportProductFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>
+        }
+        findFirst: {
+          args: Prisma.TransportProductFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TransportProductFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>
+        }
+        findMany: {
+          args: Prisma.TransportProductFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>[]
+        }
+        create: {
+          args: Prisma.TransportProductCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>
+        }
+        createMany: {
+          args: Prisma.TransportProductCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TransportProductCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>[]
+        }
+        delete: {
+          args: Prisma.TransportProductDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>
+        }
+        update: {
+          args: Prisma.TransportProductUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>
+        }
+        deleteMany: {
+          args: Prisma.TransportProductDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TransportProductUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TransportProductUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>[]
+        }
+        upsert: {
+          args: Prisma.TransportProductUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TransportProductPayload>
+        }
+        aggregate: {
+          args: Prisma.TransportProductAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTransportProduct>
+        }
+        groupBy: {
+          args: Prisma.TransportProductGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TransportProductGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TransportProductCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TransportProductCountAggregateOutputType> | number
+        }
+      }
+    }
+    TariffReduction: {
+      payload: Prisma.$TariffReductionPayload<ExtArgs>
+      fields: Prisma.TariffReductionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TariffReductionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TariffReductionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>
+        }
+        findFirst: {
+          args: Prisma.TariffReductionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TariffReductionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>
+        }
+        findMany: {
+          args: Prisma.TariffReductionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>[]
+        }
+        create: {
+          args: Prisma.TariffReductionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>
+        }
+        createMany: {
+          args: Prisma.TariffReductionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TariffReductionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>[]
+        }
+        delete: {
+          args: Prisma.TariffReductionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>
+        }
+        update: {
+          args: Prisma.TariffReductionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>
+        }
+        deleteMany: {
+          args: Prisma.TariffReductionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TariffReductionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TariffReductionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>[]
+        }
+        upsert: {
+          args: Prisma.TariffReductionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TariffReductionPayload>
+        }
+        aggregate: {
+          args: Prisma.TariffReductionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTariffReduction>
+        }
+        groupBy: {
+          args: Prisma.TariffReductionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TariffReductionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TariffReductionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TariffReductionCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1392,6 +1542,7 @@ export const SubscriptionScalarFieldEnum = {
   cancellationEffectiveAt: 'cancellationEffectiveAt',
   cancelledById: 'cancelledById',
   bankInfoId: 'bankInfoId',
+  transportProductId: 'transportProductId',
   paymentMode: 'paymentMode',
   annualAmount: 'annualAmount',
   monthlyAmount: 'monthlyAmount'
@@ -1425,10 +1576,46 @@ export const StatusVerificationScalarFieldEnum = {
   apiQueriedAt: 'apiQueriedAt',
   validFrom: 'validFrom',
   validUntil: 'validUntil',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  tariffReductionId: 'tariffReductionId'
 } as const
 
 export type StatusVerificationScalarFieldEnum = (typeof StatusVerificationScalarFieldEnum)[keyof typeof StatusVerificationScalarFieldEnum]
+
+
+export const TransportProductScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  indication: 'indication',
+  period: 'period',
+  priceLabel: 'priceLabel',
+  priceCents: 'priceCents',
+  sellingArguments: 'sellingArguments',
+  subscriptionTag: 'subscriptionTag',
+  portalUrl: 'portalUrl',
+  rechargeUrl: 'rechargeUrl',
+  imageUrl: 'imageUrl',
+  isAnnualPlan: 'isAnnualPlan',
+  syncedAt: 'syncedAt'
+} as const
+
+export type TransportProductScalarFieldEnum = (typeof TransportProductScalarFieldEnum)[keyof typeof TransportProductScalarFieldEnum]
+
+
+export const TariffReductionScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  indication: 'indication',
+  reductionPercent: 'reductionPercent',
+  isFree: 'isFree',
+  sellingArguments: 'sellingArguments',
+  syncedAt: 'syncedAt',
+  baseProductId: 'baseProductId'
+} as const
+
+export type TariffReductionScalarFieldEnum = (typeof TariffReductionScalarFieldEnum)[keyof typeof TariffReductionScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1784,6 +1971,8 @@ export type GlobalOmitConfig = {
   subscription?: Prisma.SubscriptionOmit
   payment?: Prisma.PaymentOmit
   statusVerification?: Prisma.StatusVerificationOmit
+  transportProduct?: Prisma.TransportProductOmit
+  tariffReduction?: Prisma.TariffReductionOmit
 }
 
 /* Types for Logging */

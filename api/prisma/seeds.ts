@@ -813,6 +813,8 @@ async function main() {
       subscriptionType: 'Navigo Annuel',
       startDate: new Date('2026-01-01'),
       endDate: new Date('2026-12-31'),
+      transportProductId: 23,
+
       status: 'active',
       paymentMode: PaymentMode.SEPA_MONTHLY,
       annualAmount: 924.0,
@@ -830,6 +832,7 @@ async function main() {
       subscriptionType: 'Imagine R',
       startDate: new Date('2025-09-01'),
       endDate: new Date('2026-08-31'),
+      transportProductId: 29,
       status: 'active',
       paymentMode: PaymentMode.SEPA_MONTHLY,
       annualAmount: 350.0,

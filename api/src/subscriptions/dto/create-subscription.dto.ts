@@ -14,19 +14,22 @@ export class CreateSubscriptionDto {
   @IsInt()
   referrerId?: number;
 
-  @IsOptional()
-  @IsInt()
-  payerId?: number;
-
   @IsString()
   navigoNumber: string;
 
   @IsString()
   subscriptionType: string;
 
+  @IsOptional()
+  @IsInt()
+  transportProductId?: number;
+
   @IsDateString()
   startDate: string;
 
   @IsDateString()
   endDate: string;
+
+  @IsInt()
+  bankInfoId: number;
 }

@@ -94,3 +94,13 @@ export type Payment = Prisma.PaymentModel
  * 
  */
 export type StatusVerification = Prisma.StatusVerificationModel
+/**
+ * Model TransportProduct
+ * 
+ */
+export type TransportProduct = Prisma.TransportProductModel
+/**
+ * Model TariffReduction
+ * 
+ */
+export type TariffReduction = Prisma.TariffReductionModel

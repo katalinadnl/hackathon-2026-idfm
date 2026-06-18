@@ -27,3 +27,21 @@ export function monthsUntil(iso: string) {
     (end.getMonth() - today.getMonth())
   );
 }
+
+export function parseFrDate(value: string): Date | null {
+  const m = value.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if (!m) return null;
+  const [, day, month, year] = m;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+export function addMonths(date: Date, months: number): Date {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d;
+}
+
+export function formatFrDate(date: Date): string {
+  return date.toLocaleDateString("fr-FR");
+}

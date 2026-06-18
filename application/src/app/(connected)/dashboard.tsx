@@ -14,12 +14,198 @@ import { Icon } from "@/components/ui/Icon";
 import { Card } from "@/components/ui/Card";
 import { DS } from "@/constants/theme";
 import { useAuth } from "@/contexts/auth";
-import { ApiSubscription, SubscriptionRole } from "@/hooks/use-subscriptions";
 import { useFetch } from "@/hooks/useFetch";
 import {
   STATUS_LABEL,
   STATUS_TONE,
 } from "@/components/subscription/SubscriptionHeader";
+import { useTariffs } from "@/hooks/useTariffs";
+import { Tariff, TariffReduction } from "@/lib/api/tariffs";
+import { ApiSubscription, SubscriptionRole } from "@/hooks/use-subscriptions";
+
+function NewSubscriptionCta({
+  onSelect,
+}: {
+  onSelect: (target: "self" | "other") => void;
+}) {
+  return (
+    <View style={styles.sectionContent}>
+      <SectionHeader title="Nouvel abonnement" />
+      <View style={styles.newSubGrid}>
+        <Card style={styles.newSubCard}>
+          <View style={styles.newSubIcon}>
+            <Icon name="person" size={22} color={DS.actionPrimary} />
+          </View>
+          <Text style={styles.newSubTitle}>Pour moi</Text>
+          <Text style={styles.newSubDesc}>
+            Souscrivez un nouveau pass Navigo à votre nom.
+          </Text>
+          <Button
+            variant="primary"
+            size="sm"
+            trailingIcon="arrow-right"
+            onPress={() => onSelect("self")}
+          >
+            Commencer
+          </Button>
+        </Card>
+
+        <Card style={styles.newSubCard}>
+          <View style={styles.newSubIcon}>
+            <Icon name="user-plus" size={22} color={DS.actionPrimary} />
+          </View>
+          <Text style={styles.newSubTitle}>Pour une autre personne</Text>
+          <Text style={styles.newSubDesc}>
+            Abonnez un proche — enfant, parent ou conjoint — en tant que
+            référent ou payeur.
+          </Text>
+          <Button
+            variant="secondary"
+            size="sm"
+            trailingIcon="arrow-right"
+            onPress={() => onSelect("other")}
+          >
+            Commencer
+          </Button>
+        </Card>
+      </View>
+    </View>
+  );
+}
+
+function formatReductionBenefit(r: TariffReduction): string {
+  if (r.isFree && r.reductionPercent) {
+    return `gratuit ou jusqu'à -${r.reductionPercent} %`;
+  }
+  if (r.isFree) return "gratuit";
+  if (r.reductionPercent) return `-${r.reductionPercent} %`;
+  return "réduction";
+}
+
+function TariffCard({
+  tariff,
+  onSelect,
+}: {
+  tariff: Tariff;
+  onSelect: () => void;
+}) {
+  return (
+    <Card style={styles.tariffCard}>
+      <View style={styles.tariffCardBody}>
+        <Text style={styles.tariffName}>{tariff.name}</Text>
+        {!!tariff.description && (
+          <Text style={styles.tariffDesc}>{tariff.description}</Text>
+        )}
+        <Text style={styles.tariffPrice}>
+          {tariff.priceLabel}
+          <Text style={styles.tariffPricePeriod}>
+            {" "}
+            / {tariff.period ?? "an"}
+          </Text>
+        </Text>
+        {tariff.sellingArguments.slice(0, 3).map((arg) => (
+          <Text key={arg} style={styles.tariffArg}>
+            • {arg}
+          </Text>
+        ))}
+      </View>
+      <Button
+        variant="secondary"
+        size="sm"
+        trailingIcon="arrow-right"
+        onPress={onSelect}
+      >
+        Choisir cette formule
+      </Button>
+    </Card>
+  );
+}
+
+function ReductionCard({
+  reduction,
+  baseProductName,
+  onSelect,
+}: {
+  reduction: TariffReduction;
+  baseProductName: string;
+  onSelect: () => void;
+}) {
+  return (
+    <Card style={styles.tariffCard}>
+      <View style={styles.tariffCardBody}>
+        <Text style={styles.tariffName}>{reduction.name}</Text>
+        <Text style={styles.tariffReductionBase}>
+          S&apos;applique sur {baseProductName}
+        </Text>
+        {!!reduction.description && (
+          <Text style={styles.tariffDesc}>{reduction.description}</Text>
+        )}
+        <Text style={styles.tariffPrice}>
+          {formatReductionBenefit(reduction)}
+        </Text>
+        {!!reduction.indication && (
+          <Text style={styles.tariffArg}>• {reduction.indication}</Text>
+        )}
+      </View>
+      <Button
+        variant="secondary"
+        size="sm"
+        trailingIcon="arrow-right"
+        onPress={onSelect}
+      >
+        Choisir cette formule
+      </Button>
+    </Card>
+  );
+}
+
+function TariffsDiscovery({
+  onSelect,
+}: {
+  onSelect: (target: "self" | "other") => void;
+}) {
+  const { tariffs, loading, error } = useTariffs();
+
+  if (loading || error || tariffs.length === 0) return null;
+
+  const reductionCards = tariffs.flatMap((tariff) =>
+    (tariff.reductions ?? []).map((reduction) => ({
+      reduction,
+      baseProductName: tariff.name,
+    })),
+  );
+
+  return (
+    <View style={styles.sectionContent}>
+      <SectionHeader title="Découvrez nos abonnements" />
+      <View style={styles.tariffGrid}>
+        {tariffs.map((tariff) => (
+          <TariffCard
+            key={tariff.id}
+            tariff={tariff}
+            onSelect={() => onSelect("self")}
+          />
+        ))}
+      </View>
+
+      {reductionCards.length > 0 && (
+        <>
+          <SectionHeader title="Réductions et tarifs solidaires" />
+          <View style={styles.tariffGrid}>
+            {reductionCards.map(({ reduction, baseProductName }) => (
+              <ReductionCard
+                key={reduction.id}
+                reduction={reduction}
+                baseProductName={baseProductName}
+                onSelect={() => onSelect("self")}
+              />
+            ))}
+          </View>
+        </>
+      )}
+    </View>
+  );
+}
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -239,6 +425,8 @@ export function LoadingPlaceholder() {
 
 export default function DashboardHome() {
   const { user } = useAuth();
+  const router = useRouter();
+
   const {
     data: subscriptions,
     loading,
@@ -246,13 +434,25 @@ export default function DashboardHome() {
   } = useFetch<ApiSubscription[]>(
     user ? `/accounts/${user.id}/subscriptions` : null,
   );
-
+  const goToNewSubscription = (target: "self" | "other") =>
+    router.push({
+      pathname: "/subscriptions/new",
+      params: { for: target },
+    } as any);
   if (!user || !subscriptions) return null;
   const active =
     subscriptions.find((s) => s.status === "active") ?? subscriptions[0];
   const withPayments = subscriptions.filter((s) => s.latestPayment);
   const accountName = user?.firstName ?? user?.email ?? "";
+  const showEmptyState = !loading && subscriptions.length === 0;
 
+  if (showEmptyState)
+    return (
+      <>
+        <NewSubscriptionCta onSelect={goToNewSubscription} />
+        <TariffsDiscovery onSelect={goToNewSubscription} />
+      </>
+    );
   return (
     <>
       <View style={styles.greeting}>
@@ -640,5 +840,79 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: DS.textMuted,
     lineHeight: 18,
+  },
+
+  newSubGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: DS.space4,
+  },
+  newSubCard: {
+    flex: 1,
+    minWidth: 240,
+    gap: DS.space3,
+  },
+  newSubIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: DS.radiusMd,
+    backgroundColor: DS.surfaceSelected,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  newSubTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  newSubDesc: {
+    fontSize: 14,
+    color: DS.textMuted,
+    lineHeight: 20,
+  },
+
+  tariffGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: DS.space4,
+  },
+  tariffCard: {
+    flex: 1,
+    minWidth: 220,
+    gap: DS.space3,
+  },
+  tariffCardBody: {
+    flex: 1,
+    gap: DS.space2,
+  },
+  tariffName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: DS.textStrong,
+  },
+  tariffDesc: {
+    fontSize: 13,
+    color: DS.textMuted,
+    lineHeight: 18,
+  },
+  tariffPrice: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: DS.actionPrimary,
+    marginTop: DS.space1,
+  },
+  tariffPricePeriod: {
+    fontSize: 13,
+    fontWeight: "400",
+    color: DS.textMuted,
+  },
+  tariffArg: {
+    fontSize: 13,
+    color: DS.textBody,
+  },
+  tariffReductionBase: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: DS.actionPrimary,
   },
 });
