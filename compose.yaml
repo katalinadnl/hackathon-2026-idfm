@@ -11,16 +11,12 @@ services:
       context: .
       dockerfile: docker/api/Dockerfile
       target: dev
-    command: npm run start:dev
     environment:
       PORT: 3000
       DATABASE_URL: ${DATABASE_URL:-postgres://${POSTGRES_USER:-app}:${POSTGRES_PASSWORD:-!ChangeMe!}@database:5432/${POSTGRES_DB:-app}}
       MAIL_HOST: ${MAIL_HOST:-mailhog}
       MAIL_PORT: ${MAIL_PORT:-1025}
       MAIL_FROM: ${MAIL_FROM:-noreply@idfm.fr}
-    volumes:
-      - ./api:/app
-      - /app/node_modules
     depends_on:
       database:
         condition: service_healthy
@@ -37,10 +33,6 @@ services:
       context: .
       dockerfile: docker/app/Dockerfile
       target: dev
-    command: npm run web
-    volumes:
-      - ./application:/app
-      - /app/node_modules
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:8081"]
       interval: 30s

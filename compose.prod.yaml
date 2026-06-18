@@ -1,38 +1,29 @@
 services:
 
-  # ── Reverse proxy ────────────────────────────────────────────────────────────
-  traefik:
-    image: traefik:v3.3
+  # ── Reverse proxy Caddy (HTTPS automatique via Let's Encrypt) ─────────────────
+  caddy:
+    image: caddy:2-alpine
     restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
+      - "443:443/udp"
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs:/letsencrypt
-    command:
-      - --providers.docker=true
-      - --providers.docker.exposedbydefault=false
-      - --providers.docker.network=public
-      - --entrypoints.web.address=:80
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      - --entrypoints.websecure.address=:443
-      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
-      # Dashboard Traefik (protégé par basic auth)
-      - --api.dashboard=true
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.traefik-dashboard.rule=Host(`traefik.${DOMAIN}`)
-      - traefik.http.routers.traefik-dashboard.entrypoints=websecure
-      - traefik.http.routers.traefik-dashboard.tls.certresolver=letsencrypt
-      - traefik.http.routers.traefik-dashboard.service=api@internal
-      - traefik.http.routers.traefik-dashboard.middlewares=auth
-      - traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN}
     networks:
       - public
+
+  # ── Mailhog (capture emails en démo) ─────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    networks:
+      - public
+      - internal
 
   # ── API NestJS ────────────────────────────────────────────────────────────────
   api:
@@ -40,6 +31,7 @@ services:
       context: .
       dockerfile: docker/api/Dockerfile
       target: production
+    command: node dist/src/main
     restart: unless-stopped
     environment:
       PORT: 3000
@@ -50,6 +42,9 @@ services:
       FC_BASE_URL: ${FC_BASE_URL}
       FC_CALLBACK_URL: https://api.${DOMAIN}/auth/france-connect/callback
       APP_REDIRECT_URL: ${APP_REDIRECT_URL}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_FROM: noreply@idfm.fr
     depends_on:
       database:
         condition: service_healthy
@@ -59,12 +54,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.api.rule=Host(`api.${DOMAIN}`)
-      - traefik.http.routers.api.entrypoints=websecure
-      - traefik.http.routers.api.tls.certresolver=letsencrypt
-      - traefik.http.services.api.loadbalancer.server.port=3000
     networks:
       - public
       - internal
@@ -76,7 +65,7 @@ services:
       dockerfile: docker/app/Dockerfile
       target: production
       args:
-        EXPO_PUBLIC_API_URL: https://api.${DOMAIN}
+        EXPO_PUBLIC_API_URL: https://api.${DOMAIN}/api
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost/health"]
@@ -84,12 +73,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 15s
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.app.rule=Host(`app.${DOMAIN}`)
-      - traefik.http.routers.app.entrypoints=websecure
-      - traefik.http.routers.app.tls.certresolver=letsencrypt
-      - traefik.http.services.app.loadbalancer.server.port=80
     networks:
       - public
 
@@ -108,7 +91,6 @@ services:
       start_period: 30s
     volumes:
       - database_data:/var/lib/postgresql/data:rw
-    # Pas de ports exposés en prod — uniquement accessible via le réseau interne
     networks:
       - internal
 
@@ -123,12 +105,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.umami.rule=Host(`stats.${DOMAIN}`)
-      - traefik.http.routers.umami.entrypoints=websecure
-      - traefik.http.routers.umami.tls.certresolver=letsencrypt
-      - traefik.http.services.umami.loadbalancer.server.port=3000
     networks:
       - public
       - internal
@@ -157,15 +133,15 @@ services:
     volumes:
       - directus_uploads:/directus/uploads
       - directus_extensions:/directus/extensions
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.directus.rule=Host(`cms.${DOMAIN}`)
-      - traefik.http.routers.directus.entrypoints=websecure
-      - traefik.http.routers.directus.tls.certresolver=letsencrypt
-      - traefik.http.services.directus.loadbalancer.server.port=8055
     networks:
       - public
       - internal
+
+  # ── Désactiver les services dev-only en prod ──────────────────────────────────
+  nginx:
+    profiles: ["dev"]
+  adminer:
+    profiles: ["dev"]
 
 networks:
   public:
@@ -176,6 +152,7 @@ networks:
 
 volumes:
   database_data:
-  traefik_certs:
+  caddy_data:
+  caddy_config:
   directus_uploads:
   directus_extensions:
