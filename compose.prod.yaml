@@ -17,6 +17,13 @@ services:
     networks:
       - public
 
+  # ── Mailhog (capture emails en démo) ─────────────────────────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    networks:
+      - internal
+
   # ── API NestJS ────────────────────────────────────────────────────────────────
   api:
     build:
@@ -34,6 +41,9 @@ services:
       FC_BASE_URL: ${FC_BASE_URL}
       FC_CALLBACK_URL: https://api.${DOMAIN}/auth/france-connect/callback
       APP_REDIRECT_URL: ${APP_REDIRECT_URL}
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_FROM: noreply@idfm.fr
     depends_on:
       database:
         condition: service_healthy
