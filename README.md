@@ -10,6 +10,7 @@ Application web & mobile destinée aux voyageurs et visiteurs d'Île-de-France M
 - Espace specifique visiteurs / touristes avec passes, destinations et accès aéroports
 - Multilingue (fr / en / es / de / ar / zh) et traduction avec l'IA
 - Backoffice Directus — gestion des contenus, bénéficiaires, abonnements et paiements
+- Analytics RGPD-compliant via Umami — suivi du trafic sans cookies
 - Accessibilité WCAG 2.1 AA — design system IDF Mobilités et Accessibilité augmentée par l'IA — simplification de l'interface à la demande
 
 
