@@ -1,15 +1,32 @@
-# Hackathon 2026 — IDFM
+# Hackathon 2026 — IDF Mobilités
+
+Application web & mobile destinée aux voyageurs et visiteurs d'Île-de-France Mobilités.
+
+## Fonctionnalités
+
+- Authentification FranceConnect + compte local
+- Abonnements Navigo — souscription, gestion des bénéficiaires, facturation
+- Conseiller IA — assistant capable d'effectuer des actions à la place de l'utilisateur (recherche de trajet, souscription, etc.)
+- Espace specifique visiteurs / touristes avec passes, destinations et accès aéroports
+- Multilingue (fr / en / es / de / ar / zh) et traduction avec l'IA
+- Backoffice Directus — gestion des contenus, bénéficiaires, abonnements et paiements
+- Accessibilité WCAG 2.1 AA — design system IDF Mobilités et Accessibilité augmentée par l'IA — simplification de l'interface à la demande
+
 
 ## Architecture
 
-| Service    | Description                                      | Techno                  |
-| ---------- | ------------------------------------------------ | ----------------------- |
-| `traefik`  | Reverse proxy, TLS automatique via Let's Encrypt | Traefik v3              |
-| `app`      | Frontend statique Expo/web servi par nginx       | Expo / React Native Web |
-| `api`      | API REST                                         | NestJS                  |
-| `database` | Base de données relationnelle                    | PostgreSQL 16           |
-| `directus` | CMS headless                                     | Directus 11             |
-| `umami`    | Analytics RGPD-compliant (prod uniquement)       | Umami                   |
+| Service      | Description                                | Techno                  |
+| ------------ | ------------------------------------------ | ----------------------- |
+| `nginx`      | Reverse proxy local (dev uniquement)       | nginx:alpine            |
+| `caddy`      | Reverse proxy + TLS auto (prod)            | Caddy 2                 |
+| `app`        | Frontend                                   | Expo / React Native Web |
+| `api`        | API REST + Swagger                         | NestJS + Prisma         |
+| `database`   | Base de données relationnelle              | PostgreSQL 16           |
+| `directus`   | CMS headless                               | Directus 11             |
+| `mailhog`    | Serveur mail de test (dev uniquement)      | MailHog                 |
+| `umami`      | Analytics RGPD-compliant (prod uniquement) | Umami                   |
+
+> En mode Swarm (haute disponibilité), Caddy est remplacé par **Traefik v3** pour le load balancing multi-nœuds.
 
 ## Prérequis
 
@@ -18,18 +35,47 @@
 
 ## Démarrage local
 
+### 1. Variables d'environnement
+
 ```bash
-# 1. Variables d'environnement
 cp api/.env.example api/.env
 cp application/.env.example application/.env
-
-# 2. Générer le client Prisma et appliquer le schéma
-
-docker compose exec api npx prisma generate && docker compose exec api npx prisma db push && docker compose exec api npm run prisma:sync-tariffs && docker compose exec api npm run prisma:fixture
-
- # 3. Lancer
-docker compose up --build
 ```
+
+Les valeurs par défaut fonctionnent en local. Modifier si besoin :
+- `api/.env` — connexion DB, clés FranceConnect, SMTP, JWT secret
+- `application/.env` — URL de l'API, clés IA
+
+### 2. Lancer les services
+
+```bash
+docker compose up -d --build
+```
+
+### 3. Initialiser la base de données (premier démarrage uniquement)
+
+```bash
+docker compose exec api npx prisma generate
+docker compose exec api npx prisma db push
+docker compose exec api npm run prisma:sync-tariffs
+docker compose exec api npm run prisma:fixture
+```
+
+### 4. Configurer Directus (premier démarrage uniquement)
+
+```bash
+node admin/seed-directus.mjs
+```
+
+Ce script crée les rôles et permissions dans Directus :
+
+| Rôle            | Accès                                              |
+| --------------- | -------------------------------------------------- |
+| Administrateur  | CRUD complet sur toutes les collections            |
+| Opérateur       | CRUD bénéficiaires/abonnements, lecture comptes    |
+| Lecteur         | Lecture seule sur toutes les collections           |
+
+### URLs locales
 
 | URL                       | Cible                  |
 | ------------------------- | ---------------------- |
@@ -37,70 +83,34 @@ docker compose up --build
 | http://localhost/api/     | API NestJS             |
 | http://localhost/api/docs | Swagger UI             |
 | http://localhost:8080/    | Adminer (DB)           |
+| http://localhost:8025/    | MailHog (emails)       |
+| http://localhost:8055/    | Directus CMS           |
+
+## Infrastructure
+
+### Déploiement production (Docker Context + Caddy)
 
 ```bash
-docker compose down
-```
-
-## Déploiement en production
-
-### Prérequis VPS
-
-- Docker installé (`curl -fsSL https://get.docker.com | sh`)
-- Ports 80 et 443 ouverts
-- Enregistrements DNS pointant vers l'IP du VPS :
-  - `app.vetpawtrol.com`
-  - `api.vetpawtrol.com`
-  - `stats.vetpawtrol.com`
-  - `traefik.vetpawtrol.com`
-
-### Déploiement via Docker Context
-
-```bash
-# 1. Créer le fichier d'environnement de prod
-make prod-env   # puis éditer .env.prod avec les vraies valeurs
-
-# 2. Créer le contexte Docker pointant vers le VPS
+make prod-env              # créer .env.prod, puis éditer avec les vraies valeurs
 make context-create VPS_HOST=<IP_DU_VPS>
-
-# 3. Déployer
 make deploy
 ```
 
-### URLs de production
+Prérequis VPS : Docker installé, ports 80/443 ouverts, enregistrements DNS configurés.
 
-| URL                            | Cible             |
-| ------------------------------ | ----------------- |
-| https://app.vetpawtrol.com     | Frontend          |
-| https://api.vetpawtrol.com     | API               |
-| https://stats.vetpawtrol.com   | Umami analytics   |
-| https://traefik.vetpawtrol.com | Dashboard Traefik |
+Caddy gère automatiquement les certificats TLS via Let's Encrypt.
 
-## Haute disponibilité — Docker Swarm
+### Haute disponibilité — Docker Swarm + Traefik
 
-Configuration d'un cluster 2 managers + 5 workers pour la haute disponibilité.
+Cluster 2 managers + 5 workers :
 
 ```bash
-# Sur manager-1 : initialiser le Swarm
-make swarm-init
-
-# Récupérer les tokens et les coller sur les autres noeuds
-make swarm-token-manager   # → coller sur manager-2
-make swarm-token-worker    # → coller sur worker-1..5
-
-# Poser le label de stockage sur manager-1 (nécessaire pour la DB)
-make swarm-label-db
-
-# Déployer la stack
-make swarm-deploy
-
-# Vérifier l'état du cluster
-make swarm-nodes
-make swarm-status
-make swarm-ps
+make swarm-init            # sur manager-1
+make swarm-token-manager   # token à coller sur manager-2
+make swarm-token-worker    # token à coller sur worker-1..5
+make swarm-label-db        # label de stockage sur manager-1
+make swarm-deploy          # déployer la stack
 ```
-
-Topologie des services :
 
 | Service    | Placement | Replicas               |
 | ---------- | --------- | ---------------------- |
@@ -108,6 +118,35 @@ Topologie des services :
 | `api`      | workers   | 5 (1 par worker)       |
 | `app`      | workers   | 5 (1 par worker)       |
 | `database` | manager-1 | 1 (volume local)       |
+
+## Comptes par défaut (dev)
+
+### Application
+
+Tous les comptes fixtures ont le mot de passe `Password123!`
+
+| Email                         | Rôle        |
+| ----------------------------- | ----------- |
+| `pierre.moreau@email.fr`      | Titulaire   |
+| `monique.moreau@email.fr`     | Titulaire   |
+| `alice.martin@email.fr`       | Titulaire   |
+| `bernard.dupont@email.fr`     | Titulaire   |
+
+### Directus CMS (`http://localhost:8055`)
+
+| Champ    | Valeur         |
+| -------- | -------------- |
+| Email    | `admin@idfm.fr` |
+| Mot de passe | `Admin123!` |
+
+### Adminer (`http://localhost:8080`)
+
+| Champ    | Valeur        |
+| -------- | ------------- |
+| Serveur  | `database`    |
+| Utilisateur | `app`      |
+| Mot de passe | `!ChangeMe!` |
+| Base     | `app`         |
 
 ## Variables d'environnement
 
