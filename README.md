@@ -38,6 +38,7 @@ Application web & mobile destinée aux voyageurs et visiteurs d'Île-de-France M
 
 ```bash
 git clone https://github.com/katalinadnl/hackathon-2026-idfm.git
+cd hackathon-2026-idfm
 ```
 
 ### 1. Variables d'environnement
